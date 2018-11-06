@@ -6,6 +6,7 @@ ________...........__________.........___...............__...
 /_______../.|__|....|____|_../.\____/..|___../.\____/..|__|..
 ........\/.................\/..............\/................
 ```
+[![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/sandialabs/dr_robot/blob/master/LICENSE)
 
 Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.
 
