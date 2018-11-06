@@ -1,0 +1,17 @@
+## Pipenv
+This tool has been made with Pipenv in mind. That being said you should easily be able to convert it to a virtualenv if you hate pipenv.
+
+```
+cd INSTALL_DIRECTORY
+pipenv install && pipenv shell
+```
+Possible integration with pip in near future as cited in Pipenv docs: https://github.com/pypa/pipfile
+
+## Virtualenv
+
+```
+cd INSTALL_DIRECTORY
+virtualenv python3 env
+. env/bin/activate
+pip install  --requirements Pipfile
+```

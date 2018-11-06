@@ -102,3 +102,9 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# custom
+.idea/*
+Dockerfile*
+auth/creds.env
+dockers/user_config.json

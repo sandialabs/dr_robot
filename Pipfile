@@ -1,0 +1,26 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+docker = "*"
+dnspython = "*"
+requests = "*"
+netaddr = "*"
+mattermostdriver = "*"
+shodan = "*"
+certifi = "*"
+typing = "*"
+argparse = "*"
+tqdm = "*"
+"bs4" = "*"
+
+[dev-packages]
+pytest = "*"
+pytest-cov = "*"
+tox = "*"
+pytest-runner = "*"
+
+[requires]
+python_version = "3.6"

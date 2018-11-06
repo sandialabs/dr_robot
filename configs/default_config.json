@@ -1,0 +1,142 @@
+{
+    "WebTools":
+    {
+        "Shodan" :
+        {
+            "short_name": "shodan",
+            "class_name": "Shodan",
+            "description" : "Query SHODAN for publicly facing sites of given domain",
+            "output_file" : "shodan.txt",
+            "api_key" : null,
+            "endpoint" : null,
+            "username" : null,
+            "password" : null
+        },
+        "Arin" :
+        {
+            "short_name" : "arin",
+            "class_name": "Arin",
+            "description" : "Query ARIN for public CIDR ranges. This is better as a brute force option as the ranges",
+            "output_file" : "arin.txt",
+            "api_key" : null,
+            "username" : null,
+            "password" : null
+        },
+        "HackerTarget" :
+        {
+            "short_name" : "hack",
+            "class_name" : "HackerTarget",
+            "description" : "This query will display the forward DNS records discovered using the data sets outlined above.",
+            "api_call_unused" : "https://api.hackertarget.com/hostsearch/?q=example.com",
+            "output_file" : "hacker.txt"
+        },
+        "Dumpster" :
+        {
+            "short_name" : "dump",
+            "class_name" : "Dumpster",
+            "description" : "Use the limited response of DNSDumpster. Requires API access for better results.",
+            "output_file" : "dumpster.txt"
+        },
+        "VirusTotal" :
+        {
+            "short_name" : "virus",
+            "class_name" : "VirusTotal",
+            "description" : "Utilize VirusTotal's Observer Subdomain Search",
+            "output_file" : "virustotal.txt"
+        }
+    },
+    "Upload" : {
+        "Mattermost":
+        {
+            "class_name" : "Mattermost",
+            "short_name" : "matter",
+            "api_key": "",
+            "token_id" : "",
+            "port" : null,
+            "username" : "",
+            "url" : "",
+            "team_name" : "",
+            "channel_name" : "",
+            "description" : "Mattermost server"
+        }
+    },
+    "Scanners" :
+    {
+        "Aquatone" : {
+            "name": "Aquatone",
+            "default" : 1,
+            "docker_name": "aqua",
+            "default_conf": "dockers/Dockerfile.Aquatone.tmp",
+            "active_conf": "dockers/Dockerfile.Aquatone",
+            "description": "AQUATONE is a set of tools for performing reconnaissance on domain names",
+            "src": "https://github.com/michenriksen/aquatone",
+            "output": "/aqua",
+            "output_file": "aquatone.txt"
+        },
+        "Sublist3r": {
+            "name": "Sublist3r",
+            "default" : 1,
+            "docker_name": "sub",
+            "default_conf": "dockers/Dockerfile.Sublist3r.tmp",
+            "active_conf": "dockers/Dockerfile.Sublist3r",
+            "description": "Sublist3r is a python tool designed to enumerate subdomains of websites using OSINT",
+            "src": "https://github.com/aboul3la/Sublist3r",
+            "output": "/root/sublist3r",
+            "output_file": "sublist3r.txt"
+        },
+        "Subbrute": {
+            "name": "Subbrute",
+            "default" : 1,
+            "docker_name" : "brute",
+            "default_conf": "dockers/Dockerfile.Subbrute.tmp",
+            "active_conf": "dockers/Dockerfile.Subbrute",
+            "description": "SubBrute is a community driven project with the goal of creating the fastest, and most accurate subdomain enumeration tool.",
+            "src": "https://github.com/TheRook/subbrute.git",
+            "output": " /root/brute",
+            "output_file": "subbrute.txt"
+        }
+    },
+    "Enumeration" :
+    {
+        "HTTPScreenshot": {
+            "name" : "HTTPScreenshot",
+            "short_name" : "http",
+            "default" : 2,
+            "docker_name" : "httpscreen",
+            "default_conf" : "dockers/Dockerfile.HTTPScreenshot.tmp",
+            "active_conf" : "dockers/Dockerfile.HTTPScreenshot",
+            "ansible_arguments" : {
+                "config" : "$config/ansible_plays/httpscreenshot_play.yml",
+                "flags": "-e '$extra'",
+                "extra_flags":{
+                    "1" : "variable_host=localhost",
+                    "2" : "infile=$infile/aggregated_hostnames.txt",
+                    "3" : "outfile=$outfile/httpscreenshots.tar",
+                    "4" : "outfolder=$outfile/httpscreenshots"
+                }
+            },
+            "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: httpscreenshot.tar and unpacked httpscreenshots",
+            "output" : "/tmp/output",
+            "inputfilelist" : "aggregated_hostnames.txt",
+            "enabled" : false
+        },
+        "Eyewitness": {
+            "name" : "Eyewitness",
+            "short_name" : "eye",
+            "default" : 2,
+            "ansible_arguments" : {
+                "config" : "$config/ansible_plays/eyewitness_play.yml",
+                "flags": "-e '$extra'",
+                "extra_flags":{
+                    "1" : "variable_host=localhost",
+                    "2" : "infile=$infile/aggregated_ips.txt",
+                    "3" : "outfile=$outfile/Eyewitness.tar",
+                    "4" : "outfolder=$outfile/Eyewitness"
+                }
+            },
+            "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: Eyewitness.tar and unpacked in Eyewitness",
+            "output" : "/tmp/output",
+            "enabled" : false
+        }
+    }
+}
