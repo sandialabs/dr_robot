@@ -10,11 +10,11 @@ ________...........__________.........___...............__...
 
 Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.
 
-DrRobot is a tool for **Domain Reconnaissance and Enumeration**. Utilizing a few virtualization technologies to reduce the environmental load on an individuals computer as well as retaining strong versioning allows DrRobot to be a highly configurable and portable tool! 
+Dr.ROBOT is a tool for **Domain Reconnaissance and Enumeration**. Utilizing a few virtualization technologies to reduce the environmental load on an individuals computer as well as retaining strong versioning allows Dr.ROBOT to be a highly configurable and portable tool! 
 
 **Use Case**: Quickly gather as many public facing servers that a target may possess. By querying DNS resources we can quickly develop a large list of possible targets that you can run further analysis on.
 
-**Note**: DrRobot is not just a one trick pony however! You can customize these tools to gather as much information as you would like them too. Strong customization allows for many possible options. 
+**Note**: Dr.ROBOT is not just a one trick pony however! You can customize these tools to gather as much information as you would like them too. Strong customization allows for many possible options. 
 
 **Command Examples**
 
