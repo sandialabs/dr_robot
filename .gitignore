@@ -105,6 +105,6 @@ venv.bak/
 
 # custom
 .idea/*
-Dockerfile*
 auth/creds.env
+!dockers/*.tmp
 dockers/user_config.json

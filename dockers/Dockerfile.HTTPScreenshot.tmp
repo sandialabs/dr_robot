@@ -1,0 +1,13 @@
+FROM andmyhacks/httpscreenshot
+
+ENV DNS $dns
+ENV TARGET $target
+ENV OUTPUT $output
+ENV INPUTFILELIST $inputfilelist
+
+RUN useradd -ms /bin/bash test
+USER test
+
+WORKDIR $$OUTPUT
+
+ENTRYPOINT [ ! -d "screenshots" ] && mkdir screenshots ; cd screenshots && httpscreenshot -l $$OUTPUT/$$INPUTFILELIST -p -w 40 -a -vH
