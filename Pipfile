@@ -15,6 +15,7 @@ typing = "*"
 argparse = "*"
 tqdm = "*"
 "bs4" = "*"
+sphinx = "*"
 
 [dev-packages]
 pytest = "*"
