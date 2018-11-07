@@ -130,7 +130,7 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}):
             nargs="*",
             help="Additional files to supply outside of the ones in the config file")
 
-    parser_dumpdb = subparser.add_parser("dumpdb", 
+    parser_dumpdb = subparser.add_parser("dumpdb",
             help="Dump the database of ip,hostname,banners to a text file")
 
     if not len(sys.argv) > 1:
@@ -182,6 +182,10 @@ if __name__ == '__main__':
         tools = load_config()
 
         args = parse_args(**tools)
+
+        if not args.actions:
+            print("No action selected, exiting...")
+            sys.exit(1)
 
         logging.debug(args)
 
@@ -251,7 +255,7 @@ if __name__ == '__main__':
                 files += [output]
 
             drrobot.rebuild(files=files)
-        
+
         if args.actions in "dumpdb":
             if exists(join_abs(ROOT_DIR, "dbs", f"{getattr(args, 'domain')}.db")):
                 if not exists(join_abs(ROOT_DIR, "output", getattr(args, 'domain'), "headers")):

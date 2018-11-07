@@ -123,7 +123,10 @@
         "Eyewitness": {
             "name" : "Eyewitness",
             "short_name" : "eye",
-            "default" : 2,
+            "docker_name" : "eye",
+            "default" : 1,
+            "default_conf" : "dockers/Dockerfile.Eyewitness.tmp",
+            "active_conf" : "dockers/Dockerfile.Eyewitness",
             "ansible_arguments" : {
                 "config" : "$config/ansible_plays/eyewitness_play.yml",
                 "flags": "-e '$extra'",
@@ -136,6 +139,7 @@
             },
             "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: Eyewitness.tar and unpacked in Eyewitness",
             "output" : "/tmp/output",
+            "infile" : "/tmp/output/aggregated/aggregated_hostnames.txt",
             "enabled" : false
         }
     }

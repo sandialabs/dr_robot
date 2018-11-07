@@ -1,0 +1,45 @@
+FROM phusion/baseimage
+LABEL maintainer Netanel Ravid
+
+ENV http_proxy $proxy
+ENV https_proxy $proxy
+ENV DNS $dns
+ENV TARGET $target
+ENV OUTPUT /tmp/output/eyewitness 
+ENV INFILE  $infile
+ARG user=eyewitness
+
+RUN if [ -n "$DNS" ]; \
+    then echo "nameserver $DNS" > /etc/resolv.conf;\
+    fi;\
+    apt-get update && \
+    apt-get install -y git wget && \
+	rm -rf /var/lib/apt/lists/*
+
+RUN if [ -n "$DNS" ]; \
+    then echo "nameserver $DNS" > /etc/resolv.conf;\
+    fi;\
+    export uid=1000 gid=1000 && \
+    mkdir -p /home/$$user && \
+    echo "$$user:x:$${uid}:$${gid}:$$user,,,:/home/$$user:/bin/bash" >> /etc/passwd && \
+    echo "$$user:x:$${uid}:" >> /etc/group && \
+    chown $${uid}:$${gid} -R /home/$$user
+
+WORKDIR /home/$$user
+
+RUN if [ -n "$DNS" ]; \
+    then echo "nameserver $DNS" > /etc/resolv.conf;\
+    fi;\
+	git clone https://github.com/ChrisTruncer/EyeWitness.git
+
+WORKDIR /home/$$user/EyeWitness
+
+RUN cd setup && \
+    ./setup.sh && \
+    cd .. && \
+    chown -R $$user:$$user /home/$$user/EyeWitness && \
+    mkdir -p /tmp/EyeWitness
+
+USER $$user
+
+ENTRYPOINT python EyeWitness.py -d /tmp/output/eyewitness -f $infile --no-prompt --headless --threads 40 --max-retries 1
