@@ -106,7 +106,7 @@
             "default_conf" : "dockers/Dockerfile.HTTPScreenshot.tmp",
             "active_conf" : "dockers/Dockerfile.HTTPScreenshot",
             "ansible_arguments" : {
-                "config" : "$config/ansible_plays/httpscreenshot_play.yml",
+                "config" : "$config/httpscreenshot_play.yml",
                 "flags": "-e '$extra'",
                 "extra_flags":{
                     "1" : "variable_host=localhost",
@@ -128,7 +128,7 @@
             "default_conf" : "dockers/Dockerfile.Eyewitness.tmp",
             "active_conf" : "dockers/Dockerfile.Eyewitness",
             "ansible_arguments" : {
-                "config" : "$config/ansible_plays/eyewitness_play.yml",
+                "config" : "$config/eyewitness_play.yml",
                 "flags": "-e '$extra'",
                 "extra_flags":{
                     "1" : "variable_host=localhost",
