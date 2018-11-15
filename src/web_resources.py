@@ -54,7 +54,9 @@ class Arin(WebTool):
     def _lookup_org(self):
         """
         Queries ARIN for the organization handle given the domain.
-        Returns: (String) Handle for Organization
+
+        Returns:
+            (String) Handle for Organization
 
         """
         url = "https://whois.arin.net/ui/query.do"
@@ -69,6 +71,12 @@ class Arin(WebTool):
         return res.json().get('ns4:pft').get('org').get('handle').get('$')
 
     def _generate_ips(self, all_cidrs):
+        """
+        Convert cidr ranges to ip addresses
+
+        Returns:
+            (List) ip address'
+        """
         ips = []
         for cidr in all_cidrs:
             if not cidr.is_private() and cidr.prefixlen >= 16:
@@ -78,6 +86,7 @@ class Arin(WebTool):
     def do_query(self):
         """
         Queries ARIN CIDR ranges for the domain passed in on instantiation
+
         Returns:
 
         """
@@ -139,6 +148,7 @@ class Shodan(WebTool):
     def do_query(self):
         """
         Queries Shodan for the domain passed in on instantiation
+
         Returns:
 
         """
@@ -172,6 +182,12 @@ class Dumpster(WebTool):
         self.hostnames = []
 
     def _grab_csrf(self):
+        """
+        Gather CSRF token from response so that we can continue making requests.
+
+        Returns:
+            (String) CSRF token
+        """
         response = requests.get(self.ENDPOINT, verify=False, proxies=self.proxies)
         reg = re.compile(r"csrftoken=([0-9A-Za-z]*)")
         if response.status_code == 200:
@@ -180,6 +196,12 @@ class Dumpster(WebTool):
         return None
 
     def do_query(self):
+        """
+        Queries DNSDumpster.com for domain information.
+
+        Returns:
+
+        """
         print("[*] Beginning Dumpster Query")
         try:
             csrf = self._grab_csrf()
@@ -218,6 +240,12 @@ class HackerTarget(WebTool):
         self.ENDPOINT = "https://api.hackertarget.com/hostsearch/?q={}".format(self.domain)
 
     def do_query(self):
+        """
+        Queries HackerTarget.com for domain information
+
+        Returns:
+
+        """
         print("[*] Beginning HackerTarget Query")
         try:
             res = requests.get(self.ENDPOINT, verify=False, proxies=self.proxies)
@@ -242,6 +270,12 @@ class VirusTotal(WebTool):
         self.ENDPOINT = "https://www.virustotal.com/ui/domains/{}/subdomains?limit=40".format(self.domain)
 
     def do_query(self):
+        """
+        Queries VirusTotal for domain inforamtion
+
+        Returns:
+
+        """
         headers = {
                 "Content-Type": "application/json"
                 }

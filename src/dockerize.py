@@ -14,6 +14,9 @@ class Docker:
                 active_config_path: (String) filepath of config to use for "active" configuration
                 default_config_path: (String) filepath of config to use as default template.
                 output_dir: (String) output directory to mount on docker
+
+        Returns:
+
         """
         self._docker_options = kwargs.get('docker_options', None)
 
@@ -28,6 +31,10 @@ class Docker:
     def _init_config(self):
         """
         Creates active configuration from template with appropriate values replaced.
+        Returns:
+
+        Args:
+
         Returns:
 
         """
@@ -47,6 +54,9 @@ class Docker:
     def build(self):
         """
         Generates docker image from active_config
+
+        Args:
+
         Returns:
 
         """
@@ -62,7 +72,11 @@ class Docker:
     def run(self):
         """
         Builds and runs docker container.
+
+        Args:
+
         Returns:
+
         """
         print(f"[*]Running container {self._docker_options['docker_name']}")
         client = docker.from_env()
@@ -87,6 +101,9 @@ class Docker:
     def update_status(self):
         """
         Thread watcher to update status of container
+
+        Args:
+
         Returns:
 
         """

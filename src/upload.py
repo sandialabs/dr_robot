@@ -85,9 +85,10 @@ class Mattermost(Forum):
                 'message': f"Recon Data {datetime.datetime.now()}",
                 'file_ids': file_ids
                 })
-    
+
     def upload(self, **kwargs):
         """
+        File upload
 
         Args:
             **kwargs:

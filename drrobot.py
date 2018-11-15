@@ -142,8 +142,11 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}):
 def tool_check():
     """
     Verifies list of tools is installed on your system.
-    Assumes binary name as shown above
-    :return: NULL
+    Assumes binary names are as shown in the list of TOOLS
+    Args:
+
+    Returns:
+
     """
     for name in TOOLS:
         try:
@@ -157,7 +160,10 @@ def load_config():
     """
     Load config from user_config.json found under the configs folder
 
-    :return: (Dict) dictionary of tools found under their respective categories
+    Args:
+
+    Returns:
+        (Dict) dictionary of tools found under their respective categories
     """
     with open(USER_CONFIG, 'r') as f:
         config = json.load(f)

@@ -7,16 +7,22 @@ class Ansible:
     def __init__(self, **kwargs):
         """
         Build Ansible object
+
         Args:
+
             **kwargs: {
                 "ansible_substitutes" : keywords to replace at run time for python job
-                "domain" : domain of scan
-                "infile" : file for playbook to use
+                "ansible_file_location" : path to ansible playbooks
+                "domain" : domain to scan
+                "infile" : file to upload to ansible server for scan
             }
+
+        Returns:
+
         """
         self.ansible_base = "ansible-playbook $flags $config"
         self.ansible_arguments = kwargs.get('ansible_arguments')
-        self.ansible_file = kwargs.get('ansible_file', None)
+        self.ansible_file = kwargs.get('ansible_file_location', None)
         if not self.ansible_file:
             raise TypeError("argument ansible_file must be of type string, not 'NoneType'")
 
@@ -32,20 +38,25 @@ class Ansible:
         self.final_command = None
 
     def build(self):
+        """
+        Build the final command for the ansible process.
+        Uses the arguments provided in the ansible_arguments
+
+        Args:
+
+        Returns:
+
+        """
         try:
             system_replacements = {
                     "infile": self.infile,
                     "outfile": self.output_dir,
                     "config": self.ansible_file
                     }
-            """
-            This needs to be redone.
-            Right now it gets the string:
-                extra_flags <- "some extra flags string"
-            then it tries to iterate over some string. But it should be a dictionary? But I am not sure that is the right way anymore????
-            """
+
             extra_flags = self.ansible_arguments.get('extra_flags', None)
             extra_replace_string = ""
+
             if extra_flags:
                 for k, v in extra_flags.items():
                     cur_str = Template(v)
@@ -54,6 +65,11 @@ class Ansible:
             flags = Template(self.ansible_arguments.get("flags"))
             config = Template(self.ansible_arguments.get("config"))
 
+            """
+            This may seem redundant but this prepends the path of the ansible location to the ansible file
+            specified in the config.
+            all the flags are added to the flags argument to be input into the final command
+            """
             substitutes = {
                     "flags" : flags.safe_substitute(extra=extra_replace_string),
                     "config" : config.safe_substitute(system_replacements)
@@ -66,6 +82,14 @@ class Ansible:
             raise TypeError("NoneType object supplied in Dict build")
 
     def run(self):
+        """
+        Run the final command built at runtime
+
+        Args:
+
+        Returns:
+
+        """
         try:
             self.build()
             call = subprocess.check_output(self.final_command, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)

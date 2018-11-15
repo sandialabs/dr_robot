@@ -24,17 +24,19 @@ class Robot:
     def __init__(self, **kwargs):
         """
         Initialize Robot object.
-        Args:
-            :param kwargs:
-                scanners (Dict): dictionary of scanners and their options
-                webtools (Dict): dictionary of webtools and their options
-                enumeration (Dict): dictionary of enumerations and their options
-                boards (Dict): dictionary of boards and their options
-                dns (str): Added DNS for host configuration
-                proxy (str): Proxy url of format "http://proxy.foo.bar:port
-                domain (str): Target domain
 
-                root_dir (str): Path to directory of drrobot.py
+        Args:
+            scanners (Dict): dictionary of scanners and their options
+            webtools (Dict): dictionary of webtools and their options
+            enumeration (Dict): dictionary of enumerations and their options
+            boards (Dict): dictionary of boards and their options
+            dns (str): Added DNS for host configuration
+            proxy (str): Proxy url of format "http://proxy.foo.bar:port
+            domain (str): Target domain
+            root_dir (str): Path to directory of drrobot.py
+
+        Returns:
+
         """
 
         self.scanners = kwargs.get("scanners", {})
@@ -56,23 +58,27 @@ class Robot:
         """
         Builds Docker objects composed of dictionary of arguments.
         These Docker objects are a wrapper around the Docker module.
+
         Args:
-        :param dockers (Dict) dictionary with all docker objects to build
-            example:
-            {
-            "Aquatone" : {
-                "name": "Aquatone",
-                "default" : 1,
-                "docker_name": "aqua",
-                "default_conf": "dockers/Dockerfile.Aquatone.tmp",
-                "active_conf": "dockers/Dockerfile.Aquatone",
-                "description": "AQUATONE is a set of tools for performing reconnaissance on domain names",
-                "src": "https://github.com/michenriksen/aquatone",
-                "output": "/aqua",
-                "output_file": "aquatone.txt"
-              }
-            }
-        :return: (List) Threads of Docker objects
+            dockers (Dict): dictionary with all docker objects to build
+
+                Example:
+                {
+                "Aquatone" : {
+                    "name": "Aquatone",
+                    "default" : 1,
+                    "docker_name": "aqua",
+                    "default_conf": "dockers/Dockerfile.Aquatone.tmp",
+                    "active_conf": "dockers/Dockerfile.Aquatone",
+                    "description": "AQUATONE is a set of tools for performing reconnaissance on domain names",
+                    "src": "https://github.com/michenriksen/aquatone",
+                    "output": "/aqua",
+                    "output_file": "aquatone.txt"
+                  }
+                }
+
+        Returns:
+            (List) Threads of Docker objects
 
         Currently error handling is done outside of the docker module. This may be subject to change.
         """
@@ -136,7 +142,11 @@ class Robot:
         """
         Create ansible object generated from dictionary containing the ansible
         objects to be built.
-        :param ansible_mods (Dict) Dictionary of ansible modules to build and run.
+
+        Args:
+            ansible_mods (Dict): Dictionary of ansible modules to build and run.
+            infile (Strings): Path to file for upload to ansible server
+
             Example:
                 {
                     "Eyewitness": {
@@ -158,8 +168,9 @@ class Robot:
                         "enabled" : false
                     }
                 }
-        :param infile (String) Config file to load if necessary
-        :return: None
+
+        Returns:
+
         """
         for ansible, ansible_json in ansible_mods.items():
             try:
@@ -167,7 +178,7 @@ class Robot:
                 print(f"[*] Running {ansible} as ansible Module")
                 attr['infile'] = infile
                 attr['domain'] = self.domain
-                attr['ansible_file'] = join_abs(self.ROOT_DIR, "ansible_plays")
+                attr['ansible_file_location'] = join_abs(self.ROOT_DIR, "ansible_plays")
                 attr['output_dir'] = self.OUTPUT_DIR
                 attr['ansible_arguments'] = ansible_json.get("ansible_arguments")
 
@@ -187,7 +198,7 @@ class Robot:
         objects to be build.
 
         Args:
-            :param webtools: (Dict) WebTool modules to build and run
+            webtools (Dict): WebTool modules to build and run
                 Example:
                 {
                     "Shodan" :
@@ -203,7 +214,8 @@ class Robot:
                     },
                 }
 
-        Returns: (List) Threads of WebTool objects that are running
+        Returns:
+            (List) Threads of WebTool objects that are running
 
         """
         threads = []
@@ -246,7 +258,8 @@ class Robot:
         Create Forum object for uploading of recon results
 
         Args:
-            :param boards: (Dict) some forum/chat/board api that we can create a simple module for
+            filepath (String): Filepath of files to upload
+            boards (Dict): dictionary of given upload destination
                 Example:
                         {
                         "Mattermost":
@@ -263,9 +276,9 @@ class Robot:
                               "description" : "Mattermost server"
                             }
                         }
-            :param filepath: (String) Filepath of files to upload
 
-        Returns: (List) Threads of upload operations running
+        Returns:
+            (List) Threads of upload operations running
         """
         threads = []
         for dest, dest_json in upload_dest.items():
@@ -312,7 +325,14 @@ class Robot:
     def _dump_db_to_file(self, dump_ips=True, dump_hostnames=True, dump_headers=False):
         """
         Dumps the contents of ips and hostnames columns from the database into two files that can be used for further enumeration
-        :return: None
+
+        Args:
+            dump_ips (Bool): if ips should be dumped
+            dump_hostnames (Bool): if hostnames should be dumped
+            dump_headers (Bool): if headers should be dumped
+
+        Return:
+
         """
         try:
             dbconn = sqlite3.connect(join_abs(self.ROOT_DIR, "dbs", f"{self.domain}.db"))
@@ -333,7 +353,7 @@ class Robot:
                 for row in headers:
                     r = dict(zip(KEYS, row))
                     with open(join_abs(self.OUTPUT_DIR,"headers", f"{r['Hostname']}_headers.txt"), 'w') as f:
-                        f.write(json.dumps(r, indent=2)) 
+                        f.write(json.dumps(r, indent=2))
         finally:
             dbconn.close()
 
@@ -341,20 +361,24 @@ class Robot:
         """
         Create an aggregated dictionary of all tool outputs that we can use to run further host enumeration on.
         This dictionary will be uploaded to a small sqlite3 database under the name "domain.db"
-        Args:
-            :param verify: (String) Filename to be used as baseline for IP/Hostnames already known and scanned. Due to
-                            changes in the code base this is not enabled at the moment.
-            :param output_files: (List) filenames that we should be looking for when reading in files.
 
-        Returns: None
+        Args:
+            verify (String): Filename to be used as baseline for IP/Hostnames already known and scanned. Due to changes in the code base this is not enabled at the moment.
+            output_files (List): filenames that we should be looking for when reading in files.
+
+        Returns:
 
         """
         def build_db(ips, cursor):
             """
             Clojue that takes in a list of ips and creates a large transaction for inserts
-            :param ips: (Dict) ips, hostnames to insert
-            :param cursor: (sqlite3.connection.cursor) to execute in our sqlite instance
-            :return:
+
+            Args:
+                ips (Dict): ips, hostnames to insert
+                cursor (sqlite3.connection.cursor): to execute in our sqlite instance
+
+            Returns:
+
             """
             cursor.execute('BEGIN TRANSACTION')
             for host, ip in ips.items():
@@ -365,8 +389,12 @@ class Robot:
         def read_file(filename):
             """
             Generator for large file reading. Reads file in chunks for insert into database.
-            :param filename: (str) filename to open and read from
-            :return:
+
+            Args:
+                filename (str): filename to open and read from
+
+            Returns:
+
             """
             with open(join_abs(self.OUTPUT_DIR, filename), 'r') as f:
                 chunks = []
@@ -409,10 +437,14 @@ class Robot:
     def _reverse_ip_lookup(data, hostname_reg, ip_regex):
         """
         Static method to do a reverse lookup of ip to hostname and vice versa if need be.
-        :param data: (str) ambiguous string, either ip or hostname.
-        :param hostname_reg: (re) compiled regex for hostname grouping
-        :param ip_regex: (re) compiled regex for ip grouping
-        :return:
+
+        Args:
+            data (str): ambiguous string, either ip or hostname.
+            hostname_reg (re): compiled regex for hostname grouping
+            ip_regex (re): compiled regex for ip grouping
+
+        Returns:
+            (Tuple) hostname, ip
         """
         hostname = hostname_reg.search(data.strip())
         ip = ip_regex.search(data.strip())
@@ -434,8 +466,11 @@ class Robot:
     def grab_header(ip):
         """
         Grabs the headers of a given ip.
-        :param ip: ip address
-        :return: (Dict) ip : (http, https)  tuple of http, https headers
+        Args:
+            ip (str) ip address
+
+        Returns:
+            (Dict) ip : (http, https)  tuple of http, https headers
         """
         http = None
         https = None
@@ -459,7 +494,11 @@ class Robot:
         """
         Function to do mass header grabbing.
         Commits all headers to the sqlite3 database given the ip.
-        :return:
+
+        Args:
+
+        Returns:
+
         """
 
         dbconn = sqlite3.connect(join_abs(self.ROOT_DIR, "dbs", f"{self.domain}.db"))
@@ -482,13 +521,16 @@ class Robot:
     def gather(self, **kwargs):
         """
         This begins our gather process. Starts by looking at webtools and scanners for initial ip and hostname gathering.
-        :param kwargs:
-            webtools : (Dict) webtool dict
-            scanners_dockers: (Dict) scanners that use docker as their base
-            scanners_ansible: (Dict) scanners that use ansible as their base.
-            headers : (Boolean) if headers should be gathered
-            verify: (str) file/resource to run scans against. Not implemented yet.
-        :return:
+
+        Args:
+            webtools (Dict): webtool dict
+            scanners_dockers (Dict): scanners that use docker as their base
+            scanners_ansible (Dict): scanners that use ansible as their base.
+            headers (Boolean): if headers should be gathered
+            verify (str): file/resource to run scans against. Not implemented yet.
+
+        Returns:
+
         """
         _threads = []
 
@@ -537,10 +579,13 @@ class Robot:
         """
         Inspection function to being the post enumeration step. This will use enumeration tools to gather further information
         from the targets found in gather.
-        :param kwargs:
-            post_enum_dockers: (Dict) enumeration tools that use docker as their base
-            post_enum_ansible: (Dict) enumeration tools that use ansible as their base.
-        :return:
+
+        Args:
+            post_enum_dockers (Dict): enumeration tools that use docker as their base
+            post_enum_ansible (Dict): enumeration tools that use ansible as their base.
+
+        Returns:
+
         """
         _threads = []
 
@@ -576,10 +621,13 @@ class Robot:
     def upload(self, **kwargs):
         """
         Upload function to access modules with respect to their given forum/chat/service api.
-        :param kwargs:
-            upload_dest: (str) module name for upload destination.
-            filepath: (str) path to file(s) to upload
-        :return:
+
+        Args:
+            upload_dest (str): module name for upload destination.
+            filepath (str): path to file(s) to upload
+
+        Returns:
+
         """
         _threads = []
         print(f"[*] Upload beginning")
@@ -594,9 +642,12 @@ class Robot:
     def rebuild(self, **kwargs):
         """
         Function to allow rebuilding of the sqlite3 database.
-        :param kwargs:
-            files: list of files to include in this rebuild.
-        :return:
+
+        Args:
+            files (List): list of files to include in this rebuild.
+
+        Returns:
+
         """
         print("[*] Rebuilding DB")
         output_files = kwargs.get("files", None)
@@ -605,6 +656,12 @@ class Robot:
         print("[*] Rebuilding complete")
 
     def dumpdb(self, **kwargs):
+        """
+        Quick function to dump the contents of the db file.
+
+        Args:
+            **kwargs
+        """
         print(f"[*] Dumping sqllite3 file for {self.domain}")
         self._dump_db_to_file(dump_headers=True)
         print(f"[*] Headers will be found under header folder in your domains output")
