@@ -16,6 +16,7 @@ argparse = "*"
 tqdm = "*"
 "bs4" = "*"
 sphinx = "*"
+sphinx-rtd-theme = "*"
 
 [dev-packages]
 pytest = "*"
