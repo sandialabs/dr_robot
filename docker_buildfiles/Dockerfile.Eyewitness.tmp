@@ -1,5 +1,4 @@
 FROM phusion/baseimage
-LABEL maintainer Netanel Ravid
 
 ENV http_proxy $proxy
 ENV https_proxy $proxy
@@ -7,7 +6,6 @@ ENV DNS $dns
 ENV TARGET $target
 ENV OUTPUT /tmp/output/eyewitness 
 ENV INFILE  $infile
-ARG user=eyewitness
 
 RUN if [ -n "$DNS" ]; \
     then echo "nameserver $DNS" > /etc/resolv.conf;\
@@ -42,4 +40,4 @@ RUN cd setup && \
 
 USER $$user
 
-ENTRYPOINT python EyeWitness.py -d /tmp/output/eyewitness -f $infile --no-prompt --headless --threads 40 --max-retries 1
+ENTRYPOINT python EyeWitness.py -d /tmp/output/eyewitness -f $infile --no-prompt --web --threads 40 --max-retries 1

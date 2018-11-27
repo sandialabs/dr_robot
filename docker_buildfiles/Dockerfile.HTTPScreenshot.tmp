@@ -1,0 +1,28 @@
+FROM ubuntu:latest
+
+ENV http_proxy $proxy
+ENV https_proxy $proxy
+ENV DNS $dns
+ENV TARGET $target
+ENV OUTPUT /tmp/screenshots
+ENV INPUTFILELIST $inputfilelist
+
+RUN if [ -n "$DNS" ]; \
+    then echo "nameserver $DNS" > /etc/resolv.conf;\
+    fi;\
+    apt-get update \
+    && apt-get install -y wget git\
+    && git clone https://github.com/breenmachine/httpscreenshot.git 
+
+RUN if [ -n "$DNS" ]; \
+    then echo "nameserver $DNS" > /etc/resolv.conf;\
+    fi;\
+    && cd httpscreenshot \
+    && ./install-dependencies.sh
+    && chmod +x httpscreenshot.py
+    && ln -s /etc/httpscreenshot/httpscreenshot.py /usr/bin/httpscreenshot
+
+RUN mkdir -p /tmp/screenshots
+WORKDIR /tmp/screenshots
+
+ENTRYPOINT httpscreenshot.py -i $infile -p -w 40  -a -vH
