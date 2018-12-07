@@ -101,7 +101,7 @@
         "HTTPScreenshot": {
             "name" : "HTTPScreenshot",
             "short_name" : "http",
-            "default" : 2,
+            "mode" : "DOCKER",
             "docker_name" : "httpscreen",
             "default_conf" : "docker_buildfiles/Dockerfile.HTTPScreenshot.tmp",
             "active_conf" : "docker_buildfiles/Dockerfile.HTTPScreenshot",
@@ -117,14 +117,14 @@
             },
             "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: httpscreenshot.tar and unpacked httpscreenshots",
             "output" : "/tmp/output",
-            "inputfilelist" : "aggregated_hostnames.txt",
+            "inputfilelist" : "aggregated_protocol_hostnames.txt",
             "enabled" : false
         },
         "Eyewitness": {
             "name" : "Eyewitness",
             "short_name" : "eye",
             "docker_name" : "eye",
-            "default" : 1,
+            "mode" : "DOCKER",
             "default_conf" : "docker_buildfiles/Dockerfile.Eyewitness.tmp",
             "active_conf" : "docker_buildfiles/Dockerfile.Eyewitness",
             "ansible_arguments" : {
@@ -139,8 +139,21 @@
             },
             "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: Eyewitness.tar and unpacked in Eyewitness",
             "output" : "/tmp/output",
-            "infile" : "/tmp/output/aggregated/aggregated_hostnames.txt",
+            "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt",
             "enabled" : false
+        },
+        "Nmap" : {
+            "name" : "Nmap Screenshot",
+            "short_name" : "nmapscreen",
+            "docker_name" : "nmapscreen",
+            "mode" : "DOCKER",
+            "default_conf" : "docker_buildfiles/Dockerfile.Nmap.Screenshot.tmp",
+            "active_conf" : "docker_buildfiles/Dockerfile.Nmap.Screenshot",
+            "description" : "Post enumeration tool for screen grabbing websites. (Chrome is not installed in the dockerfile due. Options are chromium-browser/firefox/wkhtmltoimage)",
+            "output" : "/tmp/output",
+            "infile" : "/tmp/output/aggregated/aggregated_hostnames.txt",
+            "enabled" : false,
+            "tool_nmap" : "chromium-browser"
         }
     }
 }

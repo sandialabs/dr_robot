@@ -4,7 +4,7 @@ ENV http_proxy $proxy
 ENV https_proxy $proxy
 ENV DNS $dns
 ENV TARGET $target
-ENV OUTPUT /tmp/screenshots
+ENV OUTPUT $output/httpscreenshot
 ENV INPUTFILELIST $inputfilelist
 
 RUN if [ -n "$DNS" ]; \
@@ -22,7 +22,7 @@ RUN if [ -n "$DNS" ]; \
     && chmod +x httpscreenshot.py
     && ln -s /etc/httpscreenshot/httpscreenshot.py /usr/bin/httpscreenshot
 
-RUN mkdir -p /tmp/screenshots
-WORKDIR /tmp/screenshots
+RUN mkdir -p $$OUTPUT 
+WORKDIR $$OUTPUT
 
 ENTRYPOINT httpscreenshot.py -i $infile -p -w 40  -a -vH

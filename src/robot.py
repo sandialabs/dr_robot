@@ -88,8 +88,8 @@ class Robot:
             options = scan_dict
             options.update({"proxy": self.proxy or None})
             options.update({"dns": self.dns or None})
-
             options.update({"target": self.domain})
+
             scanners += [Docker(active_config_path=join_abs(dirname(__file__), '..', scan_dict['active_conf']),
                 default_config_path=join_abs(dirname(__file__), '..', scan_dict['default_conf']),
                 docker_options=options,
@@ -345,9 +345,14 @@ class Robot:
             if dump_ips:
                 with open(join_abs(self.OUTPUT_DIR, 'aggregated', 'aggregated_ips.txt'), 'w') as f:
                     f.writelines("\n".join(list(ip[0] for ip in ips)))
+
             if dump_hostnames:
-                with open(join_abs(self.OUTPUT_DIR,'aggregated','aggregated_hostnames.txt'), 'w') as f2:
-                    f2.writelines("\n".join(list(f"https://{host[0]}\nhttp://{host[0]}" for host in hostnames)))
+                with open(join_abs(self.OUTPUT_DIR,'aggregated','aggregated_hostnames.txt'), 'w') as f:
+                    f.writelines("\n".join(list(f"{host[0]}" for host in hostnames)))
+
+                with open(join_abs(self.OUTPUT_DIR,'aggregated','aggregated_protocol_hostnames.txt'), 'w') as f:
+                    f.writelines("\n".join(list(f"https://{host[0]}\nhttp://{host[0]}" for host in hostnames)))
+
             if dump_headers:
                 KEYS = ["Ip", "Hostname", "Http", "Https"]
                 for row in headers:

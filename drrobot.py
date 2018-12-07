@@ -14,7 +14,7 @@ ROOT_DIR = dirname(abspath(__file__))
 USER_CONFIG = join(ROOT_DIR, 'configs', 'user_config.json')
 TOOLS = ["ansible", "docker"]
 
-class Module(Enum):
+class Mode(Enum):
     DOCKER = 1
     ANSIBLE = 2
 
@@ -216,23 +216,31 @@ if __name__ == '__main__':
 
         if args.actions in "gather":
 
-            webtools = {k: v for k, v in tools.get("webtools").items() if getattr(args, k) if True}
-            scanners_dockers = {k: v for k, v in tools.get("scanners").items() if
-                    getattr(args, k) is True and v["default"] == Module.DOCKER.value}
-            scanners_ansible = {k: v for k, v in tools.get("scanners").items() if
-                    getattr(args, k) is True and v["default"] == Module.ANSIBLE.value}
-            drrobot.gather(webtools=webtools, scanners_dockers=scanners_dockers, scanners_ansible=scanners_ansible, headers=getattr(args, "headers", False))
+            try:
+                webtools = {k: v for k, v in tools.get("webtools").items() if getattr(args, k) if True}
+                scanners_dockers = {k: v for k, v in tools.get("scanners").items() if
+                        getattr(args, k) is True and Mode[v["mode"]] == Mode.DOCKER}
+                scanners_ansible = {k: v for k, v in tools.get("scanners").items() if
+                        getattr(args, k) is True and Mode[v["mode"]] == Mode.ANSIBLE}
+                drrobot.gather(webtools=webtools, scanners_dockers=scanners_dockers, scanners_ansible=scanners_ansible, headers=getattr(args, "headers", False))
+            except KeyError as e:
+                print(f"[!] Mode {e} not found. Please fix config file")
 
         if args.actions in 'inspect':
-            post_enum_dockers = {k: v for k, v in tools.get("enumeration").items() if
-                    getattr(args, k) is True and v["default"] == Module.DOCKER.value}
-            post_enum_ansible = {k: v for k, v in tools.get("enumeration").items() if
-                    getattr(args, k) is True and v["default"] == Module.ANSIBLE.value}
+
+            try:
+                post_enum_dockers = {k: v for k, v in tools.get("enumeration").items() if
+                        getattr(args, k) is True and Mode[v["mode"]] == Mode.DOCKER}
+                post_enum_ansible = {k: v for k, v in tools.get("enumeration").items() if
+                        getattr(args, k) is True and Mode[v["mode"]] == Mode.ANSIBLE}
+            except KeyError as e:
+                print(f"[!] Mode {e} not found. Please fix config file")
 
             file = getattr(args, 'file', None)
             drrobot.inspection(post_enum_ansible=post_enum_ansible, post_enum_dockers=post_enum_dockers, file=file)
 
         if args.actions in "upload":
+
             filepath = getattr(args, "filepath")
 
             upload_dest = {k:v for k, v in tools.get("upload_dest").items() if
