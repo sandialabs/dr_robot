@@ -110,14 +110,14 @@
                 "flags": "-e '$extra'",
                 "extra_flags":{
                     "1" : "variable_host=localhost",
-                    "2" : "infile=$infile/aggregated_hostnames.txt",
+                    "2" : "infile=$infile/aggregated_protocol_hostnames.txt",
                     "3" : "outfile=$outfile/httpscreenshots.tar",
                     "4" : "outfolder=$outfile/httpscreenshots"
                 }
             },
             "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: httpscreenshot.tar and unpacked httpscreenshots",
             "output" : "/tmp/output",
-            "inputfilelist" : "aggregated_protocol_hostnames.txt",
+            "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt",
             "enabled" : false
         },
         "Eyewitness": {
