@@ -4,8 +4,10 @@ ENV http_proxy $proxy
 ENV https_proxy $proxy
 ENV DNS $dns
 ENV TARGET $target
-ENV OUTPUT /tmp/output/eyewitness 
+ENV OUTPUT $output/eyewitness
 ENV INFILE  $infile
+
+ARG user=eyewitness
 
 RUN if [ -n "$DNS" ]; \
     then echo "nameserver $DNS" > /etc/resolv.conf;\
@@ -28,7 +30,9 @@ WORKDIR /home/$$user
 RUN if [ -n "$DNS" ]; \
     then echo "nameserver $DNS" > /etc/resolv.conf;\
     fi;\
-	git clone https://github.com/ChrisTruncer/EyeWitness.git
+	  git clone https://github.com/ChrisTruncer/EyeWitness.git && \
+    cd EyeWitness && \
+    git checkout '489e4b4ba9d106e1bc83ff80e70e2f53757e1018'
 
 WORKDIR /home/$$user/EyeWitness
 
@@ -40,4 +44,4 @@ RUN cd setup && \
 
 USER $$user
 
-ENTRYPOINT python EyeWitness.py -d /tmp/output/eyewitness -f $infile --no-prompt --web --threads 40 --max-retries 1
+ENTRYPOINT python EyeWitness.py -d $OUTPUT -f $INFILE --no-prompt --web --threads 40 --max-retries 1
