@@ -10,39 +10,49 @@ ________...........__________.........___...............__...
 
 Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.
 
+#Table of Contents
+
+[TOC]
+
+## Introduction
+
 Dr.ROBOT is a tool for **Domain Reconnaissance and Enumeration**. Utilizing a few virtualization technologies to reduce the environmental load on an individuals computer as well as retaining strong versioning allows Dr.ROBOT to be a highly configurable and portable tool! 
 
 **Use Case**: Quickly gather as many public facing servers that a target may possess. By querying DNS resources we can quickly develop a large list of possible targets that you can run further analysis on.
 
 **Note**: Dr.ROBOT is not just a one trick pony however! You can customize these tools to gather as much information as you would like them too. Strong customization allows for many possible options. 
 
+**Install and Run**
+
+![](docs/images/demo.gif)
+
 **Command Examples**
 
 * Run gather using Sublist3r and Aquatone and Shodan
     ``` 
-    python drrobot.py --domain example.domain gather -sub -aqua -shodan 
+    python drrobot.py example.domain gather -sub -aqua -shodan 
     ```
 * Run gather using Sublist3r with Proxy
     ```
-    python drrobot.py --proxy http://some.proxy:port --domain example.domain gather -sub
+    python drrobot.py --proxy http://some.proxy:port example.domain gather -sub
     ```
 * Run inspect using Eyewitness
     ```
-    python drrobot.py --domain example.domain inspect -eye
+    python drrobot.py example.domain inspect -eye
     ```
 * Run inspect using httpscreenshot and grabbing headers
     ```
-    python drrobot.py --domain example.domain inspect -http -headers
+    python drrobot.py example.domain inspect -http -headers
     ```
 * Run upload using Mattermost (Currently the only default)
     ```
-    python drrobot.py --domain example.domain upload -matter
+    python drrobot.py example.domain upload -matter
     ```
 
 **MAIN**
 
 ```buildoutcfg
-usage: drrobot.py [-h] [--proxy PROXY] [--dns DNS] --domain DOMAIN
+usage: drrobot.py [-h] [--proxy PROXY] [--dns DNS] DOMAIN
                   {gather,inspect,upload,rebuild,dumpdb} ...
 
 Docker DNS recon tool
@@ -151,23 +161,6 @@ usage: drrobot.py dumpdb [-h]
 optional arguments:
   -h, --help            show this help message and exit
 ```
-
-
-
-## Time Analysis
-
-**Web Tools**: Quick. Depends on the amount of requests/bandwidth and other limiting factors on your end.
-
-**Scanners** 
-
- 	1. <u>Aquatone</u>: 2+ hours 
- 	2. <u>Sublist3r</u>: 2+ minutes
- 	3. Subbrute: 
-
-**Post Enumeration Tools**
-
-1. <u>Eyewitness</u>: 1+ hours
-2. <u>HttpScreenshot</u>: 1+ hours
 
 ## Configurations
 
