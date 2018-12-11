@@ -10,9 +10,19 @@ ________...........__________.........___...............__...
 
 Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.
 
-#Table of Contents
+# Table of Contents
 
-[TOC]
+  * [Introduction](#introduction)
+  * [Configurations](#configurations)
+     * [Example Configuration For WebTools](#example-configuration-for-webtools)
+     * [Example Configurations For Dockers](#example-configurations-for-dockers)
+     * [Docker Integration and Customization](#docker-integration-and-customization)
+     * [Adding Dockers](#adding-dockers)
+  * [Dependencies](#dependencies)
+  * [SSH   Ansible](#ssh--ansible)
+  * [Output](#output)
+     * [SQLite DB files](#sqlite-db-files)
+  * [TODO](#todo)
 
 ## Introduction
 
