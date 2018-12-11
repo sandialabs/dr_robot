@@ -9,7 +9,6 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from concurrent.futures import ThreadPoolExecutor
 from itertools import repeat
 import sqlite3
-from os import walk
 from os.path import dirname, getsize, isfile
 
 from docker.errors import APIError, BuildError, ContainerError, ImageNotFound
@@ -38,7 +37,6 @@ class Robot:
         Returns:
 
         """
-
         self.scanners = kwargs.get("scanners", {})
         self.webtools = kwargs.get("webtools", {})
         self.enumeration = kwargs.get("enumeration", {})
@@ -53,10 +51,9 @@ class Robot:
         #Disable warnings for insecure requests
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
-
     def _run_dockers(self, dockers):
         """
-        Builds Docker objects composed of dictionary of arguments.
+        Build Docker objects composed of dictionary of arguments.
         These Docker objects are a wrapper around the Docker module.
 
         Args:
@@ -91,9 +88,9 @@ class Robot:
             options.update({"target": self.domain})
 
             scanners += [Docker(active_config_path=join_abs(dirname(__file__), '..', scan_dict['active_conf']),
-                default_config_path=join_abs(dirname(__file__), '..', scan_dict['default_conf']),
-                docker_options=options,
-                output_dir=self.OUTPUT_DIR)]
+                         default_config_path=join_abs(dirname(__file__), '..', scan_dict['default_conf']),
+                         docker_options=options,
+                         output_dir=self.OUTPUT_DIR)]
             for scanner in scanners:
                 try:
 
@@ -139,9 +136,9 @@ class Robot:
         return threads
 
     def _run_ansible(self, ansible_mods, infile):
+
         """
-        Create ansible object generated from dictionary containing the ansible
-        objects to be built.
+        Create ansible object generated from dictionary containing the ansible objects to be built.
 
         Args:
             ansible_mods (Dict): Dictionary of ansible modules to build and run.
@@ -186,7 +183,6 @@ class Robot:
 
                 ansible_mod.run()
 
-
             except OSError as er:
                 print(f"[!] {er}")
             except TypeError as er:
@@ -194,8 +190,7 @@ class Robot:
 
     def _run_webtools(self, webtools):
         """
-        Create custom WebTool object from dictionary containing WebTool
-        objects to be build.
+        Create custom WebTool object from dictionary containing WebTool objects to be build.
 
         Args:
             webtools (Dict): WebTool modules to build and run
@@ -292,9 +287,8 @@ class Robot:
                         "team_name": dest_json.get('team_name'),
                         "channel_name": dest_json.get('channel_name'),
                         "filepath": filepath,
-                        "output_dir" : self.OUTPUT_DIR
+                        "output_dir": self.OUTPUT_DIR
                         }
-
 
                 module = importlib.import_module('..upload', __name__)
                 board_class = getattr(module, dest_json.get('class_name'))
@@ -324,7 +318,7 @@ class Robot:
 
     def _dump_db_to_file(self, dump_ips=True, dump_hostnames=True, dump_headers=False):
         """
-        Dumps the contents of ips and hostnames columns from the database into two files that can be used for further enumeration
+        Dump the contents of ips and hostnames columns from the database into two files that can be used for further enumeration
 
         Args:
             dump_ips (Bool): if ips should be dumped
@@ -340,24 +334,27 @@ class Robot:
 
             ips = dbcurs.execute("SELECT ip FROM drrobot WHERE ip IS NOT NULL").fetchall()
             hostnames = dbcurs.execute("SELECT hostname FROM drrobot WHERE hostname IS NOT NULL").fetchall()
-            #Header options require there to have been a scan otherwise there will be no output but that should be expected. Might change db to a dataframe later... possible
+            """
+                Header options require there to have been a scan otherwise there will be no output but that should be expected.
+                Might change db to a dataframe later... possible
+            """
             headers = dbcurs.execute("SELECT ip, hostname, http_headers, https_headers FROM drrobot WHERE http_headers IS NOT NULL AND https_headers IS NOT NULL").fetchall()
             if dump_ips:
                 with open(join_abs(self.OUTPUT_DIR, 'aggregated', 'aggregated_ips.txt'), 'w') as f:
                     f.writelines("\n".join(list(ip[0] for ip in ips)))
 
             if dump_hostnames:
-                with open(join_abs(self.OUTPUT_DIR,'aggregated','aggregated_hostnames.txt'), 'w') as f:
+                with open(join_abs(self.OUTPUT_DIR, 'aggregated', 'aggregated_hostnames.txt'), 'w') as f:
                     f.writelines("\n".join(list(f"{host[0]}" for host in hostnames)))
 
-                with open(join_abs(self.OUTPUT_DIR,'aggregated','aggregated_protocol_hostnames.txt'), 'w') as f:
+                with open(join_abs(self.OUTPUT_DIR, 'aggregated', 'aggregated_protocol_hostnames.txt'), 'w') as f:
                     f.writelines("\n".join(list(f"https://{host[0]}\nhttp://{host[0]}" for host in hostnames)))
 
             if dump_headers:
                 KEYS = ["Ip", "Hostname", "Http", "Https"]
                 for row in headers:
                     r = dict(zip(KEYS, row))
-                    with open(join_abs(self.OUTPUT_DIR,"headers", f"{r['Hostname']}_headers.txt"), 'w') as f:
+                    with open(join_abs(self.OUTPUT_DIR, "headers", f"{r['Hostname']}_headers.txt"), 'w') as f:
                         f.write(json.dumps(r, indent=2))
         finally:
             dbconn.close()
@@ -376,7 +373,7 @@ class Robot:
         """
         def build_db(ips, cursor):
             """
-            Clojue that takes in a list of ips and creates a large transaction for inserts
+            Clojue that takes in a list of ips and creates a large transaction for inserts.
 
             Args:
                 ips (Dict): ips, hostnames to insert
@@ -419,20 +416,19 @@ class Robot:
             dbcurs = dbconn.cursor()
             dbcurs.execute('CREATE TABLE IF NOT EXISTS drrobot (ip VARCHAR, hostname VARCHAR, http_headers VARCHAR, https_headers VARCHAR)')
 
-
             for name in output_files:
                 if not isfile(join_abs(self.OUTPUT_DIR, name)) and not isfile(name):
-                    print(f"[!] File {name} does not exist")
+                    print(f"[!] File {name} does not exist, verify scan results")
                     continue
 
                 print(f"[*] Parsing file: {name}")
                 for ips in read_file(join_abs(self.OUTPUT_DIR, name)):
                     with ThreadPoolExecutor(max_workers=40) as pool:
                         tool_ips = dict(tqdm(pool.map(Robot._reverse_ip_lookup,
-                            ips,
-                            repeat(hostname_reg, len(ips)),
-                            repeat(ip_regex, len(ips))),
-                            total=len(ips)))
+                                                      ips,
+                                                      repeat(hostname_reg, len(ips)),
+                                                      repeat(ip_regex, len(ips))),
+                                        total=len(ips)))
                         build_db(tool_ips, dbcurs)
             dbconn.commit()
         finally:
@@ -481,7 +477,7 @@ class Robot:
         https = None
         # May add option later to set UserAgent
         headers = {
-                "User-Agent" : "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0"
+                "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0"
                 }
         try:
             http = requests.get(f"http://{ip}", headers=headers, timeout=0.5, verify=False).headers
@@ -515,8 +511,8 @@ class Robot:
         # May add option to specify threaded workers.
         with ThreadPoolExecutor(max_workers=40) as pool:
             ip_headers = dict(tqdm(pool.map(Robot.grab_header,
-                ips),
-                total=len(ips)))
+                                            ips),
+                                   total=len(ips)))
             dbcurs.execute('BEGIN TRANSACTION')
         for ip, (http, https) in ip_headers.items():
             dbcurs.execute("""UPDATE drrobot SET http_headers=?, https_headers=? WHERE ip = ? LIMIT 1;""", (http, https, ip))

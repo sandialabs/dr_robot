@@ -78,7 +78,7 @@ class Docker:
         Returns:
 
         """
-        print(f"[*]Running container {self._docker_options['docker_name']}")
+        print(f"[*] Running container {self._docker_options['docker_name']}")
         client = docker.from_env()
 
         volumes = {

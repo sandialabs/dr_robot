@@ -5,6 +5,7 @@
         {
             "short_name": "shodan",
             "class_name": "Shodan",
+            "default" : false,
             "description" : "Query SHODAN for publicly facing sites of given domain",
             "output_file" : "shodan.txt",
             "api_key" : null,
@@ -16,6 +17,7 @@
         {
             "short_name" : "arin",
             "class_name": "Arin",
+            "default" : false,
             "description" : "Query ARIN for public CIDR ranges. This is better as a brute force option as the ranges",
             "output_file" : "arin.txt",
             "api_key" : null,
@@ -26,6 +28,7 @@
         {
             "short_name" : "hack",
             "class_name" : "HackerTarget",
+            "default" : false,
             "description" : "This query will display the forward DNS records discovered using the data sets outlined above.",
             "api_call_unused" : "https://api.hackertarget.com/hostsearch/?q=example.com",
             "output_file" : "hacker.txt"
@@ -34,6 +37,7 @@
         {
             "short_name" : "dump",
             "class_name" : "Dumpster",
+            "default" : false,
             "description" : "Use the limited response of DNSDumpster. Requires API access for better results.",
             "output_file" : "dumpster.txt"
         },
@@ -41,6 +45,7 @@
         {
             "short_name" : "virus",
             "class_name" : "VirusTotal",
+            "default" : false,
             "description" : "Utilize VirusTotal's Observer Subdomain Search",
             "output_file" : "virustotal.txt"
         }
@@ -64,7 +69,7 @@
     {
         "Aquatone" : {
             "name": "Aquatone",
-            "default" : 1,
+            "default" : true,
             "docker_name": "aqua",
             "default_conf": "docker_buildfiles/Dockerfile.Aquatone.tmp",
             "active_conf": "docker_buildfiles/Dockerfile.Aquatone",
@@ -75,7 +80,7 @@
         },
         "Sublist3r": {
             "name": "Sublist3r",
-            "default" : 1,
+            "default" : true,
             "docker_name": "sub",
             "default_conf": "docker_buildfiles/Dockerfile.Sublist3r.tmp",
             "active_conf": "docker_buildfiles/Dockerfile.Sublist3r",
@@ -86,7 +91,7 @@
         },
         "Subbrute": {
             "name": "Subbrute",
-            "default" : 1,
+            "default" : false,
             "docker_name" : "brute",
             "default_conf": "docker_buildfiles/Dockerfile.Subbrute.tmp",
             "active_conf": "docker_buildfiles/Dockerfile.Subbrute",
