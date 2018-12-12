@@ -91,40 +91,41 @@ class Robot:
                          default_config_path=join_abs(dirname(__file__), '..', scan_dict['default_conf']),
                          docker_options=options,
                          output_dir=self.OUTPUT_DIR)]
-            for scanner in scanners:
-                try:
 
-                    scanner.build()
-                    scanner.run()
-                except BuildError as er:
-                    print(f"Build Error encountered {er}")
-                    if "net/http" in str(er):
-                        print("This could be a proxy issue, see https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
-                    logging.error(f"Build Error encountered {er}")
-                    if not self.dns:
-                        print(f"\t[!] No DNS set. This could be an issue")
-                    if not self.proxy:
-                        print(f"\t[!] No PROXY set. This could be an issue")
+        for scanner in scanners:
+            try:
 
-                except ContainerError as er:
-                    print(f"[!] Container Error: {scanner.name}")
-                    logging.error(er)
+                scanner.build()
+                scanner.run()
+            except BuildError as er:
+                print(f"Build Error encountered {er}")
+                if "net/http" in str(er):
+                    print("This could be a proxy issue, see https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
+                logging.error(f"Build Error encountered {er}")
+                if not self.dns:
+                    print(f"\t[!] No DNS set. This could be an issue")
+                if not self.proxy:
+                    print(f"\t[!] No PROXY set. This could be an issue")
 
-                except ImageNotFound as er:
-                    print(f"[!] ImageNotFound: {scanner.name}")
-                    logging.error(er)
+            except ContainerError as er:
+                print(f"[!] Container Error: {scanner.name}")
+                logging.error(er)
 
-                except APIError as er:
-                    print(f"[!] APIError: {scanner.name}")
-                    logging.error(er)
+            except ImageNotFound as er:
+                print(f"[!] ImageNotFound: {scanner.name}")
+                logging.error(er)
 
-                except KeyError as er:
-                    print(f"[!] KeyError Output or Docker Name is not defined!!: {scanner.name}")
-                    logging.error(er)
+            except APIError as er:
+                print(f"[!] APIError: {scanner.name}")
+                logging.error(er)
 
-                except OSError as er:
-                    print(f"[!] Output directory could not be created, please verify permissions")
-                    logging.error(er)
+            except KeyError as er:
+                print(f"[!] KeyError Output or Docker Name is not defined!!: {scanner.name}")
+                logging.error(er)
+
+            except OSError as er:
+                print(f"[!] Output directory could not be created, please verify permissions")
+                logging.error(er)
 
         threads = list()
         for scanner in scanners:
