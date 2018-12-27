@@ -21,11 +21,12 @@ class Docker:
         self._docker_options = kwargs.get('docker_options', None)
 
         self._default_config_path = kwargs.get('default_config_path', None)
-        self._active_config_path =kwargs.get('active_config_path', None)
+        self._active_config_path = kwargs.get('active_config_path', None)
 
         self.container = None
         self.status = None
         self.name = None
+        self.network = "bridge"
         self.OUTPUT_DIR = kwargs.get('output_dir', None)
 
     def _init_config(self):
@@ -44,7 +45,8 @@ class Docker:
             raise OSError('Default configuration file is not found, please fix')
 
         self.name = self._docker_options['name']
-
+        self.network_mode = self._docker_options['network_mode']
+        
         logging.info(f"\t[.]With args:{self._docker_options}")
         with open(self._default_config_path, 'r') as cfg:
             t = Template(cfg.read())
@@ -66,7 +68,8 @@ class Docker:
         with open(self._active_config_path, 'rb') as f:
             _, _ = client.images.build(fileobj=f,
                     tag=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
-                    rm=True)
+                    rm=True,
+                    network_mode=self.network)
             self.status = "built"
 
     def run(self):

@@ -257,6 +257,7 @@ Under **configs** you will find a **default_config** which contains a majority o
            "name": "NewTool",
            "default" : 1, 
            "docker_name": "ntool",
+           "network_mode": "host",
            "default_conf": "dockers/Dockerfile.NewTool.tmp",
            "active_conf": "dockers/Dockerfile.NewTool",
            "description": "NewTool is an awesome tool for domain enumeration",
@@ -267,6 +268,8 @@ Under **configs** you will find a **default_config** which contains a majority o
          ...
    }
    ```
+   1. Note *network_mode* is an option specifically for docker containers. It is implementing the 
+      ``` --network ``` flag when using docker
 
 2. Then under the **dockers/** folder create your **Dockerfile.NewTool.tmp** dockerfile.
 
