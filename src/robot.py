@@ -9,7 +9,8 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from concurrent.futures import ThreadPoolExecutor
 from itertools import repeat
 import sqlite3
-from os.path import dirname, getsize, isfile
+from os.path import dirname, getsize, isfile, isdir, exists
+from os import walk, makedirs
 
 from docker.errors import APIError, BuildError, ContainerError, ImageNotFound
 from tqdm import tqdm
@@ -70,7 +71,8 @@ class Robot:
                     "description": "AQUATONE is a set of tools for performing reconnaissance on domain names",
                     "src": "https://github.com/michenriksen/aquatone",
                     "output": "/aqua",
-                    "output_file": "aquatone.txt"
+                    "output_file": "aquatone.txt" #OPTIONAL
+                    "output_dir" : "aquatone"
                   }
                 }
 
@@ -86,11 +88,14 @@ class Robot:
             options.update({"proxy": self.proxy or None})
             options.update({"dns": self.dns or None})
             options.update({"target": self.domain})
+            output_dir = self.OUTPUT_DIR
+            if options.get("output_folder", None):
+                output_dir = join_abs(self.OUTPUT_DIR, options.get("output_folder"))
 
             scanners += [Docker(active_config_path=join_abs(dirname(__file__), '..', scan_dict['active_conf']),
                          default_config_path=join_abs(dirname(__file__), '..', scan_dict['default_conf']),
                          docker_options=options,
-                         output_dir=self.OUTPUT_DIR)]
+                         output_dir=output_dir)]
 
         for scanner in scanners:
             try:
@@ -360,7 +365,7 @@ class Robot:
         finally:
             dbconn.close()
 
-    def _hostname_aggregation(self, verify=None, output_files=None):
+    def _hostname_aggregation(self, verify=None, output_files=None, output_folders=None):
         """
         Create an aggregated dictionary of all tool outputs that we can use to run further host enumeration on.
         This dictionary will be uploaded to a small sqlite3 database under the name "domain.db"
@@ -368,6 +373,7 @@ class Robot:
         Args:
             verify (String): Filename to be used as baseline for IP/Hostnames already known and scanned. Due to changes in the code base this is not enabled at the moment.
             output_files (List): filenames that we should be looking for when reading in files.
+            output_folders (List): folder names that contain the output of specific tools
 
         Returns:
 
@@ -417,13 +423,24 @@ class Robot:
             dbcurs = dbconn.cursor()
             dbcurs.execute('CREATE TABLE IF NOT EXISTS drrobot (ip VARCHAR, hostname VARCHAR, http_headers VARCHAR, https_headers VARCHAR)')
 
+            all_files = []
             for name in output_files:
-                if not isfile(join_abs(self.OUTPUT_DIR, name)) and not isfile(name):
+                if isfile(join_abs(self.OUTPUT_DIR, name)):
+                    all_files += [join_abs(self.OUTPUT_DIR, name)]
+                elif isfile(name):
+                    all_files += [name]
+                else:
                     print(f"[!] File {name} does not exist, verify scan results")
-                    continue
 
-                print(f"[*] Parsing file: {name}")
-                for ips in read_file(join_abs(self.OUTPUT_DIR, name)):
+            for folder in output_folders:
+                for root, dirs, files in walk(join_abs(self.OUTPUT_DIR, folder)):
+                    for f in files:
+                        if isfile(join_abs(root, f)):
+                            all_files += [join_abs(root,f)]
+
+            for filename in all_files:
+                print(f"[*] Parsing file: {filename}")
+                for ips in read_file(join_abs(filename)):
                     with ThreadPoolExecutor(max_workers=40) as pool:
                         tool_ips = dict(tqdm(pool.map(Robot._reverse_ip_lookup,
                                                       ips,
@@ -517,7 +534,7 @@ class Robot:
             dbcurs.execute('BEGIN TRANSACTION')
         for ip, (http, https) in ip_headers.items():
             dbcurs.execute("""UPDATE drrobot SET http_headers=?, https_headers=? WHERE ip = ? LIMIT 1;""", (http, https, ip))
-        dbcurs.execute("COMMIT")
+            dbcurs.execute("COMMIT")
         dbconn.close()
 
     def gather(self, **kwargs):
@@ -536,6 +553,7 @@ class Robot:
         """
         _threads = []
 
+        output_folders = []
         output_files = []
 
         webtools = kwargs.get('webtools', {})
@@ -547,11 +565,15 @@ class Robot:
 
         scanners_dockers = kwargs.get('scanners_dockers', {})
 
-        output_files += [v['output_file'] for _, v in scanners_dockers.items()]
+        output_folders += [v['output_folder'] for _, v in scanners_dockers.items()]
 
         scanners_ansible = kwargs.get('scanners_ansible', {})
 
-        output_files += [v['output_file'] for _, v in scanners_ansible.items()]
+        output_folders += [v['output_folder'] for _, v in scanners_ansible.items()]
+
+        for folder in output_folders:
+            if not exists(join_abs(self.OUTPUT_DIR, folder)):
+                makedirs(join_abs(self.OUTPUT_DIR, folder))
 
         if scanners_dockers:
             _threads += self._run_dockers(scanners_dockers)
@@ -567,12 +589,13 @@ class Robot:
         if verify and webtools:
             for k in webtools:
                 if verify.lower() in k.lower():
-                    verify = self.webtools[k].get('output_file', None)
+                    verify = self.webtools[k].get('output_folder', None)
                     break
         if verify:
             print(f"[*] Omit addresses gathered from web tool: {verify}")
 
-        self._hostname_aggregation(verify, output_files)
+        self._hostname_aggregation(verify=verify, output_folders=output_folders, output_files=output_files)
+        self._dump_db_to_file()
         if kwargs.get("headers", False):
             self._grab_headers()
         print("[*] Gather complete")

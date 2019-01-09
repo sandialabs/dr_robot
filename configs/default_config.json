@@ -78,7 +78,7 @@
             "description": "AQUATONE is a set of tools for performing reconnaissance on domain names",
             "src": "https://github.com/michenriksen/aquatone",
             "output": "/aqua",
-            "output_file": "aquatone.txt"
+            "output_folder": "aquatone"
         },
         "Sublist3r": {
             "name": "Sublist3r",
@@ -91,7 +91,7 @@
             "description": "Sublist3r is a python tool designed to enumerate subdomains of websites using OSINT",
             "src": "https://github.com/aboul3la/Sublist3r",
             "output": "/root/sublist3r",
-            "output_file": "sublist3r.txt"
+            "output_folder": "sublist3r"
         },
         "Subbrute": {
             "name": "Subbrute",
@@ -104,7 +104,7 @@
             "description": "SubBrute is a community driven project with the goal of creating the fastest, and most accurate subdomain enumeration tool.",
             "src": "https://github.com/TheRook/subbrute.git",
             "output": " /root/brute",
-            "output_file": "subbrute.txt"
+            "output_folder": "subbrute"
         }
     },
     "Enumeration" :
