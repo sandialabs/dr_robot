@@ -13,7 +13,7 @@ class TestAnsible(object):
                 "domain": "test.com",
                 "infile": "testfile",
                 "output_dir" : "test_output",
-                "ansible_file" : "test_ansible_file"
+                "ansible_file_location" : "test_ansible_file"
 
                 }
         return Ansible(**args)
@@ -36,7 +36,7 @@ class TestAnsible(object):
                 "domain": None,
                 "infile": None,
                 "output_dir" : "test_output",
-                "ansible_file" : "test_ansible_file"
+                "ansible_file_location" : "test_ansible_file"
                 }
         with pytest.raises(TypeError):
             ansible = Ansible(**args)

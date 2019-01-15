@@ -365,7 +365,7 @@ class Robot:
         finally:
             dbconn.close()
 
-    def _hostname_aggregation(self, verify=None, output_files=None, output_folders=None):
+    def _hostname_aggregation(self, verify=None, output_files=[], output_folders=[]):
         """
         Create an aggregated dictionary of all tool outputs that we can use to run further host enumeration on.
         This dictionary will be uploaded to a small sqlite3 database under the name "domain.db"
@@ -565,11 +565,13 @@ class Robot:
 
         scanners_dockers = kwargs.get('scanners_dockers', {})
 
-        output_folders += [v['output_folder'] for _, v in scanners_dockers.items()]
+        output_folders += [v.get('output_folder') for _, v in scanners_dockers.items() if v.get("output_folder")]
+        output_files += [v.get('output_file') for _, v in scanners_dockers.items() if v.get('output_file')]
 
         scanners_ansible = kwargs.get('scanners_ansible', {})
 
-        output_folders += [v['output_folder'] for _, v in scanners_ansible.items()]
+        output_folders += [v.get('output_folder', None) for _, v in scanners_ansible.items() if v.get("output_folder")]
+        output_files += [v.get('output_file', None) for _, v in scanners_ansible.items() if v.get("output_file")]
 
         for folder in output_folders:
             if not exists(join_abs(self.OUTPUT_DIR, folder)):
@@ -590,6 +592,8 @@ class Robot:
             for k in webtools:
                 if verify.lower() in k.lower():
                     verify = self.webtools[k].get('output_folder', None)
+                    if not verify:
+                        verify = self.webtools[k].get('output_file', None)
                     break
         if verify:
             print(f"[*] Omit addresses gathered from web tool: {verify}")
