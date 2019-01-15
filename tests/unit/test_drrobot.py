@@ -25,9 +25,10 @@ class TestCLI(object):
                     "output_file": 'tests.txt'
                     }
                 }
-        input = ["prog", "--domain", "testdomain", "gather", "-test", "-web"]
-        with patch('drrobot.sys.argv', input):
-            args = parse_args(scanners=scanners, webtools=webtools)
+        testinput = ["prog", "testdomain", "gather", "-test", "-web"]
+        with patch('drrobot.sys.argv', testinput):
+            parser = parse_args(scanners=scanners, webtools=webtools)
+            args = parser.parse_args()
             assert args.Test
             assert args.WebTool
 
@@ -48,10 +49,10 @@ class TestCLI(object):
                     "output_file": 'tests.txt'
                     }
                 }
-        input = ["prog", "--domain", "testdomain", "--proxy", "http://test.testproxy", "--dns", "testdns", "gather"]
-        with patch('drrobot.sys.argv', input):
-            args = parse_args(scanners=scanners, webtools=webtools)
-
+        testinput = ["prog",  "testdomain", "--proxy", "http://test.testproxy", "--dns", "testdns", "gather"]
+        with patch('drrobot.sys.argv', testinput):
+            parser = parse_args(scanners=scanners, webtools=webtools)
+            args = parser.parse_args()
             assert args.proxy in "http://test.testproxy"
             assert args.dns in "testdns"
 
@@ -61,10 +62,10 @@ class TestCLI(object):
                     "short_name": "test",
                     }
                 }
-        input = ["prog", "--domain", "testdomain", "inspect", "-test"]
-        with patch('drrobot.sys.argv', input):
-            args = parse_args(enumeration=enumeration)
-
+        testinput = ["prog", "testdomain", "inspect", "-test"]
+        with patch('drrobot.sys.argv', testinput):
+            parser = parse_args(enumeration=enumeration)
+            args = parser.parse_args()
             assert args.Test
 
     def test_parse_args_upload(self):
@@ -73,10 +74,10 @@ class TestCLI(object):
                     "short_name": "test",
                     }
                 }
-        input = ["prog", "--domain", "testdomain" , "upload", "-test"]
-        with patch('drrobot.sys.argv', input):
-            args = parse_args(upload_dest=upload_dest)
-
+        testinput = ["prog", "testdomain" , "upload", "-test"]
+        with patch('drrobot.sys.argv', testinput):
+            parser = parse_args(upload_dest=upload_dest)
+            args = parser.parse_args()
             assert args.Test
 
     def test_parse_args_no_input(self):
@@ -90,6 +91,7 @@ class TestCLI(object):
                     }
                 }
         try:
-            args = parse_args(webtools=webtools)
+            parser = parse_args(webtools=webtools)
+            args = parser.parse_args()
         except:
             assert True

@@ -23,10 +23,11 @@ class TestRobot(object):
         self.robot = Robot(root_dir=self.ROOT_DIR, user_config=self.USER_CONFIG, domain="tests.com")
         self.robot.domain = "tests.com"
 
+    @patch('src.robot.Robot._dump_db_to_file', return_value=True)
     @patch('src.robot.Robot._grab_headers', return_value=True)
     @patch('src.robot.Robot._hostname_aggregation', return_value = ["1.1.1.1"])
     @patch('src.robot.Robot._run_webtools', return_value = [False])
-    def test_gather_webtools(self, mock_run, mock_aggregation, mock_headers):
+    def test_gather_webtools(self, mock_run, mock_aggregation, mock_headers, mock_dump):
         attr = {
                 "webtools" : {
                     "Shodan" :
@@ -41,12 +42,13 @@ class TestRobot(object):
         self.robot.gather(**attr)
         mock_run.assert_called_with(attr['webtools'])
 
-        mock_aggregation.assert_called_with(None, ["shodan.txt"])
+        mock_aggregation.assert_called_with(verify=None, output_files=["shodan.txt"], output_folders=[])
 
+    @patch('src.robot.Robot._dump_db_to_file', return_value=True)
     @patch('src.robot.Robot._grab_headers', return_value=True)
     @patch('src.robot.Robot._hostname_aggregation', return_value = ["1.1.1.1"])
     @patch('src.robot.Robot._run_dockers', return_value = [False])
-    def test_gather_scanners(self, mock_run, mock_aggregation, mock_headers):
+    def test_gather_scanners(self, mock_run, mock_aggregation, mock_headers, mock_dump):
         attr = {
                 "scanners_dockers": {
                     "Aquatone": {
@@ -66,7 +68,7 @@ class TestRobot(object):
         self.robot.gather(**attr)
         mock_run.assert_called_with(attr['scanners_dockers'])
 
-        mock_aggregation.assert_called_with(None, ["aquatone.txt"])
+        mock_aggregation.assert_called_with(verify=None, output_files=["aquatone.txt"], output_folders=[])
 
     @patch('src.robot.sqlite3')
     @patch('src.robot.logging')
@@ -114,7 +116,7 @@ class TestRobot(object):
                 domain=self.robot.domain,
                 infile='tests',
                 output_dir=unittest.mock.ANY,
-                ansible_file=unittest.mock.ANY)
+                ansible_file_location=unittest.mock.ANY)
         mock_instance = mock_ansible.return_value
         mock_instance.run.assert_called_once_with()
 
