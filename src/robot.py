@@ -9,7 +9,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from concurrent.futures import ThreadPoolExecutor
 from itertools import repeat
 import sqlite3
-from os.path import dirname, getsize, isfile, isdir, exists
+from os.path import dirname, getsize, isfile, exists
 from os import walk, makedirs
 
 from docker.errors import APIError, BuildError, ContainerError, ImageNotFound
@@ -19,6 +19,8 @@ from . import join_abs
 from .ansible import Ansible
 from .dockerize import Docker
 
+
+logger = logging.getLogger(__name__)
 
 class Robot:
     def __init__(self, **kwargs):
@@ -106,31 +108,33 @@ class Robot:
                 print(f"Build Error encountered {er}")
                 if "net/http" in str(er):
                     print("This could be a proxy issue, see https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
-                logging.error(f"Build Error encountered {er}")
+                logger.exception(f"Build Error encountered")
                 if not self.dns:
                     print(f"\t[!] No DNS set. This could be an issue")
+                    logger.info("No DNS set. This could be an issue")
                 if not self.proxy:
                     print(f"\t[!] No PROXY set. This could be an issue")
+                    logger.info("No PROXY set. This could be an issue")
 
-            except ContainerError as er:
+            except ContainerError:
                 print(f"[!] Container Error: {scanner.name}")
-                logging.error(er)
+                logger.exception()
 
-            except ImageNotFound as er:
+            except ImageNotFound:
                 print(f"[!] ImageNotFound: {scanner.name}")
-                logging.error(er)
+                logger.exception()
 
-            except APIError as er:
+            except APIError:
                 print(f"[!] APIError: {scanner.name}")
-                logging.error(er)
+                logger.exception()
 
-            except KeyError as er:
+            except KeyError:
                 print(f"[!] KeyError Output or Docker Name is not defined!!: {scanner.name}")
-                logging.error(er)
+                logger.exception()
 
-            except OSError as er:
+            except OSError:
                 print(f"[!] Output directory could not be created, please verify permissions")
-                logging.error(er)
+                logger.exception()
 
         threads = list()
         for scanner in scanners:
@@ -189,10 +193,12 @@ class Robot:
 
                 ansible_mod.run()
 
-            except OSError as er:
-                print(f"[!] {er}")
-            except TypeError as er:
-                print(f"[!] {er}")
+            except OSError:
+                print(f"[!] Something went wrong. Check error log for details")
+                logger.exception("Error in ansible method")
+            except TypeError:
+                print(f"[!] Something went wrong. Check error log for details")
+                logger.exception("Error in ansible method")
 
     def _run_webtools(self, webtools):
         """
@@ -242,12 +248,12 @@ class Robot:
                 tool_class_obj = tool_class(**attr)
                 threads += [threading.Thread(target=tool_class_obj.do_query, daemon=True)]
 
-            except KeyError as er:
-                print(f"[!] Error locating key for tool {er}")
-                logging.error(er)
-            except json.JSONDecodeError as er:
-                print(f"[!] Failure authenticating to service {er} ")
-                logging.error(er)
+            except KeyError:
+                print(f"[!] Error locating key for tool. Check error log for details")
+                logger.exception()
+            except json.JSONDecodeError:
+                print(f"[!] Failure authenticating to service. Check error log for details")
+                logger.exception()
 
         for thread in threads:
             thread.start()
@@ -301,21 +307,21 @@ class Robot:
                 obj = board_class(**attr)
 
                 threads += [threading.Thread(target=obj.upload, daemon=True)]
-            except KeyError as er:
-                print(f"[!] Key error check your config {er}")
-                logging.error(er)
+            except KeyError:
+                print(f"[!] Key error: check your config. See error log for details")
+                logger.exception()
             except TypeError as er:
                 print(f"[!] Error in initialization of {dest}: {er}")
-                logging.error(er)
+                logger.exception()
             except OSError as er:
-                print(f"[!] {er}")
-                logging.error(er)
+                print(f"[!] {er}. See error log for details")
+                logger.exception()
             except json.JSONDecodeError as er:
-                print(f"[!] Json error {er}")
-                logging.error(er)
-            except ConnectionError as er:
+                print(f"[!] Json error {er}. See error log for details")
+                logger.exception()
+            except ConnectionError:
                 print(f"[!] ConnectionError, check URL for upload destination")
-                logging.error(er)
+                logger.exception()
 
         for thread in threads:
             thread.start()
@@ -477,7 +483,7 @@ class Robot:
                 ip = socket.gethostbyname(hostname)
 
         except socket.herror as er:
-            logging.debug(f"{ip}{hostname}: Host cannot be resolved, not adding")
+            logger.debug(f"{ip}{hostname}: Host cannot be resolved, not adding")
         finally:
             return hostname, ip
 

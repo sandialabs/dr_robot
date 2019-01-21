@@ -4,6 +4,8 @@ from string import Template
 import logging
 import time
 from tqdm import tqdm
+
+logger = logging.getLogger(__name__)
 class Docker:
     def __init__(self, **kwargs):
         """
@@ -40,14 +42,14 @@ class Docker:
 
         """
         if isfile(self._default_config_path):
-            logging.info(f"[*]Creating Dockerfile for {self._docker_options['name']}")
+            logger.info(f"Creating Dockerfile for {self._docker_options['name']}")
         elif not isfile(self._default_config_path):
             raise OSError('Default configuration file is not found, please fix')
 
         self.name = self._docker_options['name']
         self.network_mode = self._docker_options['network_mode']
-        
-        logging.info(f"\t[.]With args:{self._docker_options}")
+        logger.info(f"[.]With args:{self._docker_options}")
+
         with open(self._default_config_path, 'r') as cfg:
             t = Template(cfg.read())
         with open(self._active_config_path, 'w') as out:
@@ -71,6 +73,12 @@ class Docker:
                     rm=True,
                     network_mode=self.network)
             self.status = "built"
+        logger.debug(f"""Built with options:
+                        -f {self._active_config_path}
+                        -t {self._docker_options['docker_name']}:{self._docker_options['docker_name']}
+                        --rm
+                        --network {self.network}
+                    """)
 
     def run(self):
         """
@@ -99,6 +107,7 @@ class Docker:
 
         self.status = self.container.status
 
+        logger.debug(f"mount point specified here: {volumes}")
 
 
     def update_status(self):
@@ -119,8 +128,8 @@ class Docker:
                     self.status = self.container.status
                     pbar.update()
 
-        except docker.errors.NotFound as er:
+        except docker.errors.NotFound:
             print(f"[*] Docker container {self._docker_options['docker_name']} exited")
             self.status = 'exited'
-        except AttributeError as er:
+        except AttributeError:
             print("Container is None")

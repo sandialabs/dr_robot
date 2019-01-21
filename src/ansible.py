@@ -3,6 +3,8 @@ import os
 import subprocess
 from string import Template
 from . import join_abs
+
+logger = logging.getLogger(__name__)
 class Ansible:
     def __init__(self, **kwargs):
         """
@@ -95,13 +97,13 @@ class Ansible:
             call = subprocess.check_output(self.final_command, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
         except subprocess.CalledProcessError as er:
             print(f"[!] {er} : {er.output}")
-            logging.error(f"{er}: {er.output}")
+            logger.exception()
         except OSError as er:
             print(f"[!] {er}: {er.output}")
-            logging.error(f"{er}: {er.output}")
+            logger.exception()
         except subprocess.SubprocessError as er:
             print(f"[!] {er}: {er.output}")
-            logging.error(f"{er}: {er.output}")
+            logger.exception()
         except TypeError as er:
             print(f"[!] {er}: {er.output}")
-            logging.error(f"{er}: {er.output}")
+            logger.exception()

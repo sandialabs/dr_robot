@@ -8,6 +8,7 @@ import re
 from bs4 import BeautifulSoup
 from abc import ABC, abstractmethod
 
+logger = logging.getLogger(__name__)
 class WebTool(ABC):
     def __init__(self,  **kwargs):
         """
@@ -91,7 +92,7 @@ class Arin(WebTool):
 
         """
         print("[*] Beginning Arin Query")
-        logging.info('Starting ARIN Query for ' + self.domain)
+        logger.info('Starting ARIN Query for ' + self.domain)
         try:
             org_name = self._lookup_org()
             if not org_name:
@@ -100,12 +101,12 @@ class Arin(WebTool):
                 raise ValueError("[!] Arin API Key not found")
             url = 'http://whois.arin.net/rest/org/' + org_name + '/nets?apikey=' + self.api_key
             headers = {'Accept': 'application/json'}
-            logging.info('Getting ' + org_name + ' ARIN Query from url: ' + url)
+            logger.info('Getting ' + org_name + ' ARIN Query from url: ' + url)
             result = requests.get(url, headers=headers, proxies=self.proxies, verify=False)
             if result.status_code == 200:
                 all_cidrs = []
                 result_json = result.json()
-                logging.debug(f"\t{json.dumps(result_json, indent=4)}")
+                logger.debug(f"\t{json.dumps(result_json, indent=4)}")
 
                 if type(result_json['nets']['netRef']) is list:
                     for x in result_json['nets']['netRef']:
@@ -117,25 +118,25 @@ class Arin(WebTool):
                             result_json['nets']['netRef']['@endAddress'])
                     all_cidrs.append(result_cidr[0])
 
-                logging.info('CIDR of ' + org_name+ ' is: %s', all_cidrs)
+                logger.info('CIDR of ' + org_name+ ' is: %s', all_cidrs)
                 self.results = self._generate_ips(all_cidrs)
                 self._write_results()
             else:
-                logging.error('Failed to get data for: ' + self.org_name)
+                logger.error('Failed to get data for: ' + self.org_name)
 
             print("[*]\t Finished ARIN Query")
 
         except requests.exceptions.HTTPError as er:
             print(f"[!]\t\t Might be related to network configuration, check proxy/dns. {er}")
-            logging.error(er)
+            logger.exception()
         except requests.exceptions.ConnectionError as er:
-            logging.error(er)
+            logger.exception()
             print(f"[!]\t\t Might be related to network configuration, check proxy/dns. {er}")
         except requests.exceptions.RequestException as er:
-            logging.error(er)
+            logger.exception()
         except ValueError as er:
             print(f"{er}\t\t")
-            logging.error(er)
+            logger.exception()
 
 
 class Shodan(WebTool):
@@ -162,7 +163,7 @@ class Shodan(WebTool):
             for item in res['matches']:
                 if item['hostnames']:
                     self.results += item['hostnames']
-                logging.info("Host: {} \n"\
+                logger.info("Host: {} \n"\
                         "\t Product: {} \n"\
                         "\t PORT : {} \n"\
                         "\t Country Code : {} \n"\
@@ -172,7 +173,7 @@ class Shodan(WebTool):
             print("[*]\t Finished Shodan Query")
         except shodan.APIError as er:
             print("[!]\t\t Shodan Error. See log for more details")
-            logging.error(er)
+            logger.exception()
 
 
 class Dumpster(WebTool):
@@ -224,13 +225,13 @@ class Dumpster(WebTool):
 
             self._write_results()
         except requests.exceptions.ConnectionError as er:
-            logging.error(f"[!] Connection Error check network configuration {er}")
+            logger.error(f"[!] Connection Error check network configuration {er}")
             print(f"[!] Connection Error check network configuration {er}")
         except requests.exceptions.RequestException as er:
-            logging.error(f"[!] Request failed {er}")
+            logger.error(f"[!] Request failed {er}")
             print(f"[!] Request failed {er}")
         except IndexError as er:
-            logging.error(f"[!] No CSRF in response {er}")
+            logger.error(f"[!] No CSRF in response {er}")
             print(f"[!] No CSRF in response {er}")
         print("[*]\t End Dumpster Query")
 
@@ -254,13 +255,13 @@ class HackerTarget(WebTool):
                 self.results += [ip.strip()]
             self._write_results()
         except requests.exceptions.ConnectionError as er:
-            logging.error(f"[!] Connection Error check network configuration {er}")
+            logger.error(f"[!] Connection Error check network configuration {er}")
             print(f"[!] Connection Error check network configuration {er}")
         except requests.exceptions.RequestException as er:
-            logging.error(f"[!] Request failed {er}")
+            logger.error(f"[!] Request failed {er}")
             print(f"[!] Request failed {er}")
         except OSError as er:
-            logging.error(er)
+            logger.exception()
             print(f"[!] Writing to file failed {er}")
         print("[*]\t End HackerTarget Query")
 
@@ -296,12 +297,12 @@ class VirusTotal(WebTool):
             self._write_results()
 
         except requests.ConnectionError as er:
-            logging.error(f"[!] Connection Error check network configuration {er}")
+            logger.error(f"[!] Connection Error check network configuration {er}")
             print(f"[!] Connection Error check network configuration {er}")
         except requests.exceptions.RequestException as er:
-            logging.error(f"[!] Request failed {er}")
+            logger.error(f"[!] Request failed {er}")
             print(f"[!] Request failed {er}")
         except OSError as er:
-            logging.error(er)
+            logger.exception()
             print(f"[!] Writing to file failed {er}")
         print("[*]\t End VirtusTotal Query")

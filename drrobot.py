@@ -180,15 +180,38 @@ def load_config():
             "enumeration": enumeration,
             "upload_dest": upload_dest}
 
+def setup_logger():
+    logger = logging.getLogger()
+    logger.setLevel(logging.NOTSET)
+    formatter = logging.Formatter('%(asctime)s [%(levelname)-5s|%(name)s] \t%(message)s')
+
+    handler = logging.FileHandler(filename=join_abs(ROOT_DIR, "logs", "drrobot.err"))
+    handler.setLevel(logging.ERROR)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+    handler = logging.FileHandler(filename=join_abs(ROOT_DIR, "logs", "drrobot.dbg"))
+    handler.setLevel(logging.DEBUG)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+    handler = logging.FileHandler(filename=join_abs(ROOT_DIR, "logs", "drrobot.info"))
+    handler.setLevel(logging.INFO)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+
+    logging.getLogger("urllib3.connectionpool").disabled=True
+
+    return logger
 
 if __name__ == '__main__':
+    log = setup_logger()
+
     try:
         if not exists(join_abs(ROOT_DIR, "logs")):
             makedirs(join_abs(ROOT_DIR, "logs"))
 
-        logging.basicConfig(format='[!] %(asctime)s:%(lineno)d \t%(message)s',
-                            filename=join_abs(ROOT_DIR, "logs", "drrobot.log"),
-                            level=logging.DEBUG)
         tools = load_config()
 
         parser = parse_args(**tools)
@@ -198,7 +221,7 @@ if __name__ == '__main__':
             print("No action selected, exiting...")
             sys.exit(1)
 
-        logging.debug(args)
+        log.debug(args)
 
         tool_check()
 
@@ -296,16 +319,16 @@ if __name__ == '__main__':
                 print("[!] DB file does not exists, try running gather first")
 
     except json.JSONDecodeError as er:
-        print("[!] JSON load error, configuration file is bad. MUST FIX")
-        logging.error(er)
+        print(f"[!] JSON load error, configuration file is bad.\n {er}")
+        log.error(er)
     except DatabaseError as er:
-        print(f"[!] Something went wrong with SQLite {er}")
-        logging.error(er)
+        print(f"[!] Something went wrong with SQLite\n {er}")
+        log.error(er)
     except KeyboardInterrupt:
         print("[!] Cancelling scan")
     except OSError as er:
-        logging.error(er)
+        log.error(er)
         print(f"[!] {er}")
     except TypeError as er:
-        logging.error(er)
+        log.error(er)
         print(f"[!] {er}")
