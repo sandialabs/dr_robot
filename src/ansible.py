@@ -32,8 +32,8 @@ class Ansible:
             raise TypeError("argument domain must be of type string, not 'NoneType'")
         self.output_dir = kwargs.get('output_dir')
         self.infile = kwargs.get('infile', None)
-        if self.infile is None or os.path.isfile(self.infile):
-            self.infile = join_abs(self.output_dir,"aggregated", "aggregated_hostnames.txt")
+        if not self.infile:
+            self.infile = join_abs(self.output_dir,"aggregated")
 
         self.final_command = None
 

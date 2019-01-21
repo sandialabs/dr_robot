@@ -119,12 +119,13 @@
             "active_conf" : "docker_buildfiles/Dockerfile.HTTPScreenshot",
             "ansible_arguments" : {
                 "config" : "$config/httpscreenshot_play.yml",
-                "flags": "-e '$extra'",
+                "flags": "-e '$extra' -i configs/ansible_inventory",
                 "extra_flags":{
                     "1" : "variable_host=localhost",
-                    "2" : "infile=$infile/aggregated_protocol_hostnames.txt",
-                    "3" : "outfile=$outfile/httpscreenshots.tar",
-                    "4" : "outfolder=$outfile/httpscreenshots"
+                    "2" : "variable_user=user", 
+                    "3" : "infile=$infile/aggregated_protocol_hostnames.txt",
+                    "4" : "outfile=$outfile/httpscreenshots.tar",
+                    "5" : "outfolder=$outfile/httpscreenshots"
                 }
             },
             "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: httpscreenshot.tar and unpacked httpscreenshots",
@@ -142,12 +143,13 @@
             "active_conf" : "docker_buildfiles/Dockerfile.Eyewitness",
             "ansible_arguments" : {
                 "config" : "$config/eyewitness_play.yml",
-                "flags": "-e '$extra'",
+                "flags": "-e '$extra' -i configs/ansible_inventory",
                 "extra_flags":{
                     "1" : "variable_host=localhost",
-                    "2" : "infile=$infile/aggregated_ips.txt",
-                    "3" : "outfile=$outfile/Eyewitness.tar",
-                    "4" : "outfolder=$outfile/Eyewitness"
+                    "2" : "variable_user=user", 
+                    "3" : "infile=$infile/aggregated_ips.txt",
+                    "4" : "outfile=$outfile/Eyewitness.tar",
+                    "5" : "outfolder=$outfile/Eyewitness"
                 }
             },
             "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: Eyewitness.tar and unpacked in Eyewitness",

@@ -4,7 +4,7 @@ ENV http_proxy $proxy
 ENV https_proxy $proxy
 ENV DNS $dns
 ENV TARGET $target
-ENV OUTPUT $output/eyewitness
+ENV OUTPUT $output/Eyewitness
 ENV INFILE  $infile
 
 ARG user=eyewitness

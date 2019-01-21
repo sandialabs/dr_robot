@@ -9,7 +9,7 @@ ________...........__________.........___...............__...
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/sandialabs/dr_robot/blob/master/LICENSE)
 [![Build Status](https://travis-ci.org/Sandarmann/dr_robot.svg?branch=master)](https://travis-ci.org/Sandarmann/dr_robot)
 
-Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.
+Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.
 
 # Table of Contents
 
@@ -211,7 +211,7 @@ will load the respective class based off the classname provided at via options p
 
 ### Example Configuration For WebTools
 
-Under **configs** you will find a default_config which contains a majority of the default scanners you can have. If you wish to extend upon the **WebTools** list just follow these steps:
+Under **configs** you will find a default_config which contains a majority of the default scanners you can utilize. If you wish to extend upon the **WebTools** list just follow these steps:
 
 1. In the default_config.json/user_config.json
 
@@ -247,7 +247,7 @@ Under **configs** you will find a default_config which contains a majority of th
 
 ### Example Configurations For Dockers
 
-Under **configs** you will find a **default_config** which contains a majority of the default scanners you can have. If you wish to extend upon the **Scanners** list just follow these steps:
+Under **configs** you will find a **default_config** which contains a majority of the default scanners you can utilize. If you wish to extend upon the **Scanners** list just follow these steps:
 
 1. Add the **json** to the **config** file (user if generated).
 
@@ -276,6 +276,83 @@ Under **configs** you will find a **default_config** which contains a majority o
 
    1. If you desire adding more options at run time to the Dockerfiles look at editing the **src/dockers.py**
    2. **Note** as of right now Dockerfiles must come from the **dockers** folder. Future work includes allowing to specify a remote source for the docker images. 
+
+### Example Ansible Configuration
+
+Under **configs** you will find a **default_config** which contains a majority of the default scanners you can have. For this step however, we will be looking at configuring an inspection too **Eyewitness** for utilization with **Ansible**.
+
+1. Add the **json** to the **config** file (user if generated).
+
+   ```
+   "Enumeration" : {
+           "Eyewitness": {
+               "name" : "Eyewitness",
+               "short_name" : "eye",
+               "docker_name" : "eye",
+               "mode" : "ANSIBLE",
+               "network_mode": "host",
+               "default_conf" : "docker_buildfiles/Dockerfile.Eyewitness.tmp",
+               "active_conf" : "docker_buildfiles/Dockerfile.Eyewitness",
+               "ansible_arguments" : {
+                   "config" : "$config/eyewitness_play.yml",
+                   "flags": "-e '$extra' -i ansible_plays/inventory",
+                   "extra_flags":{
+                       "1" : "variable_host=localhost",
+                       "2" : "variable_user=root",
+                       "3" : "infile=$infile/aggregated_protocol_hostnames.txt",
+                       "4" : "outfile=$outfile/Eyewitness.tar",
+                       "5" : "outfolder=$outfile/Eyewitness"
+                   }
+               },
+               "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: Eyewitness.tar and unpacked in Eyewitness",
+               "output" : "/tmp/output",
+               "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt",
+               "enabled" : false
+           },
+   }
+   ```
+
+2. As you can see this one has a few things that may seem confusing at first but will be clarified here:
+
+   1. mode: allows you to set what tool for the job you would like to use. Currently between **DOCKER** or **ANSIBLE**
+
+   2. all options outside of **ansible_configuration** will be disregarded when developing for **ANSIBLE**
+
+   3. Options under *ansible_arguments*
+
+      1. **config**: specify the playbook that we will utilize
+
+      2. **flags**: the flags you would like to pass to the **ansible-playbook** command. With the exception of  **$extra** keyword you see above you can add anything you would like to be done uniquely here.
+
+      3. **extra_flags** : this corresponds to the **$extra** flag as seen above. This will be used to populate variable you may input into your playbook. You can use this to supply command line arguments when utilizing ansible and DrRobot such that files and other utilities may be added to your script. 
+
+         1.  **variable_host** : hostname alias found in the inventory file
+         2.  **variable_user** : user to login as  on the variable_host machine
+         3.  **infile**: file to be used with the tool above. Eyewitness requires hostnames of the format ```https://some.url``` hence *aggregated_protocol_hostnames.txt* 
+            1.  Note the use of the prefix **$infile** these names all match as they allow are just placeholders for default locations **$infile** corresponds to **outputs/target_name/aggregated**
+            2.  If you have a file in another location you can just specify the entire path without any errors occurring.
+         4.  **outfile** : The output file location 
+            1.  As with the above infile **$outfile** in the name is just a key to the location **outputs/target_name/**
+            2.  You may specify a hard coded path for other use. Just remember the location for uploading or other processing with DrRobot
+         5.  **outfolder** : The output folder to unpack/download files too
+            1.  As with the above infile **$outfile** in the name is just a key to the location **outputs/target_name/**
+            2.  This is a special case for Eyewitness and HttpScreenshot, which you can see in their playbooks. They generate a lot of files and rather than download each individually having them pack up the files as a step in the playbook and then unpacking allows for some integrity.
+         6.  A quick example below shows how we use the **extra_flags** to supply the hostname to the playbook for ansible.
+
+         ```
+         ---
+         - hosts: "{{ variable_host|quote }}"
+           remote_user: root 
+         
+           tasks:
+               - name: Apt install git
+                 become: true
+                 apt:
+                     name: git
+                     force: yes
+         ```
+
+         
 
 ### Docker Integration and Customization
 
@@ -316,6 +393,34 @@ We use **ENV** to keep track of most variable input from Python on the user end.
 
 Using the **DNS** information provided by the user we are able to download packages and git repos during building. 
 
+### Ansible Configuration
+
+Please see the ansible documentation: https://docs.ansible.com/ for details on how to develop a playbook for use with DrRobot. 
+
+#### Inventory
+
+Ansible inventory files will be self contained within DrRobot so as to further seperate itself from any one system. The inventory file will be located under **ansible_playbooks/inventory**
+
+As noted in the documentation ansible inventory can be defined as groups or single IP's. A quick example:
+
+```
+[example-host]
+ip.example.com
+```
+
+#### SSH + Ansible
+
+If you desire to run Ansible with this tool and require ssh authentication be done you can use the application as is to run Ansible scripts. The plays will be piped to STDIN/STDOUT so that you may supply credentials if required. 
+
+If you wish to have to not manually provide credentials just use an **ssh-agent**
+
+```
+eval $(ssh-agent -s)
+ssh-add /path/to/sshkey
+```
+
+## 
+
 ### Adding Dockers
 
 If you wish to add another Dockerfile to the project make a **Dockerfile.toolname.tmp** file within the **dockers** folder. Then opening up your **user_config** add a new section under the appropriate section as shown above in the  [docker](#Example Configurations For Dockers)
@@ -339,19 +444,6 @@ If you wish to add another Dockerfile to the project make a **Dockerfile.toolnam
 - **Ansible** if you require the use of external servers.
 
 - **Python Mattermost Driver** [Optional] if using Mattermost you will require this module
-
-## SSH + Ansible
-
-If you desire to run Ansible with this tool and require ssh authentication be done you can use the application as is to run Ansible scripts. The plays will be piped to STDIN/STDOUT so that you may supply credentials if required. 
-
-If you wish to have to not manually provide credentials just use an **ssh-agent**
-
-```
-eval $(ssh-agent -s)
-ssh-add /path/to/sshkey
-```
-
-
 
 ## Output
 
