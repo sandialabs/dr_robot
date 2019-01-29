@@ -105,6 +105,19 @@
             "src": "https://github.com/TheRook/subbrute.git",
             "output": " /root/brute",
             "output_folder": "subbrute"
+        },
+        "Knock": {
+            "name": "Knock",
+            "default" : false,
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "knock",
+            "default_conf": "docker_buildfiles/Dockerfile.Knock.tmp",
+            "active_conf": "docker_buildfiles/Dockerfile.Knock",
+            "description": "Knock.",
+            "src": "N/A",
+            "output": " /root/source",
+            "output_folder": "knock"
         }
     },
     "Enumeration" :
