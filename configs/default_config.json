@@ -117,7 +117,8 @@
             "description": "Knock.",
             "src": "N/A",
             "output": " /root/source",
-            "output_folder": "knock"
+            "output_folder": "knock",
+            "vt_key": ""
         }
     },
     "Enumeration" :
