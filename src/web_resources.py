@@ -250,6 +250,10 @@ class HackerTarget(WebTool):
         print("[*] Beginning HackerTarget Query")
         try:
             res = requests.get(self.ENDPOINT, verify=False, proxies=self.proxies)
+            lines = res.content.splitlines()
+            if len(lines) < 2: #Assuming anything greater than 1 is a valid domain for our purposes
+                print("Domain not found on hackertarget")
+                return
             for line in res.content.split():
                 unused_hostname, ip = str(line, 'utf-8').split(',')
                 self.results += [ip.strip()]

@@ -49,6 +49,11 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}):
                         type=str,
                         help="DNS server to add to resolv.conf of DOCKER containers")
 
+    parser.add_argument('--verbose',
+                        default=False,
+                        action="store_true",
+                        help="Display verbose statements")
+
     parser.add_argument("domain",
                         type=str,
                         help="Domain to run scan against")
@@ -231,6 +236,7 @@ if __name__ == '__main__':
                         dns=getattr(args, 'dns', None),
                         proxy=getattr(args, 'proxy', None),
                         domain=getattr(args, 'domain'),
+                        verbose=getattr(args, 'verbose'),
                         verify=getattr(args, 'verify', None))
 
         if not exists(join_abs(ROOT_DIR, "dbs")):
@@ -245,11 +251,17 @@ if __name__ == '__main__':
         if args.actions in "gather":
 
             try:
+                drrobot._print("Beginning gather")
                 webtools = {k: v for k, v in tools.get("webtools").items() if getattr(args, k) if True}
+                drrobot._print(f"Webtools:\n{webtools}")
+
                 scanners_dockers = {k: v for k, v in tools.get("scanners").items() if
                                     getattr(args, k) is True and Mode[v["mode"]] == Mode.DOCKER}
+                drrobot._print(f"scanners dockers:\n{scanners_dockers}")
+
                 scanners_ansible = {k: v for k, v in tools.get("scanners").items() if
                                     getattr(args, k) is True and Mode[v["mode"]] == Mode.ANSIBLE}
+                drrobot._print(f"scanners ansible:\n{scanners_ansible}")
 
                 if not webtools and not scanners_ansible and not scanners_dockers:
                     print("[*] No scanners/webtools provided, exiting...")
@@ -263,10 +275,14 @@ if __name__ == '__main__':
         if args.actions in 'inspect':
 
             try:
+                drrobot._print("Beginning inspection")
                 post_enum_dockers = {k: v for k, v in tools.get("enumeration").items() if
                                      getattr(args, k) is True and Mode[v["mode"]] == Mode.DOCKER}
+                drrobot._print(f"post enumeration dockers {post_enum_dockers}")
+
                 post_enum_ansible = {k: v for k, v in tools.get("enumeration").items() if
                                      getattr(args, k) is True and Mode[v["mode"]] == Mode.ANSIBLE}
+                drrobot._print(f"post enumeration ansible {post_enum_ansible}")
 
                 if not post_enum_ansible and not post_enum_dockers:
                     print("[*] No scanners/webtools provided, exiting...")
@@ -282,9 +298,12 @@ if __name__ == '__main__':
         if args.actions in "upload":
 
             filepath = getattr(args, "filepath")
+            drrobot._print(f"Beginning upload with file path: {filepath}")
 
             upload_dest = {k: v for k, v in tools.get("upload_dest").items() if
                            getattr(args, k) is True}
+            drrobot._print(f"Upload destination: {upload_dest}")
+
             drrobot.upload(filepath=filepath, upload_dest=upload_dest)
 
         if args.actions in "rebuild":

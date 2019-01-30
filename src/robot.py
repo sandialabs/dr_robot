@@ -47,12 +47,19 @@ class Robot:
         self.dns = kwargs.get("dns", None)
         self.proxy = kwargs.get("proxy", None)
         self.domain = kwargs.get("domain", None)
+        self.verbose = kwargs.get("verbose", False)
 
         self.ROOT_DIR = kwargs.get("root_dir")
         self.OUTPUT_DIR = join_abs(self.ROOT_DIR, "output", self.domain)
 
         #Disable warnings for insecure requests
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+    def _print(self, msg):
+        if self.verbose:
+            print(msg)
+        else:
+            logger.debug(msg)
 
     def _run_dockers(self, dockers):
         """
@@ -84,7 +91,7 @@ class Robot:
         Currently error handling is done outside of the docker module. This may be subject to change.
         """
         scanners = []
-
+        self._print(f"Creating scanners{dockers.keys()}")
         for scan, scan_dict in dockers.items():
             options = scan_dict
             options.update({"proxy": self.proxy or None})
@@ -94,6 +101,8 @@ class Robot:
             if options.get("output_folder", None):
                 output_dir = join_abs(self.OUTPUT_DIR, options.get("output_folder"))
 
+            self._print(f"Creating scanner for {scan} with options: \n\t{options}")
+
             scanners += [Docker(active_config_path=join_abs(dirname(__file__), '..', scan_dict['active_conf']),
                          default_config_path=join_abs(dirname(__file__), '..', scan_dict['default_conf']),
                          docker_options=options,
@@ -101,7 +110,6 @@ class Robot:
 
         for scanner in scanners:
             try:
-
                 scanner.build()
                 scanner.run()
             except BuildError as er:
@@ -137,6 +145,7 @@ class Robot:
                 logger.exception(f"[!] Output directory could not be created, please verify permissions")
 
         threads = list()
+        self._print("Threading scanners")
         for scanner in scanners:
             threads += [threading.Thread(target=scanner.update_status, daemon=True)]
 
@@ -189,6 +198,7 @@ class Robot:
                 attr['output_dir'] = self.OUTPUT_DIR
                 attr['ansible_arguments'] = ansible_json.get("ansible_arguments")
 
+                self._print(f"Creating ansible {ansible} with attributes\n\t {attr}")
                 ansible_mod = Ansible(**attr)
 
                 ansible_mod.run()
@@ -238,6 +248,7 @@ class Robot:
                         "password": tool_dict.get('password', None),
                         "endpoint": tool_dict.get('endpoint', None),
                         }
+                self._print(f"Building webtool {tool} with options \n\t{attr}")
                 """
                 module contains the modules loaded in from web_resources relative to __main__
                 tool_class contains the class object with the name specified in the default/user config file.
@@ -302,6 +313,8 @@ class Robot:
                         "output_dir": self.OUTPUT_DIR
                         }
 
+                self._print(f"Uploading to {dest} with options \n\t{attr}")
+
                 module = importlib.import_module('..upload', __name__)
                 board_class = getattr(module, dest_json.get('class_name'))
                 obj = board_class(**attr)
@@ -343,22 +356,30 @@ class Robot:
         try:
             dbconn = sqlite3.connect(join_abs(self.ROOT_DIR, "dbs", f"{self.domain}.db"))
             dbcurs = dbconn.cursor()
+            
+            self._print(f"Creating sqlite file {self.domain}.db")
 
             ips = dbcurs.execute("SELECT ip FROM drrobot WHERE ip IS NOT NULL").fetchall()
             hostnames = dbcurs.execute("SELECT hostname FROM drrobot WHERE hostname IS NOT NULL").fetchall()
+
+            self._print(f"Fetching all ips with command 'SELECT ip FROM drrobot WHERE ip IS NOT NULL'")
+            self._print(f"Fetching all hostnames with command 'SELECT hostname FROM drrobot WHERE hostname IS NOT NULL'")
             """
                 Header options require there to have been a scan otherwise there will be no output but that should be expected.
                 Might change db to a dataframe later... possible
             """
             headers = dbcurs.execute("SELECT ip, hostname, http_headers, https_headers FROM drrobot WHERE http_headers IS NOT NULL AND https_headers IS NOT NULL").fetchall()
             if dump_ips:
+                self._print("Dumping to aggregated_ips.txt")
                 with open(join_abs(self.OUTPUT_DIR, 'aggregated', 'aggregated_ips.txt'), 'w') as f:
                     f.writelines("\n".join(list(ip[0] for ip in ips)))
 
             if dump_hostnames:
+                self._print("Dumping to aggregated_hostnames.txt")
                 with open(join_abs(self.OUTPUT_DIR, 'aggregated', 'aggregated_hostnames.txt'), 'w') as f:
                     f.writelines("\n".join(list(f"{host[0]}" for host in hostnames)))
 
+                self._print("Dumping to aggregated_protocol_hostnames.txt")
                 with open(join_abs(self.OUTPUT_DIR, 'aggregated', 'aggregated_protocol_hostnames.txt'), 'w') as f:
                     f.writelines("\n".join(list(f"https://{host[0]}\nhttp://{host[0]}" for host in hostnames)))
 
@@ -444,6 +465,7 @@ class Robot:
                         if isfile(join_abs(root, f)):
                             all_files += [join_abs(root,f)]
 
+            self._print(f"Parsing all files {all_files}")
             for filename in all_files:
                 print(f"[*] Parsing file: {filename}")
                 for ips in read_file(join_abs(filename)):
