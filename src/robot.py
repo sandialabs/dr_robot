@@ -118,23 +118,23 @@ class Robot:
 
             except ContainerError:
                 print(f"[!] Container Error: {scanner.name}")
-                logger.exception()
+                logger.exception(f"[!] Container Error: {scanner.name}")
 
             except ImageNotFound:
                 print(f"[!] ImageNotFound: {scanner.name}")
-                logger.exception()
+                logger.exception(f"[!] ImageNotFound: {scanner.name}")
 
             except APIError:
                 print(f"[!] APIError: {scanner.name}")
-                logger.exception()
+                logger.exception(f"[!] APIError: {scanner.name}")
 
             except KeyError:
                 print(f"[!] KeyError Output or Docker Name is not defined!!: {scanner.name}")
-                logger.exception()
+                logger.exception(f"[!] KeyError Output or Docker Name is not defined!!: {scanner.name}")
 
             except OSError:
                 print(f"[!] Output directory could not be created, please verify permissions")
-                logger.exception()
+                logger.exception(f"[!] Output directory could not be created, please verify permissions")
 
         threads = list()
         for scanner in scanners:
@@ -250,10 +250,10 @@ class Robot:
 
             except KeyError:
                 print(f"[!] Error locating key for tool. Check error log for details")
-                logger.exception()
+                logger.exception("Key Error in run_webtools method")
             except json.JSONDecodeError:
                 print(f"[!] Failure authenticating to service. Check error log for details")
-                logger.exception()
+                logger.exception(f"Failure authenticating to service.")
 
         for thread in threads:
             thread.start()
@@ -309,19 +309,19 @@ class Robot:
                 threads += [threading.Thread(target=obj.upload, daemon=True)]
             except KeyError:
                 print(f"[!] Key error: check your config. See error log for details")
-                logger.exception()
+                logger.exception("Key error in upload method")
             except TypeError as er:
                 print(f"[!] Error in initialization of {dest}: {er}")
-                logger.exception()
+                logger.exception("Type error in upload method")
             except OSError as er:
                 print(f"[!] {er}. See error log for details")
-                logger.exception()
+                logger.exception("OSError in upload method")
             except json.JSONDecodeError as er:
                 print(f"[!] Json error {er}. See error log for details")
-                logger.exception()
+                logger.exception("Json error in upload method")
             except ConnectionError:
                 print(f"[!] ConnectionError, check URL for upload destination")
-                logger.exception()
+                logger.exception("Connection error in upload method")
 
         for thread in threads:
             thread.start()

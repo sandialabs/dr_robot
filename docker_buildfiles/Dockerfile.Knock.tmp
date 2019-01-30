@@ -33,5 +33,6 @@ RUN if [ -n "$VT_KEY" ]; \
     then sed -i ".orig" 's/""/"$VT_KEY"/g' knockpy/config.json;\
     fi
 
+WORKDIR $OUTPUT
 
 ENTRYPOINT knockpy $TARGET -j

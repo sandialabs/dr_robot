@@ -114,11 +114,24 @@
             "docker_name" : "knock",
             "default_conf": "docker_buildfiles/Dockerfile.Knock.tmp",
             "active_conf": "docker_buildfiles/Dockerfile.Knock",
-            "description": "Knock.",
-            "src": "N/A",
-            "output": " /root/source",
+            "description": "Knockpy is a python tool designed to enumerate subdomains on a target domain through a wordlist",
+            "src": "https://github.com/guelfoweb/knock",
+            "output": "/root/knock",
             "output_folder": "knock",
             "vt_key": ""
+        },
+        "Amass": {
+            "name": "Amass",
+            "default" : false,
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "amass",
+            "default_conf": "docker_buildfiles/Dockerfile.Amass.tmp",
+            "active_conf": "docker_buildfiles/Dockerfile.Amass",
+            "description": "The OWASP Amass tool suite obtains subdomain names by scraping data sources, recursive brute forcing, crawling web archives, permuting/altering names and reverse DNS sweeping.",
+            "src": "https://github.com/OWASP/Amass",
+            "output": "/root/amass",
+            "output_folder": "amass"
         }
     },
     "Enumeration" :

@@ -111,3 +111,4 @@ docker_buildfiles/*Dockerfile*
 ansible_plays/*.retry
 logs/*
 output/*
+dbs/*
