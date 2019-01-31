@@ -139,6 +139,7 @@ class TestRobot(object):
             "username" : None,
             "password" : None,
             "endpoint" : None,
+            "verbose"  : False,
             "proxies": {
                 'http': None,
                 'https': None
@@ -163,6 +164,7 @@ class TestRobot(object):
             "username" : None,
             "password" : None,
             "endpoint" : None,
+            "verbose"  : False,
             "proxies": {
                 'http': None,
                 'https': None
@@ -187,6 +189,7 @@ class TestRobot(object):
             "username" : None,
             "password" : None,
             "endpoint" : None,
+            "verbose"  : False,
             "proxies": {
                 'http': None,
                 'https': None
