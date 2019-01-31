@@ -196,6 +196,7 @@ class Robot:
                 attr['ansible_file_location'] = join_abs(self.ROOT_DIR, "ansible_plays")
                 attr['output_dir'] = self.OUTPUT_DIR
                 attr['ansible_arguments'] = ansible_json.get("ansible_arguments")
+                attr['verbose'] = self.verbose
 
                 self._print(f"Creating ansible {ansible} with attributes\n\t {attr}")
                 ansible_mod = Ansible(**attr)
@@ -505,7 +506,7 @@ class Robot:
                 ip = socket.gethostbyname(hostname)
 
         except socket.herror as er:
-            self._print(f"{ip}{hostname}: Host cannot be resolved, not adding")
+            logger.exception(f"{ip}{hostname}: Host cannot be resolved, not adding")
         finally:
             return hostname, ip
 
