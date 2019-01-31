@@ -26,11 +26,17 @@ class WebTool(ABC):
         self.proxies = kwargs.get('proxies', None)
         self.domain = kwargs.get('domain', None)
         self.output = kwargs.get('output_file', None)
+        self.verbose = kwargs.get('verbose', False)
         self.results = []
 
     @abstractmethod
     def do_query(self):
         pass
+
+    def _print(self, msg):
+        if self.verbose:
+            print("\t[D] "+msg)
+        logger.debug(msg)
 
     def _write_results(self):
         """
@@ -100,13 +106,17 @@ class Arin(WebTool):
             if not self.api_key:
                 raise ValueError("[!] Arin API Key not found")
             url = 'http://whois.arin.net/rest/org/' + org_name + '/nets?apikey=' + self.api_key
+            self._print(f"Making request to url {url}")
+
             headers = {'Accept': 'application/json'}
             logger.info('Getting ' + org_name + ' ARIN Query from url: ' + url)
             result = requests.get(url, headers=headers, proxies=self.proxies, verify=False)
+            self._print(f"Result content and status_code {result.content}, {result.status_code}")
             if result.status_code == 200:
                 all_cidrs = []
                 result_json = result.json()
-                logger.debug(f"\t{json.dumps(result_json, indent=4)}")
+
+                self._print(f"{json.dumps(result_json, indent=4)}")
 
                 if type(result_json['nets']['netRef']) is list:
                     for x in result_json['nets']['netRef']:
@@ -124,19 +134,19 @@ class Arin(WebTool):
             else:
                 logger.error('Failed to get data for: ' + self.org_name)
 
-            print("[*]\t Finished ARIN Query")
+            print("[*] Finished ARIN Query")
 
         except requests.exceptions.HTTPError as er:
-            print(f"[!]\t\t Might be related to network configuration, check proxy/dns. {er}")
-            logger.exception()
+            print(f"[!] Might be related to network configuration, check proxy/dns. {er}")
+            logger.exception("HTTP Error in Arin Scan")
         except requests.exceptions.ConnectionError as er:
-            logger.exception()
-            print(f"[!]\t\t Might be related to network configuration, check proxy/dns. {er}")
+            logger.exception("Connection Error in Arin Scan")
+            print(f"[!] Might be related to network configuration, check proxy/dns. {er}")
         except requests.exceptions.RequestException as er:
-            logger.exception()
+            logger.exception("Request Issue with Arin Scan")
         except ValueError as er:
-            print(f"{er}\t\t")
-            logger.exception()
+            print(f"{er}")
+            logger.exception("Value Error in Arin Scan")
 
 
 class Shodan(WebTool):
@@ -163,7 +173,7 @@ class Shodan(WebTool):
             for item in res['matches']:
                 if item['hostnames']:
                     self.results += item['hostnames']
-                logger.info("Host: {} \n"\
+                self._print("Host: {} \n"\
                         "\t Product: {} \n"\
                         "\t PORT : {} \n"\
                         "\t Country Code : {} \n"\
@@ -217,6 +227,10 @@ class Dumpster(WebTool):
                     "targetip": self.domain
                     }
             res = requests.post(self.ENDPOINT, data=data, headers=headers, cookies=cookies, proxies=self.proxies, verify=False,)
+            self._print(f"Dumpster query at url {self.ENDPOINT}"+
+                        f"\nwith data {data}\n"+
+                        f"and headers{headers}\n" +
+                        f"proxies {self.proxies}\n")
             soup = BeautifulSoup(res.content, 'html.parser')
             tds = soup.findAll('td', {'class':'col-md-4'})
             for td in tds:
@@ -233,7 +247,7 @@ class Dumpster(WebTool):
         except IndexError as er:
             logger.error(f"[!] No CSRF in response {er}")
             print(f"[!] No CSRF in response {er}")
-        print("[*]\t End Dumpster Query")
+        print("[*] End Dumpster Query")
 
 class HackerTarget(WebTool):
     def __init__(self, **kwargs):
@@ -250,6 +264,8 @@ class HackerTarget(WebTool):
         print("[*] Beginning HackerTarget Query")
         try:
             res = requests.get(self.ENDPOINT, verify=False, proxies=self.proxies)
+            self._print(f"Making request to url {self.ENDPOINT}" + 
+                        f"with proxies {self.proxies}")
             lines = res.content.splitlines()
             if len(lines) < 2: #Assuming anything greater than 1 is a valid domain for our purposes
                 print("Domain not found on hackertarget")
@@ -265,9 +281,9 @@ class HackerTarget(WebTool):
             logger.error(f"[!] Request failed {er}")
             print(f"[!] Request failed {er}")
         except OSError as er:
-            logger.exception()
+            logger.exception("OSError in HackerTarget")
             print(f"[!] Writing to file failed {er}")
-        print("[*]\t End HackerTarget Query")
+        print("[*] End HackerTarget Query")
 
 class VirusTotal(WebTool):
     def __init__(self, **kwargs):
@@ -287,6 +303,9 @@ class VirusTotal(WebTool):
         print("[*] Begin VirusTotal Query")
         try:
             res = requests.get(self.ENDPOINT, proxies=self.proxies, verify=False, headers=headers)
+            self._print(f"Making request to url {self.ENDPOINT}" +
+                        f"with proxies {self.proxies}" +
+                        f"with headers {headers}")
 
             next_group = res.json().get('links', None).get('next', None)
 

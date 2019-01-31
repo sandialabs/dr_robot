@@ -37,7 +37,13 @@ class Ansible:
         if not self.infile:
             self.infile = join_abs(self.output_dir,"aggregated")
 
+        self.verbose = kwargs.get('verbose', False)
         self.final_command = None
+
+    def _print(self, msg):
+        if self.verbose:
+            print("[D] " + msg)
+        logger.debug(msg)
 
     def build(self):
         """
@@ -58,6 +64,8 @@ class Ansible:
 
             extra_flags = self.ansible_arguments.get('extra_flags', None)
             extra_replace_string = ""
+            
+            self._print(f"building with extra flags {extra_flags}")
 
             if extra_flags:
                 for k, v in extra_flags.items():
@@ -80,6 +88,7 @@ class Ansible:
             t = Template(self.ansible_base)
             self.final_command = t.safe_substitute(substitutes)
 
+            self._print(f"Final ansible command {self.final_command}")
         except:
             raise TypeError("NoneType object supplied in Dict build")
 
@@ -97,13 +106,13 @@ class Ansible:
             call = subprocess.check_output(self.final_command, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
         except subprocess.CalledProcessError as er:
             print(f"[!] {er} : {er.output}")
-            logger.exception()
+            logger.exception("Called Process Error Ansible")
         except OSError as er:
             print(f"[!] {er}: {er.output}")
-            logger.exception()
+            logger.exception("OSError in Ansible")
         except subprocess.SubprocessError as er:
             print(f"[!] {er}: {er.output}")
-            logger.exception()
+            logger.exception("Subprocess Error in Ansible")
         except TypeError as er:
             print(f"[!] {er}: {er.output}")
-            logger.exception()
+            logger.exception("Type Error in Ansible")

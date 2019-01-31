@@ -57,9 +57,8 @@ class Robot:
 
     def _print(self, msg):
         if self.verbose:
-            print(msg)
-        else:
-            logger.debug(msg)
+            print("\t[D] " + msg)
+        logger.debug(msg)
 
     def _run_dockers(self, dockers):
         """
@@ -97,6 +96,7 @@ class Robot:
             options.update({"proxy": self.proxy or None})
             options.update({"dns": self.dns or None})
             options.update({"target": self.domain})
+            options.update({"verbose": self.verbose})
             output_dir = self.OUTPUT_DIR
             if options.get("output_folder", None):
                 output_dir = join_abs(self.OUTPUT_DIR, options.get("output_folder"))
@@ -116,13 +116,12 @@ class Robot:
                 print(f"Build Error encountered {er}")
                 if "net/http" in str(er):
                     print("This could be a proxy issue, see https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
-                logger.exception(f"Build Error encountered")
                 if not self.dns:
                     print(f"\t[!] No DNS set. This could be an issue")
-                    logger.info("No DNS set. This could be an issue")
+                    self._print("No DNS set. This could be an issue")
                 if not self.proxy:
                     print(f"\t[!] No PROXY set. This could be an issue")
-                    logger.info("No PROXY set. This could be an issue")
+                    self._print("No PROXY set. This could be an issue")
 
             except ContainerError:
                 print(f"[!] Container Error: {scanner.name}")
@@ -247,6 +246,7 @@ class Robot:
                         "username": tool_dict.get('username', None),
                         "password": tool_dict.get('password', None),
                         "endpoint": tool_dict.get('endpoint', None),
+                        "verbose": self.verbose,
                         }
                 self._print(f"Building webtool {tool} with options \n\t{attr}")
                 """
@@ -505,7 +505,7 @@ class Robot:
                 ip = socket.gethostbyname(hostname)
 
         except socket.herror as er:
-            logger.debug(f"{ip}{hostname}: Host cannot be resolved, not adding")
+            self._print(f"{ip}{hostname}: Host cannot be resolved, not adding")
         finally:
             return hostname, ip
 

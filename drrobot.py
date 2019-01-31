@@ -200,11 +200,6 @@ def setup_logger():
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-    handler = logging.FileHandler(filename=join_abs(ROOT_DIR, "logs", "drrobot.info"))
-    handler.setLevel(logging.INFO)
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
 
     logging.getLogger("urllib3.connectionpool").disabled=True
 

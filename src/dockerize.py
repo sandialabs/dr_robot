@@ -25,11 +25,18 @@ class Docker:
         self._default_config_path = kwargs.get('default_config_path', None)
         self._active_config_path = kwargs.get('active_config_path', None)
 
+        self.verbose = kwargs.get('verbose', False)
         self.container = None
         self.status = None
         self.name = None
         self.network = "bridge"
+
         self.OUTPUT_DIR = kwargs.get('output_dir', None)
+
+    def _print(self, msg):
+        if self.verbose:
+            print("[D] " + msg)
+        logger.debug(msg)
 
     def _init_config(self):
         """
@@ -48,7 +55,7 @@ class Docker:
 
         self.name = self._docker_options['name']
         self.network_mode = self._docker_options['network_mode']
-        logger.info(f"[.]With args:{self._docker_options}")
+        self._print(f"Making config with args:{self._docker_options}")
 
         with open(self._default_config_path, 'r') as cfg:
             t = Template(cfg.read())
@@ -73,7 +80,7 @@ class Docker:
                     rm=True,
                     network_mode=self.network)
             self.status = "built"
-        logger.debug(f"""Built with options:
+        self._print(f"""Built with options:
                         -f {self._active_config_path}
                         -t {self._docker_options['docker_name']}:{self._docker_options['docker_name']}
                         --rm
@@ -107,7 +114,7 @@ class Docker:
 
         self.status = self.container.status
 
-        logger.debug(f"mount point specified here: {volumes}")
+        self._print(f"mount point specified here: {volumes}")
 
 
     def update_status(self):
