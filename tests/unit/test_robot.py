@@ -3,7 +3,6 @@ import pytest
 from unittest.mock import patch, mock_open
 
 from src.robot import Robot
-import shutil
 import os
 
 def mock_gethostbyaddr(ip):
@@ -115,6 +114,7 @@ class TestRobot(object):
         mock_ansible.assert_called_once_with(ansible_arguments={"tests": "test"},
                 domain=self.robot.domain,
                 infile='tests',
+                verbose=False,
                 output_dir=unittest.mock.ANY,
                 ansible_file_location=unittest.mock.ANY)
         mock_instance = mock_ansible.return_value
