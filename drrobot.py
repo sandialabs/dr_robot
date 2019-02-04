@@ -206,11 +206,11 @@ def setup_logger():
     return logger
 
 if __name__ == '__main__':
-    log = setup_logger()
-
     try:
         if not exists(join_abs(ROOT_DIR, "logs")):
             makedirs(join_abs(ROOT_DIR, "logs"))
+
+        log = setup_logger()
 
         tools = load_config()
 
