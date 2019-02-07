@@ -101,7 +101,7 @@ class Robot:
             if options.get("output_folder", None):
                 output_dir = join_abs(self.OUTPUT_DIR, options.get("output_folder"))
 
-            self._print(f"Creating scanner for {scan} with options: \n\t{options}")
+            self._print(f"Creating scanner for {scan} with options: {json.dumps(options, indent=4)}")
 
             scanners += [Docker(active_config_path=join_abs(dirname(__file__), '..', scan_dict['active_conf']),
                          default_config_path=join_abs(dirname(__file__), '..', scan_dict['default_conf']),
@@ -151,7 +151,7 @@ class Robot:
         for thread in threads:
             thread.start()
 
-        return threads
+        return (threads, scanners)
 
     def _run_ansible(self, ansible_mods, infile):
 
@@ -190,7 +190,8 @@ class Robot:
         for ansible, ansible_json in ansible_mods.items():
             try:
                 attr = {}
-                print(f"[*] Running {ansible} as ansible Module")
+                print("[*] Running {ansible} as ansible Module")
+                print("[*)\t Executing Ansible on main thread")
                 attr['infile'] = infile
                 attr['domain'] = self.domain
                 attr['ansible_file_location'] = join_abs(self.ROOT_DIR, "ansible_plays")
@@ -360,16 +361,18 @@ class Robot:
             
             self._print(f"Creating sqlite file {self.domain}.db")
 
-            ips = dbcurs.execute("SELECT ip FROM drrobot WHERE ip IS NOT NULL").fetchall()
-            hostnames = dbcurs.execute("SELECT hostname FROM drrobot WHERE hostname IS NOT NULL").fetchall()
+            ips = dbcurs.execute("SELECT DISTINCT ip FROM drrobot WHERE ip IS NOT NULL").fetchall()
+            hostnames = dbcurs.execute("SELECT DISTINCT hostname FROM drrobot WHERE hostname IS NOT NULL").fetchall()
 
-            self._print(f"Fetching all ips with command 'SELECT ip FROM drrobot WHERE ip IS NOT NULL'")
-            self._print(f"Fetching all hostnames with command 'SELECT hostname FROM drrobot WHERE hostname IS NOT NULL'")
+            self._print("Fetching all ips with command 'SELECT ip FROM drrobot WHERE ip IS NOT NULL'")
+            self._print("Fetching all hostnames with command 'SELECT hostname FROM drrobot WHERE hostname IS NOT NULL'")
             """
                 Header options require there to have been a scan otherwise there will be no output but that should be expected.
                 Might change db to a dataframe later... possible
             """
-            headers = dbcurs.execute("SELECT ip, hostname, http_headers, https_headers FROM drrobot WHERE http_headers IS NOT NULL AND https_headers IS NOT NULL").fetchall()
+            headers = dbcurs.execute("SELECT DISTINCT ip, hostname, http_headers, https_headers FROM drrobot WHERE http_headers IS NOT NULL AND https_headers IS NOT NULL").fetchall()
+            self._print("SELECT DISTINCT ip, hostname, http_headers, https_headers FROM drrobot WHERE http_headers IS NOT NULL AND https_headers IS NOT NULL")
+
             if dump_ips:
                 self._print("Dumping to aggregated_ips.txt")
                 with open(join_abs(self.OUTPUT_DIR, 'aggregated', 'aggregated_ips.txt'), 'w') as f:
@@ -607,13 +610,19 @@ class Robot:
                 makedirs(join_abs(self.OUTPUT_DIR, folder))
 
         if scanners_dockers:
-            _threads += self._run_dockers(scanners_dockers)
+            scanner_threads, scanners = self._run_dockers(scanners_dockers)
+            _threads += scanner_threads
 
         if scanners_ansible:
             _threads += self._run_ansible(scanners_ansible, None)
 
         if _threads:
-            [thread.join() for thread in _threads if thread]
+            try:
+                [thread.join() for thread in _threads if thread]
+            except KeyboardInterrupt:
+                self._print("Keyboard Interrupt sending kill signal to docker")
+                [scanner.kill() for scanner in scanners]
+                raise KeyboardInterrupt
 
         verify = kwargs.get('verify', None)
 
@@ -664,7 +673,8 @@ class Robot:
         post_enum_dockers = kwargs.get("post_enum_dockers")
 
         if post_enum_dockers:
-            _threads += self._run_dockers(post_enum_dockers)
+            post_threads, post_doc = self._run_dockers(post_enum_dockers)
+            _threads += post_threads
 
         post_enum_ansible = kwargs.get("post_enum_ansible")
 
@@ -674,7 +684,12 @@ class Robot:
 
         print("[*] Inspection Done")
         if _threads:
-            [thread.join() for thread in _threads if thread]
+            try:
+                [thread.join() for thread in _threads if thread]
+            except KeyboardInterrupt:
+                self._print("Keyboard Interrupt sending kill signal to docker")
+                [post_doc.kill() for scanner in scanners]
+                raise KeyboardInterrupt
 
     def upload(self, **kwargs):
         """

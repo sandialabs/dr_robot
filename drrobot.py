@@ -252,11 +252,11 @@ if __name__ == '__main__':
 
                 scanners_dockers = {k: v for k, v in tools.get("scanners").items() if
                                     getattr(args, k) is True and Mode[v["mode"]] == Mode.DOCKER}
-                drrobot._print(f"scanners dockers:\n{scanners_dockers}")
+                drrobot._print(f"Scanners as Dockers: {json.dumps(scanners_dockers, indent=4)}")
 
                 scanners_ansible = {k: v for k, v in tools.get("scanners").items() if
                                     getattr(args, k) is True and Mode[v["mode"]] == Mode.ANSIBLE}
-                drrobot._print(f"scanners ansible:\n{scanners_ansible}")
+                drrobot._print(f"Scanners as Ansible Play: {json.dumps(scanners_ansible, indent=4)}")
 
                 if not webtools and not scanners_ansible and not scanners_dockers:
                     print("[*] No scanners/webtools provided, exiting...")
@@ -273,11 +273,11 @@ if __name__ == '__main__':
                 drrobot._print("Beginning inspection")
                 post_enum_dockers = {k: v for k, v in tools.get("enumeration").items() if
                                      getattr(args, k) is True and Mode[v["mode"]] == Mode.DOCKER}
-                drrobot._print(f"post enumeration dockers {post_enum_dockers}")
+                drrobot._print(f"Inspection dockers {json.dumps(post_enum_dockers, indent=4)}")
 
                 post_enum_ansible = {k: v for k, v in tools.get("enumeration").items() if
                                      getattr(args, k) is True and Mode[v["mode"]] == Mode.ANSIBLE}
-                drrobot._print(f"post enumeration ansible {post_enum_ansible}")
+                drrobot._print(f"Inspection ansible {json.dumps(post_enum_ansible, indent=4)}")
 
                 if not post_enum_ansible and not post_enum_dockers:
                     print("[*] No scanners/webtools provided, exiting...")
@@ -297,7 +297,7 @@ if __name__ == '__main__':
 
             upload_dest = {k: v for k, v in tools.get("upload_dest").items() if
                            getattr(args, k) is True}
-            drrobot._print(f"Upload destination: {upload_dest}")
+            drrobot._print(f"Upload tools: {json.dumps(upload_dest, indent=4)}")
 
             drrobot.upload(filepath=filepath, upload_dest=upload_dest)
 

@@ -3,6 +3,7 @@ from os.path import isfile
 from string import Template
 import logging
 import time
+import json
 from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
@@ -38,6 +39,12 @@ class Docker:
             print("[D] " + msg)
         logger.debug(msg)
 
+    def kill(self):
+        try:
+            self.container.kill()
+        except docker.errors.APIError as er:
+            self._print("Error when trying to send kill signal to docker container.")
+
     def _init_config(self):
         """
         Creates active configuration from template with appropriate values replaced.
@@ -55,7 +62,7 @@ class Docker:
 
         self.name = self._docker_options['name']
         self.network_mode = self._docker_options['network_mode']
-        self._print(f"Making config with args:{self._docker_options}")
+        self._print(f"Making config with args:{json.dumps(self._docker_options, indent=4)}")
 
         with open(self._default_config_path, 'r') as cfg:
             t = Template(cfg.read())
