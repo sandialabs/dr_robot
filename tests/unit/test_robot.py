@@ -46,7 +46,7 @@ class TestRobot(object):
     @patch('src.robot.Robot._dump_db_to_file', return_value=True)
     @patch('src.robot.Robot._grab_headers', return_value=True)
     @patch('src.robot.Robot._hostname_aggregation', return_value = ["1.1.1.1"])
-    @patch('src.robot.Robot._run_dockers', return_value = [False])
+    @patch('src.robot.Robot._run_dockers', return_value = ([False], [False]))
     def test_gather_scanners(self, mock_run, mock_aggregation, mock_headers, mock_dump):
         attr = {
                 "scanners_dockers": {
