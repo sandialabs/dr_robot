@@ -7,8 +7,25 @@ ________...........__________.........___...............__...
 ........\/.................\/..............\/................
 ```
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/sandialabs/dr_robot/blob/master/LICENSE)
+[![Build Status](https://travis-ci.org/sandialabs/dr_robot.svg?branch=master)](https://travis-ci.org/sandialabs/dr_robot)
 
-Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.
+Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.
+
+# Table of Contents
+
+  * [Introduction](#introduction)
+  * [Configurations](#configurations)
+     * [Example Configuration For WebTools](#example-configuration-for-webtools)
+     * [Example Configurations For Docker Containers](#example-configurations-for-docker-containers)
+     * [Docker Integration and Customization](#docker-integration-and-customization)
+     * [Adding Docker Containers](#adding-docker-containers)
+  * [Dependencies](#dependencies)
+  * [SSH   Ansible](#ssh--ansible)
+  * [Output](#output)
+     * [SQLite DB files](#sqlite-db-files)
+  * [TODO](#todo)
+
+## Introduction
 
 Dr.ROBOT is a tool for **Domain Reconnaissance and Enumeration**. Utilizing a few virtualization technologies to reduce the environmental load on an individuals computer as well as retaining strong versioning allows Dr.ROBOT to be a highly configurable and portable tool! 
 
@@ -16,33 +33,37 @@ Dr.ROBOT is a tool for **Domain Reconnaissance and Enumeration**. Utilizing a fe
 
 **Note**: Dr.ROBOT is not just a one trick pony however! You can customize these tools to gather as much information as you would like them too. Strong customization allows for many possible options. 
 
+**Install and Run**
+
+![](docs/images/demo.gif)
+
 **Command Examples**
 
 * Run gather using Sublist3r and Aquatone and Shodan
     ``` 
-    python drrobot.py --domain example.domain gather -sub -aqua -shodan 
+    python drrobot.py example.domain gather -sub -aqua -shodan 
     ```
 * Run gather using Sublist3r with Proxy
     ```
-    python drrobot.py --proxy http://some.proxy:port --domain example.domain gather -sub
+    python drrobot.py --proxy http://some.proxy:port example.domain gather -sub
     ```
 * Run inspect using Eyewitness
     ```
-    python drrobot.py --domain example.domain inspect -eye
+    python drrobot.py example.domain inspect -eye
     ```
 * Run inspect using httpscreenshot and grabbing headers
     ```
-    python drrobot.py --domain example.domain inspect -http -headers
+    python drrobot.py example.domain inspect -http -headers
     ```
-* Run upload using Mattermost (Currently the only default)
+* Run upload using Mattermost (currently the only default)
     ```
-    python drrobot.py --domain example.domain upload -matter
+    python drrobot.py example.domain upload -matter
     ```
 
 **MAIN**
 
 ```buildoutcfg
-usage: drrobot.py [-h] [--proxy PROXY] [--dns DNS] --domain DOMAIN
+usage: drrobot.py [-h] [--proxy PROXY] [--dns DNS] DOMAIN
                   {gather,inspect,upload,rebuild,dumpdb} ...
 
 Docker DNS recon tool
@@ -50,14 +71,14 @@ Docker DNS recon tool
 positional arguments:
   {gather,inspect,upload,rebuild,dumpdb}
     gather              Run scanners against the given domain and gather
-                        resources. You have the option to run usingany
-                        dockers/webtools you may have included in your config.
+                        resources. You have the option to run using any
+                        docker_buildfiles/webtools you may have included in your config.
     inspect             Run further tools against domain information gathered
-                        from previous step.Note: you must either supply a file
+                        from previous step. Note: you must either supply a file
                         which contains a list of IP/Hostnames orThe targeted
                         domain must have a db under the dbs folder
     upload              Upload recon data to Mattermost. Currently only works
-                        with afolder that contain PNG images.
+                        with a folder that contain PNG images.
     rebuild             Rebuild the database with additional files/all files
                         from previous runtime
     dumpdb              Dump the database of ip,hostname,banners to a text
@@ -152,23 +173,6 @@ optional arguments:
   -h, --help            show this help message and exit
 ```
 
-
-
-## Time Analysis
-
-**Web Tools**: Quick. Depends on the amount of requests/bandwidth and other limiting factors on your end.
-
-**Scanners** 
-
- 	1. <u>Aquatone</u>: 2+ hours 
- 	2. <u>Sublist3r</u>: 2+ minutes
- 	3. Subbrute: 
-
-**Post Enumeration Tools**
-
-1. <u>Eyewitness</u>: 1+ hours
-2. <u>HttpScreenshot</u>: 1+ hours
-
 ## Configurations
 
 This tool is highly dependent on the configuration you provide it. Provided for you is a **default_config.json** that you can use as a simple template for your **user_config.json**. Most of the configurations under **Scanners**  are done for you and can be used as is. Note the use of **default** in this and other sections.
@@ -207,7 +211,7 @@ will load the respective class based off the classname provided at via options p
 
 ### Example Configuration For WebTools
 
-Under **configs** you will find a default_config which contains a majority of the default scanners you can have. If you wish to extend upon the **WebTools** list just follow these steps:
+Under **configs** you will find a default_config which contains a majority of the default scanners you can utilize. If you wish to extend upon the **WebTools** list just follow these steps:
 
 1. In the default_config.json/user_config.json
 
@@ -241,9 +245,9 @@ Under **configs** you will find a default_config which contains a majority of th
    		self.results
    ```
 
-### Example Configurations For Dockers
+### Example Configurations For Docker Containers
 
-Under **configs** you will find a **default_config** which contains a majority of the default scanners you can have. If you wish to extend upon the **Scanners** list just follow these steps:
+Under **configs** you will find a **default_config** which contains a majority of the default scanners you can utilize. If you wish to extend upon the **Scanners** list just follow these steps:
 
 1. Add the **json** to the **config** file (user if generated).
 
@@ -254,8 +258,9 @@ Under **configs** you will find a **default_config** which contains a majority o
            "name": "NewTool",
            "default" : 1, 
            "docker_name": "ntool",
-           "default_conf": "dockers/Dockerfile.NewTool.tmp",
-           "active_conf": "dockers/Dockerfile.NewTool",
+           "network_mode": "host",
+           "default_conf": "docker_buildfiles/Dockerfile.NewTool.tmp",
+           "active_conf": "docker_buildfiles/Dockerfile.NewTool",
            "description": "NewTool is an awesome tool for domain enumeration",
            "src": "https://github.com/NewTool",
            "output": "/home/newtool",
@@ -264,11 +269,90 @@ Under **configs** you will find a **default_config** which contains a majority o
          ...
    }
    ```
+   1. Note *network_mode* is an option specifically for docker containers. It is implementing the 
+      ``` --network ``` flag when using docker
 
-2. Then under the **dockers/** folder create your **Dockerfile.NewTool.tmp** dockerfile.
+2. Then under the **docker_buildfiles/** folder create your **Dockerfile.NewTool.tmp** dockerfile.
 
-   1. If you desire adding more options at run time to the Dockerfiles look at editing the **src/dockers.py**
-   2. **Note** as of right now Dockerfiles must come from the **dockers** folder. Future work includes allowing to specify a remote source for the docker images. 
+   1. If you desire adding more options at run time to the Dockerfiles look at editing the **src/dockerize**
+   2. **Note** as of right now Dockerfiles must come from the **docker_buildfiles** folder. Future work includes allowing to specify a remote source for the docker images. 
+
+### Example Ansible Configuration
+
+Under **configs** you will find a **default_config** which contains a majority of the default scanners you can have. For this step however, we will be looking at configuring an inspection too **Eyewitness** for utilization with **Ansible**.
+
+1. Add the **json** to the **config** file (user if generated).
+
+   ```
+   "Enumeration" : {
+           "Eyewitness": {
+               "name" : "Eyewitness",
+               "short_name" : "eye",
+               "docker_name" : "eye",
+               "mode" : "ANSIBLE",
+               "network_mode": "host",
+               "default_conf" : "docker_buildfiles/Dockerfile.Eyewitness.tmp",
+               "active_conf" : "docker_buildfiles/Dockerfile.Eyewitness",
+               "ansible_arguments" : {
+                   "config" : "$config/eyewitness_play.yml",
+                   "flags": "-e '$extra' -i ansible_plays/inventory",
+                   "extra_flags":{
+                       "1" : "variable_host=localhost",
+                       "2" : "variable_user=root",
+                       "3" : "infile=$infile/aggregated_protocol_hostnames.txt",
+                       "4" : "outfile=$outfile/Eyewitness.tar",
+                       "5" : "outfolder=$outfile/Eyewitness"
+                   }
+               },
+               "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: Eyewitness.tar and unpacked in Eyewitness",
+               "output" : "/tmp/output",
+               "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt",
+               "enabled" : false
+           },
+   }
+   ```
+
+2. As you can see this one has a few things that may seem confusing at first but will be clarified here:
+
+   1. mode: allows you to specify how you want to deploy a tool you want to use. Currently **DOCKER** or **ANSIBLE** are the only available methods to deploy.
+
+   2. All options outside of **ansible_configuration** will be ignored when developing for **ANSIBLE**.
+
+   3. Options under *ansible_arguments*
+
+      1. **config**: specify which playbook to use
+
+      2. **flags**: which flags to pass to the **ansible-playbook** command. With the exception of the **$extra** flag, you can add anything you would like to be done uniquely here.
+
+      3. **extra_flags** : this corresponds to the **$extra** flag as seen above. This will be used to populate variables that you input into your playbook. You can use this to supply command line arguments when utilizing ansible and DrRobot in order to add files and other utilities to your script. 
+
+         1.  **variable_host** : hostname alias found in the inventory file
+         2.  **variable_user** : user to login as on the variable_host machine
+         3.  **infile**: file to be used with the tool above. Eyewitness requires hostnames with the format ```https://some.url```, hence *aggregated_protocol_hostnames.txt* 
+            1.  Note the use of the prefix **$infile**- these names all match as they are placeholders for the default locations that **$infile** corresponds to in **outputs/target_name/aggregated**
+            2.  If you have a file in another location you can just specify the entire path without any errors occurring.
+         4.  **outfile** : The output file location 
+            1.  As with the above infile **$outfile** in the name is just a key to the location **outputs/target_name/**
+            2.  You may specify a hard coded path for other use. Just remember the location for uploading or other processing with DrRobot
+         5.  **outfolder** : The output folder to unpack/download files too
+            1.  As with the above infile **$outfile** in the name is just a key to the location **outputs/target_name/**
+            2.  This is a special case for Eyewitness and HttpScreenshot, which you can see in their playbooks. They generate a lot of files and rather than download each individually having them pack up the files as a step in the playbook and then unpacking allows for some integrity.
+         6.  A quick example below shows how we use the **extra_flags** to supply the hostname to the playbook for ansible.
+
+         ```
+         ---
+         - hosts: "{{ variable_host|quote }}"
+           remote_user: root 
+         
+           tasks:
+               - name: Apt install git
+                 become: true
+                 apt:
+                     name: git
+                     force: yes
+         ```
+
+         
 
 ### Docker Integration and Customization
 
@@ -309,9 +393,37 @@ We use **ENV** to keep track of most variable input from Python on the user end.
 
 Using the **DNS** information provided by the user we are able to download packages and git repos during building. 
 
-### Adding Dockers
+### Ansible Configuration
 
-If you wish to add another Dockerfile to the project make a **Dockerfile.toolname.tmp** file within the **dockers** folder. Then opening up your **user_config** add a new section under the appropriate section as shown above in the  [docker](#Example Configurations For Dockers)
+Please see the ansible documentation: https://docs.ansible.com/ for details on how to develop a playbook for use with DrRobot. 
+
+#### Inventory
+
+Ansible inventory files will be self contained within DrRobot so as to further seperate itself from any one system. The inventory file will be located under **ansible_playbooks/inventory**
+
+As noted in the documentation ansible inventory can be defined as groups or single IP's. A quick example:
+
+```
+[example-host]
+ip.example.com
+```
+
+#### SSH + Ansible
+
+If you desire to run Ansible with this tool and require ssh authentication be done you can use the application as is to run Ansible scripts. The plays will be piped to STDIN/STDOUT so that you may supply credentials if required. 
+
+If you wish to have to not manually provide credentials just use an **ssh-agent**
+
+```
+eval $(ssh-agent -s)
+ssh-add /path/to/sshkey
+```
+
+## 
+
+### Adding Docker Containers
+
+If you wish to add another Dockerfile to the project make a **Dockerfile.toolname.tmp** file within the **docker_buildfiles** folder. Then opening up your **user_config** add a new section under the appropriate section as shown above in the  [docker](#Example Configurations For Docker Containers)
 
 ## Dependencies
 
@@ -332,19 +444,6 @@ If you wish to add another Dockerfile to the project make a **Dockerfile.toolnam
 - **Ansible** if you require the use of external servers.
 
 - **Python Mattermost Driver** [Optional] if using Mattermost you will require this module
-
-## SSH + Ansible
-
-If you desire to run Ansible with this tool and require ssh authentication be done you can use the application as is to run Ansible scripts. The plays will be piped to STDIN/STDOUT so that you may supply credentials if required. 
-
-If you wish to have to not manually provide credentials just use an **ssh-agent**
-
-```
-eval $(ssh-agent -s)
-ssh-add /path/to/sshkey
-```
-
-
 
 ## Output
 
@@ -403,8 +502,8 @@ For now the table is simply:
 | headers  | VARCHAR |
 
 ## TODO
-* ssh-agent kyechain usage http://www.snowfrog.net/2007/11/15/ssh-ssh-agent-keychain-and-cron-notes/
+* ssh-agent keychain usage http://www.snowfrog.net/2007/11/15/ssh-ssh-agent-keychain-and-cron-notes/
 * Add pandas as backend manager for easier handling of information.
 * Implement another class for further enumeration and possible usage of the sqlite database
 * HTML encode the HEADERS
-* Allow pulling from Docker repository if no Dockerfile is found in the **dockers** folder
+* Allow pulling from Docker repository if no Dockerfile is found in the **docker_buildfiles** folder

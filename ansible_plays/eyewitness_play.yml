@@ -1,6 +1,6 @@
 ---
 - hosts: "{{ variable_host|quote }}"
-  remote_user: admin
+  remote_user: "{{ variable_user|quote }}" 
 
   tasks:
       - name: Apt install git
@@ -28,18 +28,19 @@
             ./setup.sh
 
       - name: Copy target hosts file to remote
+        become: true
         copy:
             src: "{{ infile|quote }}" #This is how you access a passed in variable --extra-vars "version=1.23.45 other_variable=foo"
             dest: /tmp/EyeWitness/hosts_targets.txt
-            owner: admin
-            group: admin
+            owner: root 
+            group: root 
             mode: u+rw,g+rw,o+rw
 
       - name: Run Scan
         become: true
         command:
             chdir=/tmp/EyeWitness
-            python EyeWitness.py -f hosts_targets.txt -d /tmp/EyeWitness/reportout --no-prompt --headless --threads 40 --max-retries 1
+            python EyeWitness.py -f hosts_targets.txt -d /tmp/EyeWitness/reportout --no-prompt --web --threads 40 --max-retries 1
         async: 100000
         poll: 60
 

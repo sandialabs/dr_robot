@@ -105,6 +105,10 @@ venv.bak/
 
 # custom
 .idea/*
-auth/creds.env
-!dockers/*.tmp
-dockers/user_config.json
+configs/user_config.json
+docker_buildfiles/*Dockerfile*
+!docker_buildfiles/*tmp
+ansible_plays/*.retry
+logs/*
+output/*
+dbs/*

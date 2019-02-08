@@ -3,9 +3,10 @@ from abc import ABC, abstractmethod
 import logging
 import datetime
 from os import walk, stat
-from os.path import exists, abspath, dirname, isdir, splitext
+from os.path import exists, abspath
 from . import join_abs
 
+logger = logging.getLogger(__name__)
 class Forum(ABC):
     def __init__(self, **kwargs):
         """
@@ -85,9 +86,10 @@ class Mattermost(Forum):
                 'message': f"Recon Data {datetime.datetime.now()}",
                 'file_ids': file_ids
                 })
-    
+
     def upload(self, **kwargs):
         """
+        File upload
 
         Args:
             **kwargs:
@@ -103,10 +105,10 @@ class Mattermost(Forum):
             channel_id = self.inst.channels.get_channel_by_name(channel_name=self.channel_name, team_id=team_id)['id']
         except exceptions.NoAccessTokenProvided as er:
             print(f"[!] NoAccessTokenProvided {er}")
-            logging.error(er)
+            logger.exception()
         except exceptions.InvalidOrMissingParameters as er:
             print(f"[!] InvalidOrMissingParameters {er}")
-            logging.error(er)
+            logger.exception()
 
         file_location = self.output_dir
 
@@ -118,10 +120,10 @@ class Mattermost(Forum):
 
         except exceptions.ContentTooLarge as er:
             print(f"[!] ContentTooLarge {er}")
-            logging.error(er)
+            logger.exception()
         except exceptions.ResourceNotFound as er:
             print(f"[!] ResourceNotFound {er}")
-            logging.error(er)
+            logger.exception()
         except OSError as er:
             print(f"[!] File not found {er}")
-            logging.error(er)
+            logger.exception()
