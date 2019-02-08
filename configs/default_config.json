@@ -132,7 +132,20 @@
             "src": "https://github.com/OWASP/Amass",
             "output": "/root/amass",
             "output_folder": "amass"
-        }
+        },
+        "Reconng": {
+            "name": "Reconng",
+            "default" : false,
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "recon",
+            "default_conf": "docker_buildfiles/Dockerfile.Reconng.tmp",
+            "active_conf": "docker_buildfiles/Dockerfile.Reconng",
+            "description": "Recon-ng is a full-featured Web Reconnaissance framework written in Python. DrRobot utilizes several of the recon/hosts-domain modules in this framework.",
+            "src": "https://bitbucket.org/LaNMaSteR53/recon-ng",
+            "output": "/tmp/output",
+            "output_folder": "reconng"
+        }        
     },
     "Enumeration" :
     {
