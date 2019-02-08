@@ -7,7 +7,7 @@ ________...........__________.........___...............__...
 ........\/.................\/..............\/................
 ```
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/sandialabs/dr_robot/blob/master/LICENSE)
-[![Build Status](https://travis-ci.org/Sandarmann/dr_robot.svg?branch=master)](https://travis-ci.org/Sandarmann/dr_robot)
+[![Build Status](https://travis-ci.org/sandialabs/dr_robot.svg?branch=master)](https://travis-ci.org/sandialabs/dr_robot)
 
 Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.
 
@@ -16,9 +16,9 @@ Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS
   * [Introduction](#introduction)
   * [Configurations](#configurations)
      * [Example Configuration For WebTools](#example-configuration-for-webtools)
-     * [Example Configurations For Dockers](#example-configurations-for-dockers)
+     * [Example Configurations For Docker Containers](#example-configurations-for-docker-containers)
      * [Docker Integration and Customization](#docker-integration-and-customization)
-     * [Adding Dockers](#adding-dockers)
+     * [Adding Docker Containers](#adding-docker-containers)
   * [Dependencies](#dependencies)
   * [SSH   Ansible](#ssh--ansible)
   * [Output](#output)
@@ -55,7 +55,7 @@ Dr.ROBOT is a tool for **Domain Reconnaissance and Enumeration**. Utilizing a fe
     ```
     python drrobot.py example.domain inspect -http -headers
     ```
-* Run upload using Mattermost (Currently the only default)
+* Run upload using Mattermost (currently the only default)
     ```
     python drrobot.py example.domain upload -matter
     ```
@@ -71,14 +71,14 @@ Docker DNS recon tool
 positional arguments:
   {gather,inspect,upload,rebuild,dumpdb}
     gather              Run scanners against the given domain and gather
-                        resources. You have the option to run usingany
-                        dockers/webtools you may have included in your config.
+                        resources. You have the option to run using any
+                        docker_buildfiles/webtools you may have included in your config.
     inspect             Run further tools against domain information gathered
-                        from previous step.Note: you must either supply a file
+                        from previous step. Note: you must either supply a file
                         which contains a list of IP/Hostnames orThe targeted
                         domain must have a db under the dbs folder
     upload              Upload recon data to Mattermost. Currently only works
-                        with afolder that contain PNG images.
+                        with a folder that contain PNG images.
     rebuild             Rebuild the database with additional files/all files
                         from previous runtime
     dumpdb              Dump the database of ip,hostname,banners to a text
@@ -245,7 +245,7 @@ Under **configs** you will find a default_config which contains a majority of th
    		self.results
    ```
 
-### Example Configurations For Dockers
+### Example Configurations For Docker Containers
 
 Under **configs** you will find a **default_config** which contains a majority of the default scanners you can utilize. If you wish to extend upon the **Scanners** list just follow these steps:
 
@@ -259,8 +259,8 @@ Under **configs** you will find a **default_config** which contains a majority o
            "default" : 1, 
            "docker_name": "ntool",
            "network_mode": "host",
-           "default_conf": "dockers/Dockerfile.NewTool.tmp",
-           "active_conf": "dockers/Dockerfile.NewTool",
+           "default_conf": "docker_buildfiles/Dockerfile.NewTool.tmp",
+           "active_conf": "docker_buildfiles/Dockerfile.NewTool",
            "description": "NewTool is an awesome tool for domain enumeration",
            "src": "https://github.com/NewTool",
            "output": "/home/newtool",
@@ -272,10 +272,10 @@ Under **configs** you will find a **default_config** which contains a majority o
    1. Note *network_mode* is an option specifically for docker containers. It is implementing the 
       ``` --network ``` flag when using docker
 
-2. Then under the **dockers/** folder create your **Dockerfile.NewTool.tmp** dockerfile.
+2. Then under the **docker_buildfiles/** folder create your **Dockerfile.NewTool.tmp** dockerfile.
 
-   1. If you desire adding more options at run time to the Dockerfiles look at editing the **src/dockers.py**
-   2. **Note** as of right now Dockerfiles must come from the **dockers** folder. Future work includes allowing to specify a remote source for the docker images. 
+   1. If you desire adding more options at run time to the Dockerfiles look at editing the **src/dockerize**
+   2. **Note** as of right now Dockerfiles must come from the **docker_buildfiles** folder. Future work includes allowing to specify a remote source for the docker images. 
 
 ### Example Ansible Configuration
 
@@ -314,22 +314,22 @@ Under **configs** you will find a **default_config** which contains a majority o
 
 2. As you can see this one has a few things that may seem confusing at first but will be clarified here:
 
-   1. mode: allows you to set what tool for the job you would like to use. Currently between **DOCKER** or **ANSIBLE**
+   1. mode: allows you to specify how you want to deploy a tool you want to use. Currently **DOCKER** or **ANSIBLE** are the only available methods to deploy.
 
-   2. all options outside of **ansible_configuration** will be disregarded when developing for **ANSIBLE**
+   2. All options outside of **ansible_configuration** will be ignored when developing for **ANSIBLE**.
 
    3. Options under *ansible_arguments*
 
-      1. **config**: specify the playbook that we will utilize
+      1. **config**: specify which playbook to use
 
-      2. **flags**: the flags you would like to pass to the **ansible-playbook** command. With the exception of  **$extra** keyword you see above you can add anything you would like to be done uniquely here.
+      2. **flags**: which flags to pass to the **ansible-playbook** command. With the exception of the **$extra** flag, you can add anything you would like to be done uniquely here.
 
-      3. **extra_flags** : this corresponds to the **$extra** flag as seen above. This will be used to populate variable you may input into your playbook. You can use this to supply command line arguments when utilizing ansible and DrRobot such that files and other utilities may be added to your script. 
+      3. **extra_flags** : this corresponds to the **$extra** flag as seen above. This will be used to populate variables that you input into your playbook. You can use this to supply command line arguments when utilizing ansible and DrRobot in order to add files and other utilities to your script. 
 
          1.  **variable_host** : hostname alias found in the inventory file
-         2.  **variable_user** : user to login as  on the variable_host machine
-         3.  **infile**: file to be used with the tool above. Eyewitness requires hostnames of the format ```https://some.url``` hence *aggregated_protocol_hostnames.txt* 
-            1.  Note the use of the prefix **$infile** these names all match as they allow are just placeholders for default locations **$infile** corresponds to **outputs/target_name/aggregated**
+         2.  **variable_user** : user to login as on the variable_host machine
+         3.  **infile**: file to be used with the tool above. Eyewitness requires hostnames with the format ```https://some.url```, hence *aggregated_protocol_hostnames.txt* 
+            1.  Note the use of the prefix **$infile**- these names all match as they are placeholders for the default locations that **$infile** corresponds to in **outputs/target_name/aggregated**
             2.  If you have a file in another location you can just specify the entire path without any errors occurring.
          4.  **outfile** : The output file location 
             1.  As with the above infile **$outfile** in the name is just a key to the location **outputs/target_name/**
@@ -421,9 +421,9 @@ ssh-add /path/to/sshkey
 
 ## 
 
-### Adding Dockers
+### Adding Docker Containers
 
-If you wish to add another Dockerfile to the project make a **Dockerfile.toolname.tmp** file within the **dockers** folder. Then opening up your **user_config** add a new section under the appropriate section as shown above in the  [docker](#Example Configurations For Dockers)
+If you wish to add another Dockerfile to the project make a **Dockerfile.toolname.tmp** file within the **docker_buildfiles** folder. Then opening up your **user_config** add a new section under the appropriate section as shown above in the  [docker](#Example Configurations For Docker Containers)
 
 ## Dependencies
 
@@ -506,4 +506,4 @@ For now the table is simply:
 * Add pandas as backend manager for easier handling of information.
 * Implement another class for further enumeration and possible usage of the sqlite database
 * HTML encode the HEADERS
-* Allow pulling from Docker repository if no Dockerfile is found in the **dockers** folder
+* Allow pulling from Docker repository if no Dockerfile is found in the **docker_buildfiles** folder
