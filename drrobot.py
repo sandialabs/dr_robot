@@ -21,7 +21,6 @@ class Mode(Enum):
 
 
 if not isfile(USER_CONFIG) and isfile(join(ROOT_DIR, 'configs', 'default_config.json')):
-    print(ROOT_DIR)
     copy(join(ROOT_DIR, 'configs', 'default_config.json'), USER_CONFIG)
 elif not isfile(join(ROOT_DIR, 'configs', 'default_config.json')):
     print("default_config.json does not exist and user_config.json does not exist. checkout the file via git.")

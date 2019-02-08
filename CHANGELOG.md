@@ -3,6 +3,11 @@
 ```
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ```
+## Unreleased
+
+### Added
+* Allow pulling from Docker repository if no Dockerfile is found locally
+
 ## [1.1.0] - Feb 2019 
 
 Current Release

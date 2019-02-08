@@ -194,14 +194,19 @@ This tool is highly dependent on the configuration you provide it. Provided for 
                         for example **ansible-playbook $flags $config** ,
     * custom_substitutes : Sub dictionary of options to replace in the custom command above. 
     These are usually options that are dependant on runtime items.
-    > {\
-      "config" : "$config/httpscreenshot_play.yml", \
-      "flags": "-e 'infile=$infile outfile=$outfile/httpscreenshot.tar outfolder=$outfile/httpscreenshots'"\
-    },
+    ```json
+    {
+    "config" : "$config/httpscreenshot_play.yml", 
+    "flags": "-e 'infile=$infile',
+    "outfile": "$outfile/httpscreenshot.tar",
+    "outfolder": "$outfile/httpscreenshots",
+    }
+    ```
+
     * description : Description
     * "inputfilelist : filename to look for 
     * enabled : True/False run all the time
-    
+
 Web referencing modules and Forum posting modules are also included in this config. One thing of vital 
 importance when configuring these tools.
 *  class_name : this must match the name you specify for a given class under the respective module name
@@ -496,14 +501,9 @@ The choice of SQLite was for fast implementation of database storage while also 
 
 For now the table is simply:
 
-| ip       | VARCHAR |
-| -------- | ------- |
-| hostname | VARCHAR |
-| headers  | VARCHAR |
-
-## TODO
-* ssh-agent keychain usage http://www.snowfrog.net/2007/11/15/ssh-ssh-agent-keychain-and-cron-notes/
-* Add pandas as backend manager for easier handling of information.
-* Implement another class for further enumeration and possible usage of the sqlite database
-* HTML encode the HEADERS
-* Allow pulling from Docker repository if no Dockerfile is found in the **docker_buildfiles** folder
+| ip           | VARCHAR |
+| --------     | ------- |
+| hostname     | VARCHAR |
+| headers      | VARCHAR |
+| http_headers | VARCHAR |
+| https_headers| VARCHAR |
