@@ -502,7 +502,7 @@ For now the table is simply:
 | headers  | VARCHAR |
 
 ## TODO
-* ssh-agent kyechain usage http://www.snowfrog.net/2007/11/15/ssh-ssh-agent-keychain-and-cron-notes/
+* ssh-agent keychain usage http://www.snowfrog.net/2007/11/15/ssh-ssh-agent-keychain-and-cron-notes/
 * Add pandas as backend manager for easier handling of information.
 * Implement another class for further enumeration and possible usage of the sqlite database
 * HTML encode the HEADERS
