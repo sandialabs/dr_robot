@@ -23,7 +23,6 @@ Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS
   * [SSH   Ansible](#ssh--ansible)
   * [Output](#output)
      * [SQLite DB files](#sqlite-db-files)
-  * [TODO](#todo)
 
 ## Introduction
 
