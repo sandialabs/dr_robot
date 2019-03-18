@@ -26,11 +26,11 @@ Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS
 
 ## Introduction
 
-Dr.ROBOT is a tool for **Domain Reconnaissance and Enumeration**. Utilizing a few virtualization technologies to reduce the environmental load on an individuals computer as well as retaining strong versioning allows Dr.ROBOT to be a highly configurable and portable tool! 
+Dr. ROBOT is a tool for **Domain Reconnaissance and Enumeration**. Utilizing a few virtualization technologies to reduce the environmental load on an individuals computer as well as retaining strong versioning allows Dr. ROBOT to be a highly configurable and portable tool.
 
 **Use Case**: Quickly gather as many public facing servers that a target may possess. By querying DNS resources we can quickly develop a large list of possible targets that you can run further analysis on.
 
-**Note**: Dr.ROBOT is not just a one trick pony however! You can customize these tools to gather as much information as you would like them too. Strong customization allows for many possible options. 
+**Note**: Dr. ROBOT is not just a one trick pony. You can customize these tools to gather as much information as you would like them too. Strong customization allows for many possible options. 
 
 **Install and Run**
 
@@ -328,7 +328,7 @@ Under **configs** you will find a **default_config** which contains a majority o
 
       2. **flags**: which flags to pass to the **ansible-playbook** command. With the exception of the **$extra** flag, you can add anything you would like to be done uniquely here.
 
-      3. **extra_flags** : this corresponds to the **$extra** flag as seen above. This will be used to populate variables that you input into your playbook. You can use this to supply command line arguments when utilizing ansible and DrRobot in order to add files and other utilities to your script. 
+      3. **extra_flags** : this corresponds to the **$extra** flag as seen above. This will be used to populate variables that you input into your playbook. You can use this to supply command line arguments when utilizing ansible and Dr. Robot in order to add files and other utilities to your script. 
 
          1.  **variable_host** : hostname alias found in the inventory file
          2.  **variable_user** : user to login as on the variable_host machine
@@ -337,7 +337,7 @@ Under **configs** you will find a **default_config** which contains a majority o
             2.  If you have a file in another location you can just specify the entire path without any errors occurring.
          4.  **outfile** : The output file location 
             1.  As with the above infile **$outfile** in the name is just a key to the location **outputs/target_name/**
-            2.  You may specify a hard coded path for other use. Just remember the location for uploading or other processing with DrRobot
+            2.  You may specify a hard coded path for other use. Just remember the location for uploading or other processing with Dr. Robot
          5.  **outfolder** : The output folder to unpack/download files too
             1.  As with the above infile **$outfile** in the name is just a key to the location **outputs/target_name/**
             2.  This is a special case for Eyewitness and HttpScreenshot, which you can see in their playbooks. They generate a lot of files and rather than download each individually having them pack up the files as a step in the playbook and then unpacking allows for some integrity.
