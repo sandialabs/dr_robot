@@ -1,5 +1,7 @@
 import importlib
 import json
+from xml.dom.minidom import parseString
+import dicttoxml
 import logging
 import re
 import socket
@@ -570,7 +572,7 @@ class Robot:
             dbcurs.execute("COMMIT")
         dbconn.close()
 
-    def _gen_json(self, output_file):
+    def _gen_output(self):
         if not exists(join_abs(self.ROOT_DIR, "dbs", f"{self.domain}.db")):
             self._print("No database file found. Exiting")
             return
@@ -629,14 +631,7 @@ class Robot:
             else:
                 if hostname not in file_index[ip]['hostnames']:
                     file_index[ip]['hostnames'] += [hostname]
-        try:
-            """
-            need to dump json file here, error checking as well
-            """
-            with open(output_file, 'w') as f:
-                json.dump(file_index, f, indent="\t")
-        except Exception as er:
-            self._print(str(er))
+        return file_index
         
 
 
@@ -802,9 +797,25 @@ class Robot:
     def generate_output(self, _format, output_file):
         if not output_file:
             output_file = join_abs(self.OUTPUT_DIR, f"output.{_format}")
+        file_index = self._gen_output()  
         if 'json' in _format:
             print("Generating JSON")
-            self._gen_json(output_file)  
+            try:
+                """
+                need to dump json file here, error checking as well
+                """
+                with open(output_file, 'w') as f:
+                    json.dump(file_index, f, indent="\t")
+            except Exception as er:
+                self._print(str(er))
+        elif "xml":
+            try:
+                with open(output_file, 'w') as f:
+                    xmlout = dicttoxml.dicttoxml(file_index)
+                    dom = parseString(xmlout)
+                    f.write(dom.toprettyxml())
+            except Exception as er:
+                self._print(str(er))
 
     def dumpdb(self, **kwargs):
         """

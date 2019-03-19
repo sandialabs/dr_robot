@@ -159,7 +159,7 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}):
                                          help="Generate output in specified format. Contains all information from scans (images, headers, hostnames, ips)")
 
     parser_output.add_argument("format",
-                               choices=["json", "txt"],
+                               choices=["json", "xml"],
                                default="json",
                                help="Generate json file under outputs folder (format)")
 

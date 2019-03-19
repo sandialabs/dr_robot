@@ -18,6 +18,7 @@ tqdm = "*"
 sphinx = "*"
 sphinx-rtd-theme = "*"
 slackclient = "*"
+dicttoxml = "*"
 
 [dev-packages]
 pytest = "*"
