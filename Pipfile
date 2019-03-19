@@ -17,6 +17,7 @@ tqdm = "*"
 "bs4" = "*"
 sphinx = "*"
 sphinx-rtd-theme = "*"
+slackclient = "*"
 
 [dev-packages]
 pytest = "*"

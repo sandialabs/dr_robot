@@ -58,6 +58,9 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}):
                         help="Domain to run scan against")
 
     subparser = parser.add_subparsers(dest='actions')
+    ##########################
+    #INSPECT
+    ##########################
 
     parser_gather = subparser.add_parser('gather',
                                          help="Runs initial scanning phase where tools under the webtools/scanners"
@@ -92,6 +95,9 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}):
     #                         default=None,
     #                         type=str,
     #                         help="Verify results of scan against another scan. [Requires flag to match scans being done]")
+    ##########################
+    #INSPECT
+    ##########################
 
     parser_inspect = subparser.add_parser('inspect',
                                           help="Run further tools against domain information gathered from previous step."
@@ -109,6 +115,9 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}):
                                 default=None,
                                 type=str,
                                 help="(NOT WORKING) File with hostnames to run further inspection on")
+    ##########################
+    #UPLOAD
+    ##########################
 
     parser_upload = subparser.add_parser('upload',
                                          help="Upload recon data to Mattermost. Currently only works with a"
@@ -126,6 +135,9 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}):
                                help="Filepath to the folder containing images"
                                "to upload. This is relative to the domain "
                                "specified. By default this will just be the path to the output folder")
+    ##########################
+    #REBUILD
+    ##########################
 
     parser_rebuild = subparser.add_parser('rebuild',
                                           help="Rebuild the database with additional files/all files from previous runtime")
@@ -134,9 +146,26 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}):
                                 "--files",
                                 nargs="*",
                                 help="Additional files to supply outside of the ones in the config file")
+    ##########################
+    #DUMPDB
+    ##########################
 
     parser_dumpdb = subparser.add_parser("dumpdb",
                                          help="Dump the database of ip,hostname,banners to a text file")
+    ##########################
+    #OUTPUT
+    ##########################
+    parser_output = subparser.add_parser("output",
+                                         help="Generate output in specified format. Contains all information from scans (images, headers, hostnames, ips)")
+
+    parser_output.add_argument("format",
+                               choices=["json", "txt"],
+                               default="json",
+                               help="Generate json file under outputs folder (format)")
+
+    parser_output.add_argument("--output",
+                               default=None,
+                               help="Alternative location to create output file")
 
     if not len(sys.argv) > 1:
         parser.print_help()
@@ -322,6 +351,12 @@ if __name__ == '__main__':
                 files += [output]
 
             drrobot.rebuild(files=files)
+
+        if args.actions in "output":
+            _format = getattr(args, "format")
+            output = getattr(args, "output")
+            #TODO implement other output formats
+            drrobot.generate_output(_format, output)
 
         if args.actions in "dumpdb":
             if exists(join_abs(ROOT_DIR, "dbs", f"{getattr(args, 'domain')}.db")):

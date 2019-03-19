@@ -5,12 +5,13 @@ import re
 import socket
 import threading
 import requests
+import glob
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from concurrent.futures import ThreadPoolExecutor
 from itertools import repeat
 import sqlite3
 from os.path import dirname, getsize, isfile, exists
-from os import walk, makedirs
+from os import walk, makedirs, getcwd
 
 from docker.errors import APIError, BuildError, ContainerError, ImageNotFound
 from tqdm import tqdm
@@ -569,6 +570,76 @@ class Robot:
             dbcurs.execute("COMMIT")
         dbconn.close()
 
+    def _gen_json(self, output_file):
+        if not exists(join_abs(self.ROOT_DIR, "dbs", f"{self.domain}.db")):
+            self._print("No database file found. Exiting")
+            return
+
+        dbconn = sqlite3.connect(join_abs(self.ROOT_DIR, "dbs", f"{self.domain}.db"))
+        dbcurs = dbconn.cursor()
+
+        db_headers = dbcurs.execute("SELECT * FROM drrobot WHERE http_headers IS NOT NULL OR https_headers IS NOT NULL").fetchall()
+        db_ips = dbcurs.execute("SELECT DISTINCT ip, hostname FROM drrobot").fetchall()
+
+        """
+        (IP, HOSTNAME, HTTP, HTTPS)
+        """
+        file_index = {}
+        """
+            Need to be smarter about this:
+
+            Multiple different sql queries
+                1. Grabs all those with headers:
+                    most likely that if they have headers they have a screenshot
+                    glob can run and take it's time.
+                2. Grab all unique ips
+                2a. Grab all unique hostnames
+
+                3. Update json with all documents
+        """
+        self._print(f"How many ip/hostnames with header information found {len(db_headers)}")
+        for ip, hostname, http, https in db_headers:
+            ip_screenshots = glob.glob("**/*{}*".format(ip), recursive=True)
+            hostname_screeshots = glob.glob("**/*{}*".format(hostname), recursive=True)
+        
+            image_files = []
+            for _file in ip_screenshots:
+                image_files += [join_abs(getcwd(), _file)]
+            for _file in hostname_screeshots:
+                image_files += [join_abs(getcwd(), _file)]
+            file_index[ip] = {
+                        "ip" : ip,
+                        "hostnames" : [hostname],
+                        "http_header" : http,
+                        "https_header" : https,
+                        "images" : image_files
+                    }
+
+        self._print(f"How many ip/hostnames {len(db_ips)}")
+
+        for ip, hostname in db_ips:
+            if ip not in file_index:
+                file_index[ip] = {
+                            "ip" : ip,
+                            "hostnames" : [hostname],
+                            "http_header" : "",
+                            "https_header" : "",
+                            "images" : [] 
+                        }
+            else:
+                if hostname not in file_index[ip]['hostnames']:
+                    file_index[ip]['hostnames'] += [hostname]
+        try:
+            """
+            need to dump json file here, error checking as well
+            """
+            with open(output_file, 'w') as f:
+                json.dump(file_index, f, indent="\t")
+        except Exception as er:
+            self._print(str(er))
+        
+
+
     def gather(self, **kwargs):
         """
         This begins our gather process. Starts by looking at webtools and scanners for initial ip and hostname gathering.
@@ -727,6 +798,13 @@ class Robot:
         self._hostname_aggregation(False, output_files=output_files)
         self._grab_headers()
         print("[*] Rebuilding complete")
+
+    def generate_output(self, _format, output_file):
+        if not output_file:
+            output_file = join_abs(self.OUTPUT_DIR, f"output.{_format}")
+        if 'json' in _format:
+            print("Generating JSON")
+            self._gen_json(output_file)  
 
     def dumpdb(self, **kwargs):
         """
