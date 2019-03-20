@@ -1,10 +1,12 @@
 from mattermostdriver import Driver, exceptions
+from slackclient import SlackClient
 from abc import ABC, abstractmethod
 import logging
 import datetime
 from os import walk, stat
-from os.path import exists, abspath
+from os.path import exists, abspath, isdir, isfile, basename
 from . import join_abs
+import time
 
 logger = logging.getLogger(__name__)
 class Forum(ABC):
@@ -37,6 +39,7 @@ class Forum(ABC):
 
         """
         pass
+
 
 class Mattermost(Forum):
     def __init__(self, **kwargs):
@@ -113,10 +116,22 @@ class Mattermost(Forum):
         file_location = self.output_dir
 
         try:
-            if self.filepath and exists(abspath(self.filepath)):
-                file_location = abspath(self.filepath)
+            if isfile(self.filepath):
+                file_ids = [self.inst.files.upload_file(channel_id=channel_id,
+                    files={'files': (basename(self.filepath), open(join_abs(self.filepath), 'rb'))}
+                    )['file_infos'][0]['id']]
 
-            self._upload_files(file_location, channel_id)
+                self.inst.posts.create_post(options={
+                    'channel_id': channel_id,
+                    'message': f"Recon Data {datetime.datetime.now()}",
+                    'file_ids': file_ids
+                    })
+
+            elif isdir(self.filepath):
+                if self.filepath and exists(abspath(self.filepath)):
+                    file_location = abspath(self.filepath)
+
+                self._upload_files(file_location, channel_id)
 
         except exceptions.ContentTooLarge as er:
             print(f"[!] ContentTooLarge {er}")
@@ -127,3 +142,70 @@ class Mattermost(Forum):
         except OSError as er:
             print(f"[!] File not found {er}")
             logger.exception()
+
+class Slack(Forum):
+    def __init__(self, **kwargs):
+        """
+        Initialize Slack Client
+        """
+        super().__init__(**kwargs)
+
+        self.output_dir = kwargs.get("output_dir")
+        self.channel_name = kwargs.get("channel_name", None)
+        self.filepath = kwargs.get("filepath", None)
+
+    def _get_files(self, file_location, max_filesize=50):
+        """
+        Generator to grab individual files for upload
+
+        Args:
+            file_location:      Location of file(s) to upload
+            max_filesize:       Max allowed file size, in megabytes, for uploading
+
+        Returns:
+            (Tuple) (filename, path to file)
+        """
+        if not exists(file_location):
+            return None
+
+        #file_ids = []
+        for root, dirs, files in walk(file_location):
+            for filename in files:
+                #TODO add optional parameters for adjusting size. Implement file splitting
+                print(f"[...] Uploading {filename}")
+                if stat(join_abs(root, filename)).st_size / 1024 ** 2 > max_filesize:
+                    print(f"[!]\tFile {filename} is to big, ignoring for now")
+                    continue
+                else:
+                    yield (filename, join_abs(root, filename))
+
+    def upload(self, **kwargs):
+        sc = SlackClient(self.api_key)
+        file_location = self.output_dir
+
+        #try:
+        if isfile(self.filepath):
+            sc.api_call(
+                    "files.upload",
+                    channels=self.channel_name,
+                    file=open(self.filepath, "rb"),
+                    filename=basename(self.filepath))
+
+        elif isdir(self.filepath):
+            print(self.filepath)
+            if self.filepath and exists(abspath(self.filepath)):
+                file_location = abspath(self.filepath)
+
+            for filename, filepath in self._get_files(file_location):
+                print(filename, filepath)
+                sc.api_call(
+                        "files.upload",
+                        channels=self.channel_name,
+                        file=open(filepath, "rb"),
+                        filename=filename)
+                time.sleep(1)
+        #except Exception as ex:
+        #    print(str(ex))
+        #    logger.exception(ex)
+
+

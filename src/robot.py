@@ -573,6 +573,15 @@ class Robot:
         dbconn.close()
 
     def _gen_output(self):
+        """
+        Generate output file from target information in sqlite3 database
+
+        Args:
+            (None)
+        Returns:
+            (Dict) file_index: Dictionary of dictionaries containing ip, hostname information from various phases of Dr.Robot 
+
+        """
         if not exists(join_abs(self.ROOT_DIR, "dbs", f"{self.domain}.db")):
             self._print("No database file found. Exiting")
             return
@@ -610,7 +619,6 @@ class Robot:
             for _file in hostname_screeshots:
                 image_files += [join_abs(getcwd(), _file)]
             file_index[ip] = {
-                        "ip" : ip,
                         "hostnames" : [hostname],
                         "http_header" : http,
                         "https_header" : https,
@@ -622,14 +630,12 @@ class Robot:
         for ip, hostname in db_ips:
             if ip not in file_index:
                 file_index[ip] = {
-                            "ip" : ip,
                             "hostnames" : [hostname],
                             "http_header" : "",
                             "https_header" : "",
                             "images" : [] 
                         }
-            else:
-                if hostname not in file_index[ip]['hostnames']:
+            elif hostname not in file_index[ip]['hostnames']:
                     file_index[ip]['hostnames'] += [hostname]
         return file_index
         
@@ -795,6 +801,16 @@ class Robot:
         print("[*] Rebuilding complete")
 
     def generate_output(self, _format, output_file):
+        """
+        Function to translate contents of sqlite3 file into an alternative text format (Json, XML, etc.)
+
+        Args:
+            _format:        format of output file [xml, json]
+            output_file:    (Optional) filename to dump contents too 
+
+        Returns:
+            (None)
+        """
         if not output_file:
             output_file = join_abs(self.OUTPUT_DIR, f"output.{_format}")
         file_index = self._gen_output()  
@@ -819,7 +835,7 @@ class Robot:
 
     def dumpdb(self, **kwargs):
         """
-        Quick function to dump the contents of the db file.
+        Function to dump the contents of the db file.
 
         Args:
             **kwargs
