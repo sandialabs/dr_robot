@@ -82,6 +82,9 @@ positional arguments:
                         from previous runtime
     dumpdb              Dump the database of ip,hostname,banners to a text
                         file
+    output              Generate output in specified format. Contains all 
+                        information from scans (images, headers, hostnames, ips) 
+                        found in database files. 
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -170,6 +173,18 @@ usage: drrobot.py dumpdb [-h]
 
 optional arguments:
   -h, --help            show this help message and exit
+```
+
+**OUTPUT**
+```
+usage: drrobot.py domain output [-h] [--output OUTPUT] {json,xml}
+
+positional arguments:
+  {json,xml}       Generate json file under outputs folder (format)
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --output OUTPUT  Alternative location to create output file
 ```
 
 ## Configurations
