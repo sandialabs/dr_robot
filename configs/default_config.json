@@ -106,6 +106,19 @@
             "output": " /root/brute",
             "output_folder": "subbrute"
         },
+        "Subfinder": {
+            "name": "Subfinder",
+            "default" : false,
+            "mode" : "DOCKER",
+            "docker_name" : "sfinder",
+            "network_mode": "host",
+            "default_conf": "docker_buildfiles/Dockerfile.Subfinder.tmp",
+            "active_conf": "docker_buildfiles/Dockerfile.Subfinder",
+            "description": "SubFinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources",
+            "src": "https://github.com/subfinder/subfinder",
+            "output": "/root/subfinder",
+            "output_folder": "subfinder"
+        },
         "Knock": {
             "name": "Knock",
             "default" : false,
