@@ -53,6 +53,11 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}):
                         action="store_true",
                         help="Display verbose statements")
 
+    parser.add_argument('--dbfile',
+                        default="drrobot.db",
+                        type=str,
+                        help="Specify what db file to use for saving data too")
+
     parser.add_argument("domain",
                         type=str,
                         help="Domain to run scan against")
@@ -260,6 +265,7 @@ if __name__ == '__main__':
                         proxy=getattr(args, 'proxy', None),
                         domain=getattr(args, 'domain'),
                         verbose=getattr(args, 'verbose'),
+                        dbfile=getattr(args, 'dbfile'),
                         verify=getattr(args, 'verify', None))
 
         if not exists(join_abs(ROOT_DIR, "dbs")):
