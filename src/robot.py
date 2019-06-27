@@ -487,8 +487,8 @@ class Robot:
                             CREATE TABLE IF NOT EXISTS data (
                                 ip VARCHAR,
                                 hostname VARCHAR,
-                                http_headers VARCHAR,
-                                https_headers VARCHAR,
+                                http_headers BLOB,
+                                https_headers BLOB,
                                 domain VARCHAR,
                                 FOREIGN KEY(domain) REFERENCES domains(domain)
                             )
