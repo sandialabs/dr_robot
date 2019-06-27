@@ -513,11 +513,16 @@ drw-r--r-- 1 drrobot 1049089 	 0 Aug 27 11:05 httpscreenshot
 
 The choice of SQLite was for fast implementation of database storage while also limiting dependencies. In the future I am looking to add a mongodb dockerfile that will allow any information you specify to be stored inside the database.
 
-For now the table is simply:
-
-| ip           | VARCHAR |
+Table Data:
+| domainid     | INTEGER | PRIMARY KEY
 | --------     | ------- |
+| ip           | VARCHAR |
 | hostname     | VARCHAR |
 | headers      | VARCHAR |
-| http_headers | VARCHAR |
-| https_headers| VARCHAR |
+| http_headers | TEXT    |
+| https_headers| TEXT    |
+| domain       | VARCHAR | FOREIGN KEY
+
+Table Domain:
+| domain       | VARCHAR | PRIMARY KEY
+| --------     | ------- |
