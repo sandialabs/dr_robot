@@ -365,17 +365,31 @@ class Robot:
             
             self._print(f"Creating sqlite file {self.dbfile}")
 
-            ips = dbcurs.execute(f"SELECT DISTINCT ip FROM {self.domain.replace('.', '_')} WHERE ip IS NOT NULL").fetchall()
-            hostnames = dbcurs.execute(f"SELECT DISTINCT hostname FROM {self.domain.replace('.', '_')} WHERE hostname IS NOT NULL").fetchall()
+            ips = dbcurs.execute(f"""SELECT DISTINCT ip 
+                                    FROM data 
+                                    WHERE domain='{self.domain.replace('.', '_')}' 
+                                    AND ip IS NOT NULL"""
+                                    ).fetchall()
+            hostnames = dbcurs.execute(f"""SELECT DISTINCT hostname 
+                                            FROM data 
+                                            WHERE domain='{self.domain.replace('.', '_')}'
+                                            AND hostname IS NOT NULL"""
+                                        ).fetchall()
 
-            self._print(f"Fetching all ips with command 'SELECT ip FROM {self.domain.replace('.', '_')} WHERE ip IS NOT NULL'")
-            self._print(f"Fetching all hostnames with command 'SELECT hostname FROM {self.domain.replace('.', '_')}  WHERE hostname IS NOT NULL'")
+            self._print(f"Fetching all ips with command 'SELECT DISTINCT ip FROM data WHERE domain={self.domain.replace('.', '_')} AND ip IS NOT NULL'")
+            self._print(f"Fetching all hostnames with command 'SELECT DISTINCT hostname FROM data WHERE domain={self.domain.replace('.', '_')} AND hostname IS NOT NULL'")
             """
                 Header options require there to have been a scan otherwise there will be no output but that should be expected.
                 Might change db to a dataframe later... possible
             """
-            headers = dbcurs.execute(f"SELECT DISTINCT ip, hostname, http_headers, https_headers FROM {self.domain.replace('.', '_')} WHERE http_headers IS NOT NULL AND https_headers IS NOT NULL").fetchall()
-            self._print(f"SELECT DISTINCT ip, hostname, http_headers, https_headers FROM {self.domain.replace('.', '_')} WHERE http_headers IS NOT NULL AND https_headers IS NOT NULL")
+            headers = dbcurs.execute(f"""SELECT DISTINCT ip, hostname, http_headers, https_headers 
+                                        FROM data 
+                                        WHERE domain='{self.domain.replace('.', '_')}' 
+                                        AND (http_headers IS NOT NULL 
+                                        AND https_headers IS NOT NULL)"""
+                                        ).fetchall()
+
+            self._print(f"SELECT DISTINCT ip, hostname, http_headers, https_headers FROM data WHERE domain={self.domain.replace('.', '_')} AND (http_headers IS NOT NULL AND https_headers IS NOT NULL)")
 
             if dump_ips:
                 self._print("Dumping to aggregated_ips.txt")
@@ -425,8 +439,12 @@ class Robot:
 
             """
             cursor.execute('BEGIN TRANSACTION')
+            domain = self.domain.replace(".","_")
             for host, ip in ips.items():
-                cursor.execute(f"""INSERT OR IGNORE INTO {self.domain.replace('.', '_')} (ip, hostname, http_headers, https_headers) VALUES (?,?, NULL, NULL);""", (ip, host))
+                cursor.execute("""INSERT OR IGNORE INTO data 
+                                    (ip, hostname, http_headers, https_headers, domain) 
+                                    VALUES (?,?, NULL, NULL, ?);""", 
+                                    (ip, host, domain))
 
             cursor.execute('COMMIT')
 
@@ -456,7 +474,28 @@ class Robot:
 
             dbconn = sqlite3.connect(join_abs(self.ROOT_DIR, "dbs", self.dbfile))
             dbcurs = dbconn.cursor()
-            dbcurs.execute(f"CREATE TABLE IF NOT EXISTS {self.domain.replace('.', '_')} (ip VARCHAR, hostname VARCHAR, http_headers VARCHAR, https_headers VARCHAR)")
+            dbcurs.execute("PRAGMA foreign_keys=1") #Enable foreign key support
+            # Simpel database that contains list of domains to run against
+            dbcurs.execute("""
+                            CREATE TABLE IF NOT EXISTS domains (
+                                domain VARCHAR PRIMARY KEY,
+                                UNIQUE(domain)
+                            )
+                            """)
+            # Setup database to keep all data from all targets. This allows us to use a single model for hosting with Django
+            dbcurs.execute("""
+                            CREATE TABLE IF NOT EXISTS data (
+                                ip VARCHAR,
+                                hostname VARCHAR,
+                                http_headers VARCHAR,
+                                https_headers VARCHAR,
+                                domain VARCHAR,
+                                FOREIGN KEY(domain) REFERENCES domains(domain)
+                            )
+                            """)
+            # Quickly create entry in domains table. 
+            dbcurs.execute(f"INSERT OR IGNORE INTO domains(domain) VALUES ('{self.domain.replace('.', '_')}')")
+            dbconn.commit()
 
             all_files = []
             for name in output_files:
@@ -559,7 +598,11 @@ class Robot:
         dbconn = sqlite3.connect(join_abs(self.ROOT_DIR, "dbs", self.dbfile))
         dbcurs = dbconn.cursor()
 
-        ips = dbcurs.execute(f"SELECT ip FROM {self.domain.replace('.', '_')} WHERE ip IS NOT NULL").fetchall()
+        ips = dbcurs.execute(f"""SELECT ip 
+                                    FROM data 
+                                    WHERE ip IS NOT NULL 
+                                    AND domain='{self.domain.replace('.','_')}'"""
+                                ).fetchall()
         ips = [item[0] for item in ips]
         # Threading is done against the staticmethod. Feel free to change the max_workers if your system allows.
         # May add option to specify threaded workers.
@@ -567,11 +610,16 @@ class Robot:
             ip_headers = dict(tqdm(pool.map(Robot.grab_header,
                                             ips),
                                    total=len(ips)))
-            dbcurs.execute('BEGIN TRANSACTION')
+        dbcurs.execute('BEGIN TRANSACTION')
         domain_rep = self.domain.replace(".", "_")
         for ip, (http, https) in ip_headers.items():
-            dbcurs.execute(f"""UPDATE {self.domain.replace('.', '_')} SET http_headers=?, https_headers=? WHERE ip = ? LIMIT 1;""", (http, https, ip))
-            dbcurs.execute("COMMIT")
+            dbcurs.execute(f"""UPDATE data 
+                                SET http_headers=?, https_headers=? 
+                                WHERE ip = ? 
+                                AND domain= ? 
+                                LIMIT 1;""", 
+                                (http, https, ip, domain_rep))
+        dbcurs.execute("COMMIT")
         dbconn.close()
 
     def _gen_output(self):
@@ -591,8 +639,15 @@ class Robot:
         dbconn = sqlite3.connect(join_abs(self.ROOT_DIR, "dbs", self.dbfile))
         dbcurs = dbconn.cursor()
 
-        db_headers = dbcurs.execute(f"SELECT * FROM {self.domain.replace('.', '_')} WHERE http_headers IS NOT NULL OR https_headers IS NOT NULL").fetchall()
-        db_ips = dbcurs.execute(f"SELECT DISTINCT ip, hostname FROM {self.domain.replace('.', '_')}").fetchall()
+        db_headers = dbcurs.execute(f"""SELECT * 
+                                        FROM data 
+                                        WHERE domain='{self.domain.replace('.','_')}' 
+                                        AND (http_headers IS NOT NULL OR https_headers IS NOT NULL)"""
+                                        ).fetchall()
+        db_ips = dbcurs.execute(f"""SELECT DISTINCT ip, hostname 
+                                    FROM data 
+                                    WHERE domain='{self.domain.replace('.', '_')}'"""
+                                    ).fetchall()
 
         """
         (IP, HOSTNAME, HTTP, HTTPS)
