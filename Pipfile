@@ -19,6 +19,7 @@ sphinx = "*"
 sphinx-rtd-theme = "*"
 slackclient = "*"
 dicttoxml = "*"
+django = "*"
 
 [dev-packages]
 pytest = "*"

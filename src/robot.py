@@ -485,10 +485,11 @@ class Robot:
             # Setup database to keep all data from all targets. This allows us to use a single model for hosting with Django
             dbcurs.execute("""
                             CREATE TABLE IF NOT EXISTS data (
+                                domainid INTEGER PRIMARY KEY,
                                 ip VARCHAR,
                                 hostname VARCHAR,
-                                http_headers BLOB,
-                                https_headers BLOB,
+                                http_headers TEXT,
+                                https_headers TEXT,
                                 domain VARCHAR,
                                 FOREIGN KEY(domain) REFERENCES domains(domain)
                             )
