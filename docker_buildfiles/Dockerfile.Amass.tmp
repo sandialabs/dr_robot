@@ -12,4 +12,4 @@ RUN mkdir -p $$OUTPUT
 RUN apk --no-cache add git \
   && go get -u github.com/OWASP/Amass/...
 
-ENTRYPOINT amass -d "$target" -passive -o $$OUTPUT
+ENTRYPOINT amass -d "$target" --passive -o $$OUTPUT
