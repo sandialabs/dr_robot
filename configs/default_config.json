@@ -63,6 +63,15 @@
             "team_name" : "",
             "channel_name" : "",
             "description" : "Mattermost server"
+        },
+        "Slack" : 
+		{
+            "class_name" : "Slack",
+            "short_name" : "slack",
+            "api_key": "",
+            "channel_name" : "",
+            "description" : "Slack server"
+            
         }
     },
     "Scanners" :
