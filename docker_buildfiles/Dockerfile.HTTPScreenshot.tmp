@@ -8,20 +8,20 @@ ENV OUTPUT $output/httpscreenshot
 ENV INFILE $infile
 
 RUN if [ -n "$DNS" ]; \
-    then echo "nameserver $DNS" > /etc/resolv.conf;\
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     apt-get update \
     && apt-get install -y wget git python-dev python-pip libfontconfig unzip firefox
 
 RUN if [ -n "$DNS" ]; \
-    then echo "nameserver $DNS" > /etc/resolv.conf;\
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
     && dpkg -i google-chrome-stable_current_amd64.deb || true \
     && apt-get -y -f install
 
 RUN if [ -n "$DNS" ]; \
-    then echo "nameserver $DNS" > /etc/resolv.conf;\
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     git clone https://github.com/Sandarmann/httpscreenshot.git
 
@@ -33,7 +33,7 @@ RUN cd httpscreenshot \
     && unzip -o chromedriver_linux64.zip \
     && ln -s /httpscreenshot/chromedriver /usr/bin/chromedriver
 
-RUN mkdir -p $$OUTPUT 
-WORKDIR $$OUTPUT
+RUN mkdir -p $output 
+WORKDIR $output
 
-ENTRYPOINT httpscreenshot -i $INFILE -b chrome -p -w 40  -a -vH
+ENTRYPOINT httpscreenshot -i $infile -b chrome -p -w 40  -a -vH

@@ -8,24 +8,24 @@ ENV TARGET $target
 ENV OUTPUT $output
 ENV VT_KEY $vt_key
 
-RUN mkdir -p $OUTPUT
+RUN mkdir -p $output
 
 RUN if [ -n "$DNS" ]; \
-    then echo "nameserver $DNS" > /etc/resolv.conf;\
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     apt-get update && \
     apt-get install -y git python-dnspython && \
 	  rm -rf /var/lib/apt/lists/*
 
 RUN if [ -n "$DNS" ]; \
-    then echo "nameserver $DNS" > /etc/resolv.conf;\
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     git clone https://github.com/guelfoweb/knock.git /home/knock
 
 WORKDIR /home/knock
 
 RUN if [ -n "$DNS" ]; \
-    then echo "nameserver $DNS" > /etc/resolv.conf;\
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     python setup.py install
 
@@ -33,6 +33,6 @@ RUN if [ -n "$VT_KEY" ]; \
     then sed -i ".orig" 's/""/"$VT_KEY"/g' knockpy/config.json;\
     fi
 
-WORKDIR $OUTPUT
+WORKDIR $output
 
-ENTRYPOINT knockpy -j $TARGET
+ENTRYPOINT knockpy -j $target

@@ -116,7 +116,7 @@
             "active_conf": "docker_buildfiles/Dockerfile.Subbrute",
             "description": "SubBrute is a community driven project with the goal of creating the fastest, and most accurate subdomain enumeration tool.",
             "src": "https://github.com/TheRook/subbrute.git",
-            "output": " /root/brute",
+            "output": "/root/brute",
             "output_folder": "subbrute"
         },
         "Knock": {
