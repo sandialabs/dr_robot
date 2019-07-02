@@ -1,0 +1,18 @@
+FROM python:3
+
+ENV http_proxy $proxy
+ENV https_proxy $proxy 
+ENV DNS $dns
+ENV INFILE $infile
+ENV TARGET $target
+ENV OUTPUT $output
+
+
+RUN if [ -n "$$DNS" ]; \
+    then echo "nameserver $DNS" >> /etc/resolv.conf;\
+    fi;\
+	pip install django
+
+ENV PYTHONUNBUFFERED 1
+
+WORKDIR /root/dr_robot

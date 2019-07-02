@@ -106,17 +106,21 @@ class Docker:
         print(f"[*] Running container {self._docker_options['docker_name']}")
         client = docker.from_env()
 
-        volumes = {
-                self.OUTPUT_DIR: {
-                    'bind': self._docker_options['output'],
-                    'mode': 'rw'
+        volumes = self._docker_options.get("volumes", None)
+        if volumes is None:
+            volumes = {
+                    self.OUTPUT_DIR: {
+                        'bind': self._docker_options['output'],
+                        'mode': 'rw'
+                        }
                     }
-                }
         self.container = client.containers.run(image=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
                 dns=[self._docker_options.get('dns')] if self._docker_options.get('dns', None) else None,
                 auto_remove=True,
                 tty=True,
                 detach=True,
+                command=self._docker_options.get('command', None),
+                ports=self._docker_options.get('ports', None),
                 volumes=volumes)
 
         self.status = self.container.status

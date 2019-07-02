@@ -27,7 +27,7 @@ elif not isfile(join(ROOT_DIR, 'configs', 'default_config.json')):
     sys.exit(1)
 
 
-def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}):
+def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}, server={}):
 
     """
     Parse arguments supplied at command line.
@@ -171,6 +171,12 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}):
     parser_output.add_argument("--output",
                                default=None,
                                help="Alternative location to create output file")
+    ##########################
+    #SERVE
+    ##########################
+
+    parser_output = subparser.add_parser("serve",
+                                         help="Serve database file in docker container using django")
 
     if not len(sys.argv) > 1:
         parser.print_help()
@@ -213,10 +219,12 @@ def load_config():
     webtools = config.get('WebTools', {})
     enumeration = config.get('Enumeration', {})
     upload_dest = config.get('Upload', {})
+    serve = config.get('Serve', {})
     return {"scanners": scanners,
             "webtools": webtools,
             "enumeration": enumeration,
-            "upload_dest": upload_dest}
+            "upload_dest": upload_dest,
+            "server" : serve}
 
 def setup_logger():
     logger = logging.getLogger()
@@ -371,6 +379,11 @@ if __name__ == '__main__':
                 drrobot.dumpdb()
             else:
                 print("[!] DB file does not exists, try running gather first")
+        
+        if args.actions in "serve":
+            # TODO Add check for running container
+            print("Serving drrobot container. (Warning, you will have to stop the container on your own)")
+            drrobot.serve(server=tools.get("server"))
 
     except json.JSONDecodeError as er:
         print(f"[!] JSON load error, configuration file is bad.\n {er}")
