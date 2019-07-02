@@ -145,6 +145,20 @@
             "src": "https://bitbucket.org/LaNMaSteR53/recon-ng",
             "output": "/tmp/output",
             "output_folder": "reconng"
+        },
+        "Altdns": {
+            "name": "Altdns",
+            "default" : false,
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "altdns",
+            "default_conf": "docker_buildfiles/Dockerfile.Altdns.tmp",
+            "active_conf": "docker_buildfiles/Dockerfile.Altdns",
+            "description": "",
+            "src": "",
+            "infile" : "/root/altdns/aggregated/aggregated_hostnames.txt",
+            "output": "/root/altdns",
+            "output_folder": "altdns"
         }        
     },
     "Enumeration" :
