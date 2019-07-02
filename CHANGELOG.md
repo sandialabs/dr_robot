@@ -4,8 +4,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
-### Added
-* Allow pulling from Docker repository if no Dockerfile is found locally
+### Beta
+* Serve option to host Django serve via Docker
+	* make requests to http://hostname:port/data/<domain_name>/
+	* Allow various selections of hosting data. Currently only supports Django via Docker.
+* Refactor all templates to adjust for DNS options
 
 ## [1.2.0] - Jun 2019
 
