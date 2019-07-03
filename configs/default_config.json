@@ -83,9 +83,9 @@
         "active_conf": "serve_api/Dockerfile.Django",
         "description" : "Django container for hosting database",
         "ports" : {
-            "8888" : "8888",
+            "8888" : "8888"
          },
-        "output": "/db",
+        "output": "/db"
     },
     "Scanners" :
     {
