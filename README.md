@@ -27,11 +27,11 @@ Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS
 
 ## Introduction
 
-Dr. ROBOT is a tool for **Domain Reconnaissance and Enumeration**. Utilizing a few virtualization technologies to reduce the environmental load on an individuals computer as well as retaining strong versioning allows Dr. ROBOT to be a highly configurable and portable tool.
+Dr. ROBOT is a tool for **Domain Reconnaissance and Enumeration**. By utilizing containers to reduce the overhead of dealing with dependencies, inconsistency across operating sytems, and different languages, Dr. ROBOT is built to be highly portable and configurable.
 
-**Use Case**: Quickly gather as many public facing servers that a target may possess. By querying DNS resources we can quickly develop a large list of possible targets that you can run further analysis on.
+**Use Case**: Gather as many public facing servers that a target organization possesses. Querying DNS resources enables us to quickly develop a large list of possible targets that you can run further analysis on.
 
-**Note**: Dr. ROBOT is not just a one trick pony. You can customize these tools to gather as much information as you would like them too. Strong customization allows for many possible options. 
+**Note**: Dr. ROBOT is not just a one trick pony. You can easily customize the tools that are used gather information, so that you can enjoy the benefits of using latest and greatest along with your battle tested favorites.
 
 **Install and Run**
 
@@ -55,7 +55,7 @@ Dr. ROBOT is a tool for **Domain Reconnaissance and Enumeration**. Utilizing a f
     ```
     python drrobot.py example.domain inspect -http -headers
     ```
-* Run upload using Mattermost (currently the only default)
+* Run upload using Mattermost (currently the only output default)
     ```
     python drrobot.py example.domain upload -matter
     ```
@@ -72,18 +72,18 @@ Docker DNS recon tool
 
 positional arguments:
   {gather,inspect,upload,rebuild,dumpdb,output,serve}
-    gather              Runs initial scanning phase where tools under the
-                        webtools/scannerscategory will run and gather
-                        information used in the following phases
+    gather              Run scanners against a specified domain and gather the associated
+                        systems. You have the option to run using any
+                        docker_buildfiles/webtools included in your config.
     inspect             Run further tools against domain information gathered
-                        from previous step.Note: you must either supply a file
-                        which contains a list of IP/Hostnames orThe targeted
-                        domain must have a db under the dbs folder
+                        from the gather step. Note: you must either supply a file
+                        which contains a list of IP/Hostnames, or the targeted
+                        domain must have a db file in the dbs folder
     upload              Upload recon data to Mattermost. Currently only works
                         with afolder that contain PNG images.
     rebuild             Rebuild the database with additional files/all files
-                        from previous runtime
-    dumpdb              Dump the database of ip,hostname,banners to a text
+                        from the previous runtime
+    dumpdb              Dump the database of ip, hostname, and banners to a text
                         file
     output              Generate output in specified format. Contains all
                         information from scans (images, headers, hostnames,
@@ -96,7 +96,6 @@ optional arguments:
   --dns DNS             DNS server to add to resolv.conf of DOCKER containers
   --verbose             Display verbose statements
   --dbfile DBFILE       Specify what db file to use for saving data too
-d
 ```
 **Gather**
 ```buildoutcfg
@@ -110,7 +109,7 @@ positional arguments:
   domain                Domain to run scan against
 
 optional arguments:
-  -h, --help            show this help message and exit
+  -h, --help            Show this help message and exit
   -aqua, --Aquatone     AQUATONE is a set of tools for performing
                         reconnaissance on domain names
   -sub, --Sublist3r     Sublist3r is a python tool designed to enumerate
@@ -128,7 +127,9 @@ optional arguments:
                         scraping data sources, recursive brute forcing,
                         crawling web archives, permuting/altering names and
                         reverse DNS sweeping.
-  -recong, --Reconng
+  -recon, --Reconng     Recon-ng is a full-featured Web Reconnaissance
+                        framework written in Python. DrRobot utilizes several
+                        of the recon/hosts-domain modules in this framework.
   -shodan, --Shodan     Query SHODAN for publicly facing sites of given domain
   -arin, --Arin         Query ARIN for public CIDR ranges. This is better as a
                         brute force option as the ranges
@@ -151,16 +152,16 @@ positional arguments:
   domain                Domain to run scan against
 
 optional arguments:
-  -h, --help            show this help message and exit
+  -h, --help            Show this help message and exit
   -httpscreen, --HTTPScreenshot
                         Post enumeration tool for screen grabbing websites.
-                        All images will be downloaded to outfile:
+                        All images will be downloaded to an output file:
                         httpscreenshot.tar and unpacked httpscreenshots
   -eye, --Eyewitness    Post enumeration tool for screen grabbing websites.
                         All images will be downloaded to outfile:
                         Eyewitness.tar and unpacked in Eyewitness
-  --proxy PROXY         proxy server URL to set DOCKER http_proxy too
-  --dns DNS             DNS server to add to resolv.conf of DOCKER containers
+  --proxy PROXY         Proxy server URL to set for DOCKER http_proxy
+  --dns DNS             DNS server for the resolv.conf of DOCKER containers
   --file FILE           (NOT WORKING) File with hostnames to run further
                         inspection on
 ```
@@ -174,13 +175,13 @@ positional arguments:
   domain                Domain to run scan against
 
 optional arguments:
-  -h, --help            show this help message and exit
-  -matter, --Mattermost
+  -h, --help            Show this help message and exit
+  -matter, --Mattermost Mattermost server to upload findings to
                         Mattermost server
   -slack, --Slack       Slack server
-  --filepath FILEPATH   Filepath to the folder containing imagesto upload.
-                        This is relative to the domain specified. By default
-                        this will just be the path to the output folder
+  --filepath FILEPATH   Filepath to the folder containing images to upload.
+                        This is relative to the domain specified. By default,
+                        this will be the path to the output folder
 ```
 **Rebuild**
 
@@ -188,9 +189,9 @@ optional arguments:
 usage: drrobot.py rebuild [-h] [-f [FILES [FILES ...]]]
 
 optional arguments:
-  -h, --help            show this help message and exit
+  -h, --help            Show this help message and exit
   -f [FILES [FILES ...]], --files [FILES [FILES ...]]
-                        Additional files to supply outside of the ones in the
+                        Additional files to supply in addition to the ones in the
                         config file
 ```
 **Dumpdb**
@@ -202,7 +203,7 @@ positional arguments:
   domain                Domain to run scan against
 
 optional arguments:
-  -h, --help            show this help message and exit
+  -h, --help            Show this help message and exit
 ```
 
 **OUTPUT**
@@ -214,7 +215,7 @@ positional arguments:
   domain           Domain to dump output of
 
 optional arguments:
-  -h, --help       show this help message and exit
+  -h, --help       Show this help message and exit
   --output OUTPUT  Alternative location to create output file
 ```
 
@@ -229,12 +230,11 @@ optional arguments:
 
 ## Configurations
 
-This tool is highly dependent on the configuration you provide it. Provided for you is a **default_config.json** that you can use as a simple template for your **user_config.json**. Most of the configurations under **Scanners**  are done for you and can be used as is. Note the use of **default** in this and other sections.
+This tool is highly dependent on the configuration you provide it. Provided for you is a **default_config.json** that you can use as a simple template for your **user_config.json**. Most of the configurations under **Scanners** are done for you and can be used as is. Note the use of **default** in this and other sections.
 
 > default : specifies a Docker or Ansible instance. Make sure you adjust configurations according to their usage. 
 
 * Docker Configuration Requirements
-
     * Example:
 
         ```json
@@ -271,7 +271,7 @@ This tool is highly dependent on the configuration you provide it. Provided for 
 
 * Ansible Configuration Requirements
     * Example
-    ```
+    ```json
         "HTTPScreenshot": {
             "name" : "HTTPScreenshot",
             "short_name" : "http",
@@ -306,7 +306,7 @@ This tool is highly dependent on the configuration you provide it. Provided for 
 
 * Web Modules
     * Example:
-    ```
+    ```json
             "HackerTarget" :
         {
             "short_name" : "hack",
@@ -326,7 +326,7 @@ This tool is highly dependent on the configuration you provide it. Provided for 
 
 * Serve Module:
     * Example
-    ```
+    ```json
     "Serve" : {
         "name" : "Django",
         "command" : "python manage.py runserver 0.0.0.0:8888",
@@ -349,11 +349,12 @@ This tool is highly dependent on the configuration you provide it. Provided for 
     * ports: Port mapping of localhost to container for docker
 
 
+
 ### Example Configuration For WebTools
 
-Under **configs** you will find a default_config which contains a majority of the default scanners you can utilize. If you wish to extend upon the **WebTools** list just follow these steps:
+Under **configs**, you will find a default_config that contains a majority of the default scanners you can use. If you wish to extend upon the **WebTools** list just follow these steps:
 
-1. In the default_config.json/user_config.json
+1. Add the new tool to the user_config.json
 
    ```json
    {
@@ -372,7 +373,7 @@ Under **configs** you will find a default_config which contains a majority of th
        },
    ```
 
-2. Open **src/web_resources.py** make a class with the **class_name** above. ***DO NOT FORGET TO MATCH IT EXACLY***
+2. Open **src/web_resources.py** and make a class with the **class_name** specified in the previous step. ***MAKE SURE IT MATCHES EXACTLY***
 
    ```python
    class NewTool(WebTool):
@@ -387,11 +388,11 @@ Under **configs** you will find a default_config which contains a majority of th
 
 ### Example Configurations For Docker Containers
 
-Under **configs** you will find a **default_config** which contains a majority of the default scanners you can utilize. If you wish to extend upon the **Scanners** list just follow these steps:
+Under **configs**, you will find a **default_config** which contains a majority of the default scanners you can utilize. If you wish to extend upon the **Scanners** list just follow these steps:
 
 1. Add the **json** to the **config** file (user if generated).
 
-   ```
+   ```json
    "Scanners" : {
     ...
        "NewTool": {
@@ -413,10 +414,10 @@ Under **configs** you will find a **default_config** which contains a majority o
    1. Note *network_mode* is an option specifically for docker containers. It is implementing the 
       ``` --network ``` flag when using docker
 
-2. Then under the **docker_buildfiles/** folder create your **Dockerfile.NewTool.tmp** dockerfile.
+2. Under the **docker_buildfiles/** folder, create your **Dockerfile.NewTool.tmp** dockerfile.
 
-   1. If you desire adding more options at run time to the Dockerfiles look at editing the **src/dockerize**
-   2. **Note** as of right now Dockerfiles must come from the **docker_buildfiles** folder. Future work includes allowing to specify a remote source for the docker images. 
+   1. If you desire adding more options at run time to the Dockerfiles, look at editing **src/dockerize**
+   2. **Note:** As of right now Dockerfiles must come from the **docker_buildfiles** folder. Future work includes specifying a remote source for the docker images. 
 
 ### Example Ansible Configuration
 
@@ -424,7 +425,7 @@ Under **configs** you will find a **default_config** which contains a majority o
 
 1. Add the **json** to the **config** file (user if generated).
 
-   ```
+   ```json
    "Enumeration" : {
            "Eyewitness": {
                "name" : "Eyewitness",
@@ -453,9 +454,9 @@ Under **configs** you will find a **default_config** which contains a majority o
    }
    ```
 
-2. As you can see this one has a few things that may seem confusing at first but will be clarified here:
+2. As you can see, this has a few items that may seem confusing at first, but will be clarified here:
 
-   1. mode: allows you to specify how you want to deploy a tool you want to use. Currently **DOCKER** or **ANSIBLE** are the only available methods to deploy.
+   1. mode: Allows you to specify how you want to deploy a tool you want to use. Currently **DOCKER** or **ANSIBLE** are the only available methods to deploy.
 
    2. All options outside of **ansible_configuration** will be ignored when developing for **ANSIBLE**.
 
@@ -480,7 +481,7 @@ Under **configs** you will find a **default_config** which contains a majority o
             2.  This is a special case for Eyewitness and HttpScreenshot, which you can see in their playbooks. They generate a lot of files and rather than download each individually having them pack up the files as a step in the playbook and then unpacking allows for some integrity.
          6.  A quick example below shows how we use the **extra_flags** to supply the hostname to the playbook for ansible.
 
-         ```
+         ```yaml
          ---
          - hosts: "{{ variable_host|quote }}"
            remote_user: root 
@@ -507,7 +508,7 @@ All Docker files will have a **default_conf** and an **active_conf**.
 
 **example Dockerfile.tmp**
 
-```
+```dockerfile
 FROM python:3.4
 
 WORKDIR /home
@@ -544,7 +545,7 @@ Ansible inventory files will be self contained within DrRobot so as to further s
 
 As noted in the documentation ansible inventory can be defined as groups or single IP's. A quick example:
 
-```
+```yaml
 [example-host]
 ip.example.com
 ```
@@ -555,7 +556,7 @@ If you desire to run Ansible with this tool and require ssh authentication be do
 
 If you wish to have to not manually provide credentials just use an **ssh-agent**
 
-```
+```bash
 eval $(ssh-agent -s)
 ssh-add /path/to/sshkey
 ```
@@ -574,7 +575,7 @@ If you wish to add another Dockerfile to the project make a **Dockerfile.toolnam
 
   - **Pipenv** for versioning of all Python packages. You can use the Pipfile with setup.py requirements as well.
 
-    ```
+    ```bash
     cd /path/to/drrobot/
     pipenv install && pipenv shell
     python drrobot.py <command> <flags> target
@@ -629,9 +630,7 @@ drwxrwxr-x 7 sasha sasha    4096 Mar 19 13:49 ..
 
 ```
 
-### SQLite DB files
-
-The choice of SQLite was for fast implementation of database storage while also limiting dependencies. In the future I am looking to add a mongodb dockerfile that will allow any information you specify to be stored inside the database.
+### SQLite DB file schema
 
 Table Data:
 | domainid     | INTEGER | PRIMARY KEY
@@ -649,4 +648,4 @@ Table Domain:
 
 ## Serve
 
-As is often the case, it would be nice to retrieve this data elsewhere on a system. Under the serve-api folder exists a simple Django server implementation that you can stand up locally or serve via Docker. In order to serve the data for now you simply need to copy your database folder to the root directory of the **serve-api** and rename the file to **drrobot.db**. If you would like to use an alternative name simply change the name in the Django **serve____-api/drrobot/drrobot/settings.py**.  
+As is often the case, having an API can be nice for automation purposes. Under the serve-api folder, there is a simple Django server implementation that you can stand up locally or serve via Docker. In order to serve the datak, you need to copy your database folder to the root directory of **serve-api** and rename the file to **drrobot.db**. If you would like to use an alternative name, simply change the name in the Django **serve____-api/drrobot/drrobot/settings.py**.  
