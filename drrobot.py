@@ -58,13 +58,9 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}, server=
                         type=str,
                         help="Specify what db file to use for saving data too")
 
-    parser.add_argument("domain",
-                        type=str,
-                        help="Domain to run scan against")
-
     subparser = parser.add_subparsers(dest='actions')
     ##########################
-    #INSPECT
+    # GATHER
     ##########################
 
     parser_gather = subparser.add_parser('gather',
@@ -95,6 +91,11 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}, server=
                                default=True,
                                action='store_true',
                                help="If headers should be scraped from ip addresses gathered")
+
+    parser_gather.add_argument("domain",
+                            type=str,
+                            help="Domain to run scan against")
+
     # Disabled for initial release
     # parser_run.add_argument('--verify',
     #                         default=None,
@@ -120,6 +121,10 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}, server=
                                 default=None,
                                 type=str,
                                 help="(NOT WORKING) File with hostnames to run further inspection on")
+
+    parser_inspect.add_argument("domain",
+                                type=str,
+                                help="Domain to run scan against")
     ##########################
     #UPLOAD
     ##########################
@@ -140,6 +145,10 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}, server=
                                help="Filepath to the folder containing images"
                                "to upload. This is relative to the domain "
                                "specified. By default this will just be the path to the output folder")
+
+    parser_upload.add_argument("domain",
+                                type=str,
+                                help="Domain to run scan against")
     ##########################
     #REBUILD
     ##########################
@@ -157,6 +166,9 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}, server=
 
     parser_dumpdb = subparser.add_parser("dumpdb",
                                          help="Dump the database of ip,hostname,banners to a text file")
+    parser_dumpdb.add_argument("domain",
+                                type=str,
+                                help="Domain to show data for")
     ##########################
     #OUTPUT
     ##########################
@@ -171,11 +183,15 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}, server=
     parser_output.add_argument("--output",
                                default=None,
                                help="Alternative location to create output file")
+
+    parser_output.add_argument("domain",
+                                type=str,
+                                help="Domain to dump output of")
     ##########################
     #SERVE
     ##########################
 
-    parser_output = subparser.add_parser("serve",
+    parser_serve = subparser.add_parser("serve",
                                          help="Serve database file in docker container using django")
 
     if not len(sys.argv) > 1:

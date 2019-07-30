@@ -84,8 +84,7 @@
         "description" : "Django container for hosting database",
         "ports" : {
             "8888" : "8888"
-         },
-        "output": "/db"
+         }
     },
     "Scanners" :
     {

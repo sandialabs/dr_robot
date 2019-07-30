@@ -112,3 +112,4 @@ ansible_plays/*.retry
 logs/*
 output/*
 dbs/*
+serve_api/Dockerfile.Django

@@ -63,41 +63,49 @@ Dr. ROBOT is a tool for **Domain Reconnaissance and Enumeration**. Utilizing a f
 **MAIN**
 
 ```buildoutcfg
-usage: drrobot.py [-h] [--proxy PROXY] [--dns DNS] DOMAIN
-                  {gather,inspect,upload,rebuild,dumpdb} ...
+usage: drrobot.py [-h] [--proxy PROXY] [--dns DNS] [--verbose]
+                  [--dbfile DBFILE]
+                  domain {gather,inspect,upload,rebuild,dumpdb,output,serve}
+                  ...
 
 Docker DNS recon tool
 
 positional arguments:
-  {gather,inspect,upload,rebuild,dumpdb}
-    gather              Run scanners against the given domain and gather
-                        resources. You have the option to run using any
-                        docker_buildfiles/webtools you may have included in your config.
+  domain                Domain to run scan against
+  {gather,inspect,upload,rebuild,dumpdb,output,serve}
+    gather              Runs initial scanning phase where tools under the
+                        webtools/scannerscategory will run and gather
+                        information used in the following phases
     inspect             Run further tools against domain information gathered
-                        from previous step. Note: you must either supply a file
+                        from previous step.Note: you must either supply a file
                         which contains a list of IP/Hostnames orThe targeted
                         domain must have a db under the dbs folder
     upload              Upload recon data to Mattermost. Currently only works
-                        with a folder that contain PNG images.
+                        with afolder that contain PNG images.
     rebuild             Rebuild the database with additional files/all files
                         from previous runtime
     dumpdb              Dump the database of ip,hostname,banners to a text
                         file
-    output              Generate output in specified format. Contains all 
-                        information from scans (images, headers, hostnames, ips) 
-                        found in database files. 
+    output              Generate output in specified format. Contains all
+                        information from scans (images, headers, hostnames,
+                        ips)
+    serve               Serve database file in docker container using django
 
 optional arguments:
   -h, --help            show this help message and exit
-  --proxy PROXY         proxy server URL to set DOCKER http_proxy too
+  --proxy PROXY         Proxy server URL to set DOCKER http_proxy too
   --dns DNS             DNS server to add to resolv.conf of DOCKER containers
-  --domain DOMAIN       Domain to run scan against
+  --verbose             Display verbose statements
+  --dbfile DBFILE       Specify what db file to use for saving data too
+d
 ```
 **Gather**
 ```buildoutcfg
-usage: drrobot.py gather [-h] [-aqua] [-sub] [-brute] [-shodan] [-arin]
-                         [-hack] [-dump] [-virus] [--ignore IGNORE]
-                         [--verify VERIFY]
+
+usage: drrobot.py domain gather [-h] [-aqua] [-sub] [-brute] [-sfinder]
+                                [-knock] [-amass] [-recong] [-shodan] [-arin]
+                                [-hack] [-dump] [-virus] [--ignore IGNORE]
+                                [--headers]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -108,6 +116,17 @@ optional arguments:
   -brute, --Subbrute    SubBrute is a community driven project with the goal
                         of creating the fastest, and most accurate subdomain
                         enumeration tool.
+  -sfinder, --Subfinder
+                        SubFinder is a subdomain discovery tool that discovers
+                        valid subdomains for websites by using passive online
+                        sources
+  -knock, --Knock       Knockpy is a python tool designed to enumerate
+                        subdomains on a target domain through a wordlist
+  -amass, --Amass       The OWASP Amass tool suite obtains subdomain names by
+                        scraping data sources, recursive brute forcing,
+                        crawling web archives, permuting/altering names and
+                        reverse DNS sweeping.
+  -recong, --Reconng
   -shodan, --Shodan     Query SHODAN for publicly facing sites of given domain
   -arin, --Arin         Query ARIN for public CIDR ranges. This is better as a
                         brute force option as the ranges
@@ -120,7 +139,6 @@ optional arguments:
   --ignore IGNORE       Space seperated list of subnets to ignore
   --headers             If headers should be scraped from ip addresses
                         gathered
-
 ```
 **INSPECT**
 ```buildoutcfg
@@ -146,12 +164,13 @@ optional arguments:
 **UPLOAD**
 
 ```
-usage: drrobot.py upload [-h] [-matter] [--filepath FILEPATH] 
+usage: drrobot.py domain upload [-h] [-matter] [-slack] [--filepath FILEPATH]
 
 optional arguments:
   -h, --help            show this help message and exit
   -matter, --Mattermost
                         Mattermost server
+  -slack, --Slack       Slack server
   --filepath FILEPATH   Filepath to the folder containing imagesto upload.
                         This is relative to the domain specified. By default
                         this will just be the path to the output folder
@@ -188,6 +207,15 @@ optional arguments:
   --output OUTPUT  Alternative location to create output file
 ```
 
+**Serve**
+```
+usage: drrobot.py domain serve [-h]
+
+optional arguments:
+  -h, --help  show this help message and exit
+
+```
+
 ## Configurations
 
 This tool is highly dependent on the configuration you provide it. Provided for you is a **default_config.json** that you can use as a simple template for your **user_config.json**. Most of the configurations under **Scanners**  are done for you and can be used as is. Note the use of **default** in this and other sections.
@@ -195,39 +223,120 @@ This tool is highly dependent on the configuration you provide it. Provided for 
 > default : specifies a Docker or Ansible instance. Make sure you adjust configurations according to their usage. 
 
 * Docker Configuration Requirements
-    * name: Long name to show for description/toolname,
-    * default : 1 to specify DOCKER,
-    * docker_name: short name for docker tag and commandline,
-    * default_conf: name of TMP Dockerfile,
-    * active_conf: Name for active config file,
-    * description: Description,
-    * output: Output directory of tool on remote host. 
+
+    * Example:
+
+        ```json
+        "Sublist3r": {
+            "name": "Sublist3r",
+            "default" : true,
+            "mode" : "DOCKER",
+            "docker_name": "sub",
+            "network_mode": "host",
+            "default_conf": "docker_buildfiles/Dockerfile.Sublist3r.tmp",
+            "active_conf": "docker_buildfiles/Dockerfile.Sublist3r",
+            "description": "Sublist3r is a python tool designed to enumerate subdomains of websites using OSINT",
+            "src": "https://github.com/aboul3la/Sublist3r",
+            "output": "/root/sublist3r",
+            "output_folder": "sublist3r"
+        },
+        
+        ```
+
+        
+
+    * name: Identifiable name for the program/utility you are using
+    * default : (Disabled for now) 
+    * mode : DOCKER (uses docker container with this tool when chosen)
+    * docker_name : What the docker image name will be when running ```docker images```
+    * network_mode : Network mode to use when creating container. Host uses the host network
+    * default_conf : Template Dockerfile to build form
+    * active_conf : Target specific configuration that will be used during runtime
+    * description : Description of tool (optional)
+    * src : Where the tool comes from (optional)
+    * output : Location of output on the docker container. Can be hardcoded into Dockerfiles for preference
+    * output_folder : Location under the *outputs/target* folder where output for target will be stored
+
+
 * Ansible Configuration Requirements
-    * name : "HTTPScreenshot",
-    * default : 2,
-    * custom_command : commandline function to run with flag substitutes you may need
-                        for example **ansible-playbook $flags $config** ,
-    * custom_substitutes : Sub dictionary of options to replace in the custom command above. 
-    These are usually options that are dependant on runtime items.
-    ```json
-    {
-    "config" : "$config/httpscreenshot_play.yml", 
-    "flags": "-e 'infile=$infile',
-    "outfile": "$outfile/httpscreenshot.tar",
-    "outfolder": "$outfile/httpscreenshots",
+    * Example
+    ```
+        "HTTPScreenshot": {
+            "name" : "HTTPScreenshot",
+            "short_name" : "http",
+            "mode" : "ANSIBLE",
+            "ansible_arguments" : {
+                "config" : "$config/httpscreenshot_play.yml",
+                "flags": "-e '$extra' -i ansible_plays/inventory.yml",
+                "extra_flags":{
+                    "1" : "variable_host=localhost",
+                    "2" : "infile=$infile/aggregated/aggregated_protocol_hostnames.txt",
+                    "3" : "outfile=$outfile/httpscreenshots.tar",
+                    "4" : "outfolder=$outfile/httpscreenshots",
+                    "5" : "variable_user=bitnami"
+                }
+            },
+            "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: httpscreenshot.tar and unpacked httpscreenshots",
+            "output" : "/tmp/output",
+            "infile" : "/tmp/output/aggregated_protocol_hostnames.txt",
+            "enabled" : false
+    ```
+    * name: Identifiable name for the program/utility you are using
+    * default : (Disabled for now) 
+    * mode : ANSIBLE (uses Ansible with this tool when chosen)
+    * ansible_arguments : Json configuration for specific informaiton
+        * config : playbook to use ($config keyword is replaces for full path to file when issuing ansible playbook command)
+        * flags : specifies extra flags to be used with the ansible command (specifically useful for any extra flags you would like to use)
+        * extra flags : key does not matter so long as it is different from any other key. These extra flags will all be applied to the ansible file in question
+    * description : Description of tool (optional)
+    * src : Where the tool comes from (optional)
+    * output : Where output will be stored on the external file system
+    * infile : (Unique for certain modules) what files this program will use as input to the program. In this case you will notice that it searches /tmp/output for aggregated_protocol_hostnames.txt. This file is supplied from the above extra flags option.
+
+* Web Modules
+    * Example:
+    ```
+            "HackerTarget" :
+        {
+            "short_name" : "hack",
+            "class_name" : "HackerTarget",
+            "default" : false,
+            "description" : "This query will display the forward DNS records discovered using the data sets outlined above.",
+            "api_call_unused" : "https://api.hackertarget.com/hostsearch/?q=example.com",
+            "output_file" : "hacker.txt"
+        },
+    ```
+    * short_name : quick reference name for use in CLI
+    * class_name : this must match the name you specify for a given class under the respective module name
+        * The reason behind this results from the loading of modules at runtime which requires the use of importlib. This will load the respective class from the classname provided via the CLI options.
+    * default : false (Disabled for now)
+    * api_call_unused : (Old, may be used later...)
+    * description : Description of tool (optional)
+
+* Serve Module:
+    * Example
+    ```
+    "Serve" : {
+        "name" : "Django",
+        "command" : "python manage.py runserver 0.0.0.0:8888",
+        "docker_name": "django",
+        "network_mode": "host",
+        "default_conf": "serve_api/Dockerfile.Django.tmp",
+        "active_conf": "serve_api/Dockerfile.Django",
+        "description" : "Django container for hosting database",
+        "ports" : {
+            "8888" : "8888"
+         }
     }
     ```
+    * command: Command to start server on Docker container (Note: For now only using docker)
+    * docker_name : What the docker image name will be when running ```docker images```
+    * network_mode : Network mode to use when creating container. Host uses the host network
+    * default_conf : Template Dockerfile to build form
+    * active_conf : Target specific configuration that will be used during runtime
+    * description : Description of tool (optional)
+    * ports: Port mapping of localhost to container for docker
 
-    * description : Description
-    * "inputfilelist : filename to look for 
-    * enabled : True/False run all the time
-
-Web referencing modules and Forum posting modules are also included in this config. One thing of vital 
-importance when configuring these tools.
-*  class_name : this must match the name you specify for a given class under the respective module name
-
-The reason behind this is due to the loading of modules at runtime which require the use of *importlib* which 
-will load the respective class based off the classname provided at via options provided on the commandline.   
 
 ### Example Configuration For WebTools
 
@@ -256,13 +365,13 @@ Under **configs** you will find a default_config which contains a majority of th
 
    ```python
    class NewTool(WebTool):
-   	def __init__(self, **kwargs):
-   		super().__init__(**kwargs)
-   		....
-   	def do_query(self):
-   		.... do the query ... 
-   		store results in
-   		self.results
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        ....
+    def do_query(self):
+        .... do the query ... 
+        store results in
+        self.results
    ```
 
 ### Example Configurations For Docker Containers
@@ -273,10 +382,11 @@ Under **configs** you will find a **default_config** which contains a majority o
 
    ```
    "Scanners" : {
-   	...
+    ...
        "NewTool": {
            "name": "NewTool",
-           "default" : 1, 
+           "default" : true, 
+           "mode" : DOCKER,
            "docker_name": "ntool",
            "network_mode": "host",
            "default_conf": "docker_buildfiles/Dockerfile.NewTool.tmp",
@@ -419,7 +529,7 @@ Please see the ansible documentation: https://docs.ansible.com/ for details on h
 
 #### Inventory
 
-Ansible inventory files will be self contained within DrRobot so as to further seperate itself from any one system. The inventory file will be located under **ansible_playbooks/inventory**
+Ansible inventory files will be self contained within DrRobot so as to further seperate itself from any one system. The inventory file will be located under **configs/ansible_inventory**
 
 As noted in the documentation ansible inventory can be defined as groups or single IP's. A quick example:
 
@@ -470,44 +580,42 @@ If you wish to add another Dockerfile to the project make a **Dockerfile.toolnam
 **Gather** : when ran will produce an output similar to:
 
 ```
-ls -la output/example.com
-drwxr-xr-x 1 drrobot 1049089     0 Aug 27 14:43 ./
-drwxr-xr-x 1 drrobot 1049089     0 Aug 30 15:28 ../
--rw-r--r-- 1 drrobot 1049089     0 Aug 27 17:01 aggregated_hostnames.txt
--rw-r--r-- 1 drrobot 1049089     0 Aug 27 17:01 aggregated_ips.txt
--rw-r--r-- 1 drrobot 1049089 	 0 Aug 27 11:05 hacker.txt
--rw-r--r-- 1 drrobot 1049089 	 0 Aug 27 11:05 sublist3r.txt
--rw-r--r-- 1 drrobot 1049089 	 0 Aug 27 11:05 subbrute.txt
--rw-r--r-- 1 drrobot 1049089 	 0 Aug 27 11:05 host.txt
--rw-r--r-- 1 drrobot 1049089 	 0 Aug 27 11:05 dumpster.txt
+ls -la  outputs/example.com
+
+total 20
+drwxrwxr-x  5 4096 Jul 30 09:24 .
+drwxrwxr-x 16 4096 Jul 30 09:23 ..
+drwxrwxr-x  2 4096 Jul 30 09:27 aggregated
+drwxrwxr-x  2 4096 Jul 30 09:27 subfinder
+drwxrwxr-x  2 4096 Jul 30 09:24 sublist3r
+
 ```
 
-You will also notice a **sqlite** file found under the **dbs** folder:
+You will also notice a **sqlite** file found under the **dbs** folder (You can specify alternative db filenames):
 
 ```
 ls -la dbs
-drwxr-xr-x 1 drrobot 1049089     0 Aug 27 14:43 ./
-drwxr-xr-x 1 drrobot 1049089     0 Aug 30 15:28 ../
--rw-r--r-- 1 drrobot 1049089     0 Aug 27 17:01 example.com.db
+drwxrwxr-x  2     4096 Jul 30 09:27 .
+drwxrwxr-x 17     4096 Jul 30 11:10 ..
+-rw-r--r--  1    16384 Jul 30 09:27 drrobot.db
 ```
 
 **Inspect**: when ran will continue to add files to the output folder. If you provided a domain file under the db section the domain folder will be created for you. The output will look similar to the above but with some added contents:
 
 ```
-ls -la output/example.com
-drwxr-xr-x 1 drrobot 1049089     0 Aug 27 14:43 ./
-drwxr-xr-x 1 drrobot 1049089     0 Aug 30 15:28 ../
--rw-r--r-- 1 drrobot 1049089     0 Aug 27 17:01 aggregated_hostnames.txt
--rw-r--r-- 1 drrobot 1049089     0 Aug 27 17:01 aggregated_ips.txt
--rw-r--r-- 1 drrobot 1049089 	 0 Aug 27 11:05 hacker.txt
--rw-r--r-- 1 drrobot 1049089 	 0 Aug 27 11:05 sublist3r.txt
--rw-r--r-- 1 drrobot 1049089 	 0 Aug 27 11:05 subbrute.txt
--rw-r--r-- 1 drrobot 1049089 	 0 Aug 27 11:05 host.txt
--rw-r--r-- 1 drrobot 1049089 	 0 Aug 27 11:05 dumpster.txt
--rw-r--r-- 1 drrobot 1049089 	 0 Aug 27 11:05 Eyewitness.tar
-drw-r--r-- 1 drrobot 1049089 	 0 Aug 27 11:05 Eyewitness
--rw-r--r-- 1 drrobot 1049089 	 0 Aug 27 11:05 httpscreenshot.tar
-drw-r--r-- 1 drrobot 1049089 	 0 Aug 27 11:05 httpscreenshot
+ls -la output/example.com/eyewitness
+
+total 4140
+drwxr-xr-x 4 sasha sasha    4096 Dec  9  2018 .
+drwxrwxr-x 7 sasha sasha    4096 Mar 19 13:49 ..
+-rw-r--r-- 1 sasha sasha 3009536 Dec  9  2018 ew.db
+-rw-r--r-- 1 sasha sasha   95957 Dec  9  2018 jquery-1.11.3.min.js
+-rw-r--r-- 1 sasha sasha   28808 Dec  9  2018 open_ports.csv
+-rw-r--r-- 1 sasha sasha   39843 Dec  9  2018 report.html
+-rw-r--r-- 1 sasha sasha   13692 Dec  9  2018 report_page10.html
+-rw-r--r-- 1 sasha sasha   13776 Dec  9  2018 report_page11.html
+-rw-r--r-- 1 sasha sasha   13742 Dec  9  2018 report_page12.html
+
 ```
 
 ### SQLite DB files
