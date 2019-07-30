@@ -31,7 +31,7 @@ Dr. ROBOT is a tool for **Domain Reconnaissance and Enumeration**. Utilizing a f
 
 **Use Case**: Quickly gather as many public facing servers that a target may possess. By querying DNS resources we can quickly develop a large list of possible targets that you can run further analysis on.
 
-**Note**: Dr. ROBOT is not just a one trick pony. You can customize these tools to gather as much information as you would like them too. Strong customization allows for many possible options. 
+**Note**: Dr. ROBOT is not just a one trick pony. You can easily customize the tools that are used gather information, so that you can enjoy the benefits of using latest and greatest along with your battle tested favorites.
 
 **Install and Run**
 
