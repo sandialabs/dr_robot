@@ -65,13 +65,12 @@ Dr. ROBOT is a tool for **Domain Reconnaissance and Enumeration**. Utilizing a f
 ```buildoutcfg
 usage: drrobot.py [-h] [--proxy PROXY] [--dns DNS] [--verbose]
                   [--dbfile DBFILE]
-                  domain {gather,inspect,upload,rebuild,dumpdb,output,serve}
+                  {gather,inspect,upload,rebuild,dumpdb,output,serve}
                   ...
 
 Docker DNS recon tool
 
 positional arguments:
-  domain                Domain to run scan against
   {gather,inspect,upload,rebuild,dumpdb,output,serve}
     gather              Runs initial scanning phase where tools under the
                         webtools/scannerscategory will run and gather
@@ -106,6 +105,9 @@ usage: drrobot.py domain gather [-h] [-aqua] [-sub] [-brute] [-sfinder]
                                 [-knock] [-amass] [-recong] [-shodan] [-arin]
                                 [-hack] [-dump] [-virus] [--ignore IGNORE]
                                 [--headers]
+
+positional arguments:
+  domain                Domain to run scan against
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -144,7 +146,9 @@ optional arguments:
 ```buildoutcfg
 usage: main.py inspect [-h] [-httpscreen] [-eye] [--proxy PROXY] [--dns DNS]
                        [--file FILE]
-                       
+
+positional arguments:
+  domain                Domain to run scan against
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -165,6 +169,9 @@ optional arguments:
 
 ```
 usage: drrobot.py domain upload [-h] [-matter] [-slack] [--filepath FILEPATH]
+
+positional arguments:
+  domain                Domain to run scan against
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -191,6 +198,9 @@ optional arguments:
 ```
 usage: drrobot.py dumpdb [-h]
 
+positional arguments:
+  domain                Domain to run scan against
+
 optional arguments:
   -h, --help            show this help message and exit
 ```
@@ -201,6 +211,7 @@ usage: drrobot.py domain output [-h] [--output OUTPUT] {json,xml}
 
 positional arguments:
   {json,xml}       Generate json file under outputs folder (format)
+  domain           Domain to dump output of
 
 optional arguments:
   -h, --help       show this help message and exit

@@ -3,7 +3,7 @@ from .models import Domains, Data
 from django.http import JsonResponse 
 # Create your views here.
 def index(request):
-    return HttpResponse("Hello, WOrld")
+    return JsonResponse({"res": "Hello, WOrld"})
 
 def domain(request, domain_name):
     dname = domain_name.replace('.','_')

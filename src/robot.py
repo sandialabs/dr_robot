@@ -54,7 +54,8 @@ class Robot:
         self.dbfile = kwargs.get("dbfile", "drrobot.py")
 
         self.ROOT_DIR = kwargs.get("root_dir")
-        self.OUTPUT_DIR = join_abs(self.ROOT_DIR, "output", self.domain)
+        if self.domain:
+            self.OUTPUT_DIR = join_abs(self.ROOT_DIR, "output", self.domain)
 
         #Disable warnings for insecure requests
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)

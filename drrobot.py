@@ -160,6 +160,10 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}, server=
                                 "--files",
                                 nargs="*",
                                 help="Additional files to supply outside of the ones in the config file")
+
+    parser_rebuild.add_argument("domain",
+                                type=str,
+                                help="Domain to dump output of")
     ##########################
     #DUMPDB
     ##########################
@@ -287,7 +291,7 @@ if __name__ == '__main__':
                         **tools,
                         dns=getattr(args, 'dns', None),
                         proxy=getattr(args, 'proxy', None),
-                        domain=getattr(args, 'domain'),
+                        domain=getattr(args, 'domain', None),
                         verbose=getattr(args, 'verbose'),
                         dbfile=getattr(args, 'dbfile'),
                         verify=getattr(args, 'verify', None))
@@ -295,11 +299,12 @@ if __name__ == '__main__':
         if not exists(join_abs(ROOT_DIR, "dbs")):
             makedirs(join_abs(ROOT_DIR, "dbs"))
 
-        if not exists(join_abs(ROOT_DIR, "output", getattr(args, 'domain'))):
-            makedirs(join_abs(ROOT_DIR, "output", getattr(args, 'domain')))
+        if getattr(args, 'domain', None):
+            if not exists(join_abs(ROOT_DIR, "output", getattr(args, 'domain'))):
+                makedirs(join_abs(ROOT_DIR, "output", getattr(args, 'domain')))
 
-        if not exists(join_abs(ROOT_DIR, "output", getattr(args, 'domain'), "aggregated")):
-            makedirs(join_abs(ROOT_DIR, "output", getattr(args, 'domain'), "aggregated"))
+            if not exists(join_abs(ROOT_DIR, "output", getattr(args, 'domain'), "aggregated")):
+                makedirs(join_abs(ROOT_DIR, "output", getattr(args, 'domain'), "aggregated"))
 
         if args.actions in "gather":
 
