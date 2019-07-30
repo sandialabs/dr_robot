@@ -23,6 +23,7 @@ Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS
   * [SSH   Ansible](#ssh--ansible)
   * [Output](#output)
      * [SQLite DB files](#sqlite-db-files)
+  * [Serve](#serve)
 
 ## Introduction
 
@@ -513,11 +514,20 @@ drw-r--r-- 1 drrobot 1049089 	 0 Aug 27 11:05 httpscreenshot
 
 The choice of SQLite was for fast implementation of database storage while also limiting dependencies. In the future I am looking to add a mongodb dockerfile that will allow any information you specify to be stored inside the database.
 
-For now the table is simply:
-
-| ip           | VARCHAR |
+Table Data:
+| domainid     | INTEGER | PRIMARY KEY
 | --------     | ------- |
+| ip           | VARCHAR |
 | hostname     | VARCHAR |
 | headers      | VARCHAR |
-| http_headers | VARCHAR |
-| https_headers| VARCHAR |
+| http_headers | TEXT    |
+| https_headers| TEXT    |
+| domain       | VARCHAR | FOREIGN KEY
+
+Table Domain:
+| domain       | VARCHAR | PRIMARY KEY
+| --------     | ------- |
+
+## Serve
+
+As is often the case, it would be nice to retrieve this data elsewhere on a system. Under the serve-api folder exists a simple Django server implementation that you can stand up locally or serve via Docker. In order to serve the data for now you simply need to copy your database folder to the root directory of the **serve-api** and rename the file to **drrobot.db**. If you would like to use an alternative name simply change the name in the Django **serve____-api/drrobot/drrobot/settings.py**.  

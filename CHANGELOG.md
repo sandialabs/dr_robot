@@ -7,6 +7,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 * Allow pulling from Docker repository if no Dockerfile is found locally
 
+## [1.2.0] - Jun 2019
+
+Updates
+
+### Added
+
+* **Django** docker container to server domain data
+* Added dbfile option for specification of personal database
+
+### Removed
+### Changed
+
+* **SQLlite** refactor
+    * Use two tables 1 for list of domains, 1 for all data gather. 
+
+### Fixed
+
+
 ## [1.1.0] - Feb 2019 
 
 Current Release
