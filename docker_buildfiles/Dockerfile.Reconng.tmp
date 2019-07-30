@@ -9,19 +9,19 @@ ENV OUTPUT $output
 RUN mkdir -p /home/
 
 RUN if [ -n "$DNS" ]; \
-    then echo "nameserver " > /etc/resolv.conf;\
+    then echo "nameserver " >> /etc/resolv.conf;\
     fi;\
     apt-get install -y git
 
 RUN if [ -n "$DNS" ]; \
-    then echo "nameserver " > /etc/resolv.conf;\
+    then echo "nameserver " >> /etc/resolv.conf;\
     fi;\
     git clone https://LaNMaSteR53@bitbucket.org/LaNMaSteR53/recon-ng.git /home/recon-ng
 
 WORKDIR /home/recon-ng
 
 RUN if [ -n "$DNS" ]; \
-    then echo "nameserver " > /etc/resolv.conf;\
+    then echo "nameserver " >> /etc/resolv.conf;\
     fi;\
     pip install -r REQUIREMENTS
 

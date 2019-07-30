@@ -1,6 +1,7 @@
-FROM kalilinux/kali-linux-docker
+FROM python:2.7
 
-WORKDIR /home
+WORKDIR /root
+
 ENV http_proxy $proxy
 ENV https_proxy $proxy
 ENV DNS $dns
@@ -8,22 +9,18 @@ ENV TARGET $target
 ENV OUTPUT $output
 
 RUN if [ -n "$$DNS" ];\
-    then echo "nameserver $$DNS" > /etc/resolv.conf;\
-    fi;\ 
-    apt update && apt upgrade && apt install -y python3.4 git
-
-RUN if [ -n "$$DNS" ];\
-    then echo "nameserver $$DNS" > /etc/resolv.conf;\
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
-    pip3 install dnspython; exit 0
+	apt install -y git ;\
+    pip install dnspython;
 
 RUN if [ -n "$$DNS" ];\
-    then echo "nameserver $$DNS" > /etc/resolv.conf;\
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     git clone https://github.com/TheRook/subbrute.git subbrute
 
-RUN mkdir -p $$OUTPUT
+RUN mkdir -p $output
 
-WORKDIR subbrute
+WORKDIR /root/subbrute
 
-ENTRYPOINT ./subbrute.py -o $$OUTPUT/subbrute.txt $$TARGET
+ENTRYPOINT ./subbrute.py -o $output/subbrute.txt $target

@@ -74,6 +74,19 @@
             
         }
     },
+    "Serve" : {
+        "name" : "Django",
+        "command" : "python manage.py runserver 0.0.0.0:8888",
+        "docker_name": "django",
+        "network_mode": "host",
+        "default_conf": "serve_api/Dockerfile.Django.tmp",
+        "active_conf": "serve_api/Dockerfile.Django",
+        "description" : "Django container for hosting database",
+        "ports" : {
+            "8888" : "8888"
+         },
+        "output": "/db"
+    },
     "Scanners" :
     {
         "Aquatone" : {
@@ -112,7 +125,7 @@
             "active_conf": "docker_buildfiles/Dockerfile.Subbrute",
             "description": "SubBrute is a community driven project with the goal of creating the fastest, and most accurate subdomain enumeration tool.",
             "src": "https://github.com/TheRook/subbrute.git",
-            "output": " /root/brute",
+            "output": "/root/brute",
             "output_folder": "subbrute"
         },
         "Subfinder": {
