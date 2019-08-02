@@ -55,7 +55,7 @@ Dr. ROBOT is a tool for **Domain Reconnaissance and Enumeration**. By utilizing 
     ```
     python drrobot.py example.domain inspect -http -headers
     ```
-* Run upload using Mattermost (currently the only output default)
+* Run upload using Mattermost/Slack
     ```
     python drrobot.py example.domain upload -matter
     ```
