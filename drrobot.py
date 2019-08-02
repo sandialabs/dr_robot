@@ -1,4 +1,4 @@
-from os import makedirs, devnull, errno
+from os import makedirs, devnull
 from os.path import dirname, abspath, join, exists, isfile
 from subprocess import Popen
 from src.robot import Robot
@@ -10,6 +10,12 @@ import sys
 from shutil import copy
 from enum import Enum
 from sqlite3 import DatabaseError
+try:
+    import errno
+except:
+    from os import errno
+
+
 ROOT_DIR = dirname(abspath(__file__))
 USER_CONFIG = join(ROOT_DIR, 'configs', 'user_config.json')
 TOOLS = ["ansible", "docker"]
