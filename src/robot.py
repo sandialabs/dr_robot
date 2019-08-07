@@ -542,8 +542,8 @@ class Robot:
 
         results = []
         for item in tqdm(data):
-            hostname = hostname_reg.search(item.strip())
-            ip = ip_regex.search(item.strip())
+            hostname = hostname_reg.search(item.rstrip())
+            ip = ip_regex.search(item.rstrip())
             hostname = hostname.group() if hostname else None
             ip = ip.group() if ip else None
             
@@ -583,14 +583,16 @@ class Robot:
                 "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0"
                 }
         try:
-            http = requests.get(f"http://{ip}", headers=headers, timeout=0.5, verify=False).headers
+            http = requests.get(f"http://{ip}", headers=headers, timeout=3, verify=False).headers
             http = str(http)
-        except:
+        except Exception as er:
+            logger.exception(f"Could not retrieve http header for ip: {ip}")
             pass
         try:
-            https = requests.get(f"https://{ip}", headers=headers, timeout=0.5, verify=False).headers
+            https = requests.get(f"https://{ip}", headers=headers, timeout=3, verify=False).headers
             https = str(https)
         except:
+            logger.exception(f"Could not retrieve https header for ip: {ip}")
             pass
         return ip , (http, https)
 
@@ -608,6 +610,7 @@ class Robot:
         dbconn = sqlite3.connect(self.dbfile)
         dbcurs = dbconn.cursor()
 
+        print("[*] Grabbing headers from ips and hostnames")
         ips = dbcurs.execute(f"""SELECT ip 
                                     FROM data 
                                     WHERE ip IS NOT NULL 
@@ -630,6 +633,28 @@ class Robot:
                                 LIMIT 1;""", 
                                 (http, https, ip, domain_rep))
         dbcurs.execute("COMMIT")
+
+        hostnames = dbcurs.execute(f"""SELECT ip 
+                                    FROM data 
+                                    WHERE ip IS NOT NULL 
+                                    AND domain='{self.domain.replace('.','_')}'"""
+                                ).fetchall()
+        hostnames = [item[0] for item in hostnames]
+        with ThreadPoolExecutor(max_workers=40) as pool:
+            hostname_headers = dict(tqdm(pool.map(Robot.grab_header,
+                                            hostnames),
+                                   total=len(hostnames)))
+        dbcurs.execute('BEGIN TRANSACTION')
+        domain_rep = self.domain.replace(".", "_")
+        for hostname, (http, https) in hostname_headers.items():
+            dbcurs.execute(f"""UPDATE data 
+                                SET http_headers=?, https_headers=? 
+                                WHERE hostname = ? 
+                                AND domain= ? 
+                                LIMIT 1;""", 
+                                (http, https, hostname, domain_rep))
+        dbcurs.execute("COMMIT")
+
         dbconn.close()
 
     def _gen_output(self):
