@@ -25,7 +25,7 @@ class TestCLI(object):
                     "output_file": 'tests.txt'
                     }
                 }
-        testinput = ["prog", "testdomain", "gather", "-test", "-web"]
+        testinput = ["prog", "gather", "-test", "-web", "testdomain"]
         with patch('drrobot.sys.argv', testinput):
             parser = parse_args(scanners=scanners, webtools=webtools)
             args = parser.parse_args()
@@ -49,7 +49,7 @@ class TestCLI(object):
                     "output_file": 'tests.txt'
                     }
                 }
-        testinput = ["prog",  "testdomain", "--proxy", "http://test.testproxy", "--dns", "testdns", "gather"]
+        testinput = ["prog","--proxy", "http://test.testproxy", "--dns", "testdns", "gather", "testdomain" ]
         with patch('drrobot.sys.argv', testinput):
             parser = parse_args(scanners=scanners, webtools=webtools)
             args = parser.parse_args()
@@ -62,7 +62,7 @@ class TestCLI(object):
                     "short_name": "test",
                     }
                 }
-        testinput = ["prog", "testdomain", "inspect", "-test"]
+        testinput = ["prog", "inspect", "-test", "testdomain"]
         with patch('drrobot.sys.argv', testinput):
             parser = parse_args(enumeration=enumeration)
             args = parser.parse_args()
@@ -74,7 +74,7 @@ class TestCLI(object):
                     "short_name": "test",
                     }
                 }
-        testinput = ["prog", "testdomain" , "upload", "-test"]
+        testinput = ["prog",  "upload", "-test", "testdomain"]
         with patch('drrobot.sys.argv', testinput):
             parser = parse_args(upload_dest=upload_dest)
             args = parser.parse_args()
