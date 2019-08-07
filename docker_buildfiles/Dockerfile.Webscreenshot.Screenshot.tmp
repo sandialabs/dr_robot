@@ -1,0 +1,38 @@
+FROM ubuntu:latest
+
+ENV http_proxy $proxy
+ENV https_proxy $proxy
+ENV DNS $dns
+ENV TARGET $target
+ENV OUTPUT $output/httpscreenshot
+ENV INFILE $infile
+ENV TOOL $tool_web
+
+
+RUN if [ -n "$DNS" ]; \
+    then echo "nameserver $DNS" > /etc/resolv.conf;\
+    fi;\
+    apt-get update \
+    && apt-get install -y wget git python python-pip chromium-browser xvfb firefox phantomjs
+
+
+RUN if [ -n "$DNS" ]; \
+    then echo "nameserver $DNS" > /etc/resolv.conf;\
+    fi;\
+    git clone https://github.com/maaaaz/webscreenshot.git webscreenshot 
+
+WORKDIR webscreenshot
+
+RUN if [ -n "$DNS" ]; \
+    then echo "nameserver $DNS" > /etc/resolv.conf;\
+    fi;\
+    pip install -r requirements.txt
+
+RUN if [ -n "$DNS" ]; \
+    then echo "nameserver $DNS" > /etc/resolv.conf;\
+    fi;\
+    pip install -r requirements.txt
+
+RUN mkdir -p $OUTPUT 
+
+ENTRYPOINT python webscreenshot.py -i $$INFILE -o $$OUTPUT -r $tool_web --no-xserver

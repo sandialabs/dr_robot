@@ -35,4 +35,4 @@ RUN if [ -n "$VT_KEY" ]; \
 
 WORKDIR $output
 
-ENTRYPOINT knockpy -j $target
+ENTRYPOINT knockpy -c $target

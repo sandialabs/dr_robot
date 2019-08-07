@@ -272,6 +272,9 @@ class Robot:
             except json.JSONDecodeError:
                 print(f"[!] Failure authenticating to service. Check error log for details")
                 logger.exception(f"Failure authenticating to service.")
+            except ValueError:
+                print("[!] Value Error thrown. Check error log for details")
+                logger.exception("Value error on init")
 
         for thread in threads:
             thread.start()
@@ -441,7 +444,7 @@ class Robot:
             """
             cursor.execute('BEGIN TRANSACTION')
             domain = self.domain.replace(".","_")
-            for host, ip in ips.items():
+            for host, ip in ips:
                 cursor.execute("""INSERT OR IGNORE INTO data 
                                     (ip, hostname, http_headers, https_headers, domain) 
                                     VALUES (?,?, NULL, NULL, ?);""", 
@@ -469,9 +472,6 @@ class Robot:
                         chunks = []
                 yield chunks
         try:
-            ip_regex = re.compile(
-                    r"(?:(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)\.){3}(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)")
-            hostname_reg = re.compile(r"([A-Za-z0-9\-]*\.?)*\." + self.domain)
 
             dbconn = sqlite3.connect(join_abs(self.ROOT_DIR, "dbs", self.dbfile))
             dbcurs = dbconn.cursor()
@@ -515,24 +515,18 @@ class Robot:
                             all_files += [join_abs(root,f)]
 
             self._print(f"Parsing all files {all_files}")
+            all_ips =[]
             for filename in all_files:
                 print(f"[*] Parsing file: {filename}")
-                for ips in read_file(join_abs(filename)):
-                    with ThreadPoolExecutor(max_workers=40) as pool:
-                        tool_ips = dict(tqdm(pool.map(Robot._reverse_ip_lookup,
-                                                      ips,
-                                                      repeat(hostname_reg, len(ips)),
-                                                      repeat(ip_regex, len(ips))),
-                                        total=len(ips)))
-                        build_db(tool_ips, dbcurs)
+                for data in read_file(join_abs(filename)):
+                    all_ips += self._reverse_ip_lookup(data)
+            build_db(all_ips, dbcurs)
             dbconn.commit()
         finally:
             dbconn.close()
 
-    @staticmethod
-    def _reverse_ip_lookup(data, hostname_reg, ip_regex):
+    def _reverse_ip_lookup(self, data):
         """
-        Static method to do a reverse lookup of ip to hostname and vice versa if need be.
 
         Args:
             data (str): ambiguous string, either ip or hostname.
@@ -540,23 +534,37 @@ class Robot:
             ip_regex (re): compiled regex for ip grouping
 
         Returns:
-            (Tuple) hostname, ip
+            (List) of Tuples (hostname, ip)
         """
-        hostname = hostname_reg.search(data.strip())
-        ip = ip_regex.search(data.strip())
-        hostname = hostname.group() if hostname else None
-        ip = ip.group() if ip else None
+        ip_regex = re.compile(
+                r"(?:(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)\.){3}(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)")
+        hostname_reg = re.compile(r"([A-Za-z0-9\-]*\.?)*\." + self.domain)
 
-        try:
-            if not hostname and ip:
-                hostname = socket.gethostbyaddr(ip)[0]
-            if not ip and hostname:
-                ip = socket.gethostbyname(hostname)
+        results = []
+        for item in tqdm(data):
+            hostname = hostname_reg.search(item.strip())
+            ip = ip_regex.search(item.strip())
+            hostname = hostname.group() if hostname else None
+            ip = ip.group() if ip else None
+            
+            if hostname is None and ip is None:
+                continue
 
-        except socket.herror as er:
-            logger.exception(f"{ip}{hostname}: Host cannot be resolved, not adding")
-        finally:
-            return hostname, ip
+            try:
+                if not hostname and ip:
+                    hostname = socket.gethostbyaddr(ip)
+                    hostname = hostname[0]
+                if not ip and hostname:
+                    ip = socket.gethostbyname(hostname)
+
+            except socket.herror as er:
+                logger.exception(f"{ip}{hostname}: Host cannot be resolved, not adding")
+            except Exception as er:
+                logger.exception(f"{ip}{hostname}: Error with socker")
+            finally:
+                results += [(hostname, ip)] 
+
+        return results
 
     @staticmethod
     def grab_header(ip):

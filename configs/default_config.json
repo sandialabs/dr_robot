@@ -258,6 +258,20 @@
             "infile" : "/tmp/output/aggregated/aggregated_hostnames.txt",
             "enabled" : false,
             "tool_nmap" : "chromium-browser"
+        },
+        "Webscreenshot" : {
+            "name" : "WebScreenshot",
+            "short_name" : "webscreen",
+            "docker_name" : "webscreen",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "default_conf" : "docker_buildfiles/Dockerfile.Webscreenshot.Screenshot.tmp",
+            "active_conf" : "docker_buildfiles/Dockerfile.Webscreenshot.Screenshot",
+            "description" : "Post enumeration tool for screen grabbing websites. (Chrome is not installed in the dockerfile due. Options are chromium-browser/firefox/wkhtmltoimage)",
+            "output" : "/tmp/output",
+            "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt",
+            "enabled" : false,
+            "tool_web" : "phantomjs"
         }
     }
 }
