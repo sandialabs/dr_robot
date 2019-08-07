@@ -188,12 +188,38 @@
             "docker_name" : "altdns",
             "default_conf": "docker_buildfiles/Dockerfile.Altdns.tmp",
             "active_conf": "docker_buildfiles/Dockerfile.Altdns",
-            "description": "",
-            "src": "",
+            "description": "Generates permutations, alterations and mutations of subdomains and then resolves them",
+            "src": "https://github.com/infosec-au/altdns",
             "infile" : "/root/altdns/aggregated/aggregated_hostnames.txt",
             "output": "/root/altdns",
             "output_folder": "altdns"
-        }        
+        },
+        "Anubis": {
+            "name": "Anubis",
+            "default" : false,
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "anubis",
+            "default_conf": "docker_buildfiles/Dockerfile.Anubis.tmp",
+            "active_conf": "docker_buildfiles/Dockerfile.Anubis",
+            "description": "Anubis is a subdomain enumeration and information gathering tool.",
+            "src": "https://github.com/jonluca/Anubis",
+            "output": "/root/anubis",
+            "output_folder": "anubis"
+        } ,
+        "CTExposer": {
+            "name": "CTExpose",
+            "default" : false,
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "ctexpo",
+            "default_conf": "docker_buildfiles/Dockerfile.CT.tmp",
+            "active_conf": "docker_buildfiles/Dockerfile.CT",
+            "description": "An OSINT tool that discovers sub-domains by searching Certificate Transparency ",
+            "src": "https://github.com/chris408/ct-exposer",
+            "output": "/root/ct",
+            "output_folder": "ctexpose"
+        }      
     },
     "Enumeration" :
     {
