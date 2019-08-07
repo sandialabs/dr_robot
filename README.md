@@ -6,6 +6,7 @@ ________...........__________.........___...............__...
 /_______../.|__|....|____|_../.\____/..|___../.\____/..|__|..
 ........\/.................\/..............\/................
 ```
+[![Dc27Badge](https://img.shields.io/badge/DEF%20CON-27-green)](https://defcon.org/html/defcon-27/dc-27-demolabs.html#Dr.%20ROBOT)
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/sandialabs/dr_robot/blob/master/LICENSE)
 [![Build Status](https://travis-ci.org/sandialabs/dr_robot.svg?branch=master)](https://travis-ci.org/sandialabs/dr_robot)
 
