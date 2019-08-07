@@ -51,7 +51,7 @@ class Robot:
         self.proxy = kwargs.get("proxy", None)
         self.domain = kwargs.get("domain", None)
         self.verbose = kwargs.get("verbose", False)
-        self.dbfile = kwargs.get("dbfile", "drrobot.py")
+        self.dbfile = kwargs.get("dbfile")
 
         self.ROOT_DIR = kwargs.get("root_dir")
         if self.domain:
@@ -364,7 +364,7 @@ class Robot:
 
         """
         try:
-            dbconn = sqlite3.connect(join_abs(self.ROOT_DIR, "dbs", self.dbfile))
+            dbconn = sqlite3.connect(self.dbfile)
             dbcurs = dbconn.cursor()
             
             self._print(f"Creating sqlite file {self.dbfile}")
@@ -473,7 +473,7 @@ class Robot:
                 yield chunks
         try:
 
-            dbconn = sqlite3.connect(join_abs(self.ROOT_DIR, "dbs", self.dbfile))
+            dbconn = sqlite3.connect(self.dbfile)
             dbcurs = dbconn.cursor()
             dbcurs.execute("PRAGMA foreign_keys=1") #Enable foreign key support
             # Simpel database that contains list of domains to run against
@@ -605,7 +605,7 @@ class Robot:
 
         """
 
-        dbconn = sqlite3.connect(join_abs(self.ROOT_DIR, "dbs", self.dbfile))
+        dbconn = sqlite3.connect(self.dbfile)
         dbcurs = dbconn.cursor()
 
         ips = dbcurs.execute(f"""SELECT ip 
@@ -642,11 +642,11 @@ class Robot:
             (Dict) file_index: Dictionary of dictionaries containing ip, hostname information from various phases of Dr.Robot 
 
         """
-        if not exists(join_abs(self.ROOT_DIR, "dbs", self.dbfile)):
+        if not exists(self.dbfile):
             self._print("No database file found. Exiting")
             return
 
-        dbconn = sqlite3.connect(join_abs(self.ROOT_DIR, "dbs", self.dbfile))
+        dbconn = sqlite3.connect(self.dbfile)
         dbcurs = dbconn.cursor()
 
         db_headers = dbcurs.execute(f"""SELECT * 
@@ -676,7 +676,7 @@ class Robot:
                 3. Update json with all documents
         """
         self._print(f"How many ip/hostnames with header information found {len(db_headers)}")
-        for ip, hostname, http, https in db_headers:
+        for _, ip, hostname, http, https, domainname in db_headers:
             ip_screenshots = glob.glob("**/*{}*".format(ip), recursive=True)
             hostname_screeshots = glob.glob("**/*{}*".format(hostname), recursive=True)
         
@@ -799,7 +799,7 @@ class Robot:
 
         if infile is None:
             print("[*] No file provided, dumping db for input")
-            db_file_loc = join_abs(self.ROOT_DIR, "dbs", self.dbfile)
+            db_file_loc = self.dbfile
             if getsize(db_file_loc) > 0:
                 self._dump_db_to_file()
             else:

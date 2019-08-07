@@ -60,7 +60,7 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}, server=
                         help="Display verbose statements")
 
     parser.add_argument('--dbfile',
-                        default="drrobot.db",
+                        default=join_abs(ROOT_DIR, "dbs", "drrobot.db"),
                         type=str,
                         help="Specify what db file to use for saving data too")
 
@@ -175,7 +175,7 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}, server=
     ##########################
 
     parser_dumpdb = subparser.add_parser("dumpdb",
-                                         help="Dump the database of ip,hostname,banners to a text file")
+                                         help="Dump contents of database (ip,hostname,banners) to a text file with hostname for filename")
     parser_dumpdb.add_argument("domain",
                                 type=str,
                                 help="Domain to show data for")
@@ -400,7 +400,9 @@ if __name__ == '__main__':
             drrobot.generate_output(_format, output)
 
         if args.actions in "dumpdb":
-            if exists(join_abs(ROOT_DIR, "dbs", f"{getattr(args, 'domain')}.db")):
+            dbpath = getattr(args, "dbfile") 
+
+            if exists(dbpath):
                 if not exists(join_abs(ROOT_DIR, "output", getattr(args, 'domain'), "headers")):
                     makedirs(join_abs(ROOT_DIR, "output", getattr(args, 'domain'), "headers"))
                 drrobot.dumpdb()
