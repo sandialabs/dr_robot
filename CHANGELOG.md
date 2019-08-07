@@ -4,13 +4,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+* JSON parsing, and other file identification
+* Multithreading file parsing. Previous implementation had a couple issues
+
 ### Beta
 * Serve option to host Django serve via Docker
 	* make requests to http://hostname:port/data/<domain_name>/
 	* Allow various selections of hosting data. Currently only supports Django via Docker.
-* Refactor all templates to adjust for DNS options
 
-## [1.2.0] - Jun 2019
+## [1.2.0] - August 2019
 
 Updates
 
@@ -18,15 +20,24 @@ Updates
 
 * **Django** docker container to server domain data
 * Added dbfile option for specification of personal database
+* **Webscreenshot** (Currently phantomjs receives the best results in Docker)
+* **Altdns**
+* **Slack** configuration. Requires you to set up a channel and make a robot with correct permissions similar to other Plugins.
 
 ### Removed
+
 ### Changed
 
 * **SQLlite** refactor
     * Use two tables 1 for list of domains, 1 for all data gather. 
+* Threading for reading files. Sometimes this threading would cause unknown hangs. Working on creating a more improved version of the file parsing.
+* Minor packages updates for urllib3 and Jinja
 
 ### Fixed
 
+* ValueError exception was not caught when building web tools. If you were missing a field  it would crash the program
+* Amass Dockerfile
+* Changes Knock to output CSV rather than Json
 
 ## [1.1.0] - Feb 2019 
 
