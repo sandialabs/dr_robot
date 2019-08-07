@@ -219,7 +219,20 @@
             "src": "https://github.com/chris408/ct-exposer",
             "output": "/root/ct",
             "output_folder": "ctexpose"
-        }      
+        },
+        "CTFR": {
+            "name": "CTFR",
+            "default" : false,
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "ctfr",
+            "default_conf": "docker_buildfiles/Dockerfile.CTFR.tmp",
+            "active_conf": "docker_buildfiles/Dockerfile.CTFR",
+            "description": "Abusing Certificate Transparency logs for getting HTTPS websites subdomains.",
+            "src": "https://github.com/UnaPibaGeek/ctfr",
+            "output": "/root/ctfr",
+            "output_folder": "ctfr"
+        }
     },
     "Enumeration" :
     {
