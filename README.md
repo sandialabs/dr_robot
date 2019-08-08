@@ -37,10 +37,20 @@ Dr. ROBOT is a tool for **Domain Reconnaissance and Enumeration**. By utilizing 
 **Install and Run**
 
 ![](docs/images/demo.gif)
+
+**Inspect**
 ![](docs/images/inspect.gif)
+
+**Upload Slack**
 ![](docs/images/upload_slack.gif)
+
+**Dump DB**
 ![](docs/images/dumpdb.gif)
+
+**Output**
 ![](docs/images/output.gif)
+
+**Serve**
 ![](docs/images/serve.gif)
 
 **Command Examples**
