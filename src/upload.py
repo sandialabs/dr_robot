@@ -1,5 +1,5 @@
 from mattermostdriver import Driver, exceptions
-from slackclient import SlackClient
+import slack
 from abc import ABC, abstractmethod
 import logging
 import datetime
@@ -58,7 +58,6 @@ class Mattermost(Forum):
             'username' : self.username,
             'port' : kwargs.get('port', 8065)
             })
-        self.output_dir = kwargs.get("output_dir")
         self.team_name = kwargs.get("team_name", None)
         self.channel_name = kwargs.get("channel_name", None)
         self.filepath = kwargs.get("filepath", None)
@@ -113,8 +112,6 @@ class Mattermost(Forum):
             print(f"[!] InvalidOrMissingParameters {er}")
             logger.exception()
 
-        file_location = self.output_dir
-
         try:
             if isfile(self.filepath):
                 file_ids = [self.inst.files.upload_file(channel_id=channel_id,
@@ -128,8 +125,7 @@ class Mattermost(Forum):
                     })
 
             elif isdir(self.filepath):
-                if self.filepath and exists(abspath(self.filepath)):
-                    file_location = abspath(self.filepath)
+                file_location = abspath(self.filepath)
 
                 self._upload_files(file_location, channel_id)
 
@@ -150,7 +146,6 @@ class Slack(Forum):
         """
         super().__init__(**kwargs)
 
-        self.output_dir = kwargs.get("output_dir")
         self.channel_name = kwargs.get("channel_name", None)
         self.filepath = kwargs.get("filepath", None)
 
@@ -180,16 +175,13 @@ class Slack(Forum):
                     yield (filename, join_abs(root, filename))
 
     def upload(self, **kwargs):
-        sc = SlackClient(self.api_key)
-        file_location = self.output_dir
+        sc = slack.WebClient(self.api_key)
 
         #try:
         if isfile(self.filepath):
-            sc.api_call(
-                    "files.upload",
+            sc.files_upload(
                     channels=self.channel_name,
-                    file=open(self.filepath, "rb"),
-                    filename=basename(self.filepath))
+                    file=self.filepath)
 
         elif isdir(self.filepath):
             print(self.filepath)
@@ -198,12 +190,9 @@ class Slack(Forum):
 
             for filename, filepath in self._get_files(file_location):
                 print(filename, filepath)
-                sc.api_call(
-                        "files.upload",
+                sc.files_upload(
                         channels=self.channel_name,
-                        file=open(filepath, "rb"),
-                        filename=filename)
-                time.sleep(1)
+                        file=filepath)
         #except Exception as ex:
         #    print(str(ex))
         #    logger.exception(ex)

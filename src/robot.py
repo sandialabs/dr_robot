@@ -320,7 +320,6 @@ class Robot:
                         "team_name": dest_json.get('team_name'),
                         "channel_name": dest_json.get('channel_name'),
                         "filepath": filepath,
-                        "output_dir": self.OUTPUT_DIR
                         }
 
                 self._print(f"Uploading to {dest} with options \n\t{attr}")
@@ -852,7 +851,7 @@ class Robot:
                 [thread.join() for thread in _threads if thread]
             except KeyboardInterrupt:
                 self._print("Keyboard Interrupt sending kill signal to docker")
-                [post_doc.kill() for scanner in scanners]
+                [doc.kill() for doc in post_doc]
                 raise KeyboardInterrupt
 
     def upload(self, **kwargs):

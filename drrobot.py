@@ -136,8 +136,7 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}, server=
     ##########################
 
     parser_upload = subparser.add_parser('upload',
-                                         help="Upload recon data to Mattermost. Currently only works with a"
-                                         "folder that contain PNG images.")
+                                         help="Upload recon data to Mattermost/Slack")
 
     for k in upload_dest.keys():
         parser_upload.add_argument(f"-{upload_dest[k].get('short_name')}",
@@ -145,16 +144,11 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}, server=
                                    action='store_true',
                                    help=upload_dest[k].get('description', "No description provided"))
 
-    parser_upload.add_argument(f"--filepath",
-                               default=None,
+    parser_upload.add_argument(f"filepath",
                                type=str,
                                help="Filepath to the folder containing images"
                                "to upload. This is relative to the domain "
                                "specified. By default this will just be the path to the output folder")
-
-    parser_upload.add_argument("domain",
-                                type=str,
-                                help="Domain to run scan against")
     ##########################
     #REBUILD
     ##########################
@@ -362,6 +356,13 @@ if __name__ == '__main__':
         if args.actions in "upload":
 
             filepath = getattr(args, "filepath")
+            if filepath is None:
+                print("No filepath provided, exiting...")
+                sys.exit(0)
+            elif not exists(filepath):
+                print("Filepath does not exists, exiting...")
+                sys.exit(0)
+
             drrobot._print(f"Beginning upload with file path: {filepath}")
 
             upload_dest = {k: v for k, v in tools.get("upload_dest").items() if
@@ -421,7 +422,7 @@ if __name__ == '__main__':
         print(f"[!] Something went wrong with SQLite\n {er}")
         log.error(er)
     except KeyboardInterrupt:
-        print("[!] Cancelling scan")
+        print("[!] KeyboardInterrup, exiting...")
     except OSError as er:
         log.error(er)
         print(f"[!] {er}")

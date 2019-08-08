@@ -631,6 +631,12 @@ drwxrwxr-x 7 sasha sasha    4096 Mar 19 13:49 ..
 
 ```
 
+### Slack
+
+Please check the following for a guide on how to setup your Python bot for messaging.
+
+https://github.com/slackapi/python-slackclient
+
 ### SQLite DB file schema
 
 Table Data:
