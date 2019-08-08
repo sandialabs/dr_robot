@@ -26,6 +26,9 @@ Updates
 
 ### Removed
 
+* Removed global domain option for all subparsers
+* Removed domain requirement for upload
+
 ### Changed
 
 * **SQLlite** refactor
@@ -38,6 +41,8 @@ Updates
 * ValueError exception was not caught when building web tools. If you were missing a field  it would crash the program
 * Amass Dockerfile
 * Changes Knock to output CSV rather than Json
+* KeyboardInterrupt when running docker containers caused error message. Now cancels gracefully.
+* Slack client was updated. Changed code to reflect new client changes.
 
 ## [1.1.0] - Feb 2019 
 
