@@ -890,6 +890,7 @@ class Robot:
         print("[*] Rebuilding DB")
         filenames = kwargs.get("files", None)
         output_files = [] 
+        output_files += [f for f in filenames if isfile(f)]
         for root, dirs, files in walk(self.OUTPUT_DIR, topdown=True):
             dirs = [d for d in filenames if isdir(d)]
             for f in files:
