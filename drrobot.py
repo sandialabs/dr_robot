@@ -123,10 +123,10 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}, server=
                                     help=enumeration[k].get('description', "No description provided"),
                                     default=False)
 
-    parser_inspect.add_argument('--file',
-                                default=None,
-                                type=str,
-                                help="(NOT WORKING) File with hostnames to run further inspection on")
+    # parser_inspect.add_argument('--file',
+    #                             default=None,
+    #                             type=str,
+    #                             help="(NOT WORKING) File with hostnames to run further inspection on")
 
     parser_inspect.add_argument("domain",
                                 type=str,
@@ -351,8 +351,8 @@ if __name__ == '__main__':
             except KeyError as e:
                 print(f"[!] Mode {e} not found. Please fix config file")
 
-            file = getattr(args, 'file', None)
-            drrobot.inspection(post_enum_ansible=post_enum_ansible, post_enum_dockers=post_enum_dockers, file=file)
+            _file = getattr(args, 'file', None)
+            drrobot.inspection(post_enum_ansible=post_enum_ansible, post_enum_dockers=post_enum_dockers, file=_file)
 
         if args.actions in "upload":
 
