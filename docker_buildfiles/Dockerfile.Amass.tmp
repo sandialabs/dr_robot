@@ -3,13 +3,14 @@ FROM golang:alpine as build
 ENV http_proxy $proxy
 ENV https_proxy $proxy
 ENV DNS $dns
-ENV TARGET $target
-ENV OUTPUT $output/amass.txt
-ENV INFILE  $infile
 
 RUN mkdir -p $output
 
 RUN apk --no-cache add git \
   && go get -u github.com/OWASP/Amass/...
+
+ENV TARGET $target
+ENV OUTPUT $output/amass.txt
+ENV INFILE  $infile
 
 ENTRYPOINT amass -d "$target" --passive -o $output

@@ -4,9 +4,6 @@ WORKDIR /home
 ENV http_proxy $proxy
 ENV https_proxy $proxy
 ENV DNS $dns
-ENV TARGET $target
-ENV OUTPUT $output
-ENV VT_KEY $vt_key
 
 RUN mkdir -p $output
 
@@ -32,6 +29,10 @@ RUN if [ -n "$DNS" ]; \
 RUN if [ -n "$VT_KEY" ]; \
     then sed -i ".orig" 's/""/"$VT_KEY"/g' knockpy/config.json;\
     fi
+
+ENV TARGET $target
+ENV OUTPUT $output
+ENV VT_KEY $vt_key
 
 WORKDIR $output
 

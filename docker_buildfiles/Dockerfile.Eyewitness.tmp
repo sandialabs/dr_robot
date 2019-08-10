@@ -3,9 +3,6 @@ FROM phusion/baseimage
 ENV http_proxy $proxy
 ENV https_proxy $proxy
 ENV DNS $dns
-ENV TARGET $target
-ENV OUTPUT $output/Eyewitness
-ENV INFILE  $infile
 
 ARG user=eyewitness
 
@@ -31,8 +28,7 @@ RUN if [ -n "$DNS" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
 	  git clone https://github.com/ChrisTruncer/EyeWitness.git && \
-    cd EyeWitness && \
-    git checkout '489e4b4ba9d106e1bc83ff80e70e2f53757e1018'
+    cd EyeWitness
 
 WORKDIR /home/$$user/EyeWitness
 
@@ -41,5 +37,9 @@ RUN cd setup && \
     cd .. && \
     chown -R $$user:$$user /home/$$user/EyeWitness && \
     mkdir -p /tmp/EyeWitness
+
+ENV TARGET $target
+ENV OUTPUT $output/Eyewitness
+ENV INFILE  $infile
 
 ENTRYPOINT mkdir -p $output && python EyeWitness.py -d $output -f $infile --no-prompt --web --threads 40 --max-retries 1

@@ -4,8 +4,6 @@ WORKDIR /home
 ENV http_proxy $proxy
 ENV https_proxy $proxy
 ENV DNS $dns
-ENV TARGET $target
-ENV OUTPUT $output
 
 RUN mkdir -p $output
 
@@ -25,5 +23,8 @@ RUN if [ -n "$$DNS" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     pip3 install -r requirements.txt
+
+ENV TARGET $target
+ENV OUTPUT $output
 
 ENTRYPOINT python3 sublist3r.py --domain $target -o $output/sublist3r.txt

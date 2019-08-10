@@ -3,8 +3,6 @@ FROM andrius/alpine-ruby
 ENV http_proxy $proxy
 ENV https_proxy $proxy
 ENV DNS $dns
-ENV TARGET $target
-ENV OUTPUT $output
 
 RUN if [ -n "$$DNS" ];\
     then echo "nameserver $dns" >> /etc/resolv.conf;\
@@ -18,6 +16,9 @@ RUN if [ -n "$$DNS" ]; \
     then gem install --http-proxy=$http_proxy aquatone;\
     else gem install aquatone; \
     fi;
+
+ENV TARGET $target
+ENV OUTPUT $output
 
 RUN mkdir -p $output
 

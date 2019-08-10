@@ -3,9 +3,6 @@ FROM python:2.7
 ENV http_proxy $proxy
 ENV https_proxy $proxy
 ENV DNS $dns
-ENV INFILE $infile
-ENV TARGET $target
-ENV OUTPUT $output
 
 
 RUN if [ -n "$$DNS" ]; \
@@ -28,6 +25,10 @@ RUN if [ -n "$DNS" ]; \
 
 RUN cp $infile /tmp/infile.txt; \
     echo $target >> /tmp/infile.txt
+
+ENV INFILE $infile
+ENV TARGET $target
+ENV OUTPUT $output
 
 RUN mkdir -p $output
 

@@ -35,7 +35,7 @@ class WebTool(ABC):
 
     def _print(self, msg):
         if self.verbose:
-            print("\t[D] "+msg)
+            print("[D] "+msg)
         logger.debug(msg)
 
     def _write_results(self):
@@ -180,9 +180,9 @@ class Shodan(WebTool):
                         "\t timestamp: {} \n"\
                         .format(" ".join(item.get("hostnames", "")), item.get("product", ""), item.get("port",""), item.get("location", ""), item.get("timestamp", "")))
                 self._write_results()
-            print("[*]\t Finished Shodan Query")
+            print("[*] Finished Shodan Query")
         except shodan.APIError as er:
-            print("[!]\t\t Shodan Error. See log for more details")
+            print("[!] Shodan Error. See log for more details")
             logger.exception()
 
 
@@ -328,4 +328,4 @@ class VirusTotal(WebTool):
         except OSError as er:
             logger.exception()
             print(f"[!] Writing to file failed {er}")
-        print("[*]\t End VirtusTotal Query")
+        print("[*] End VirtusTotal Query")

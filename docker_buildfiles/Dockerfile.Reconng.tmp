@@ -3,8 +3,6 @@ FROM python:2.7
 ENV http_proxy $proxy
 ENV https_proxy $proxy
 ENV DNS $dns
-ENV TARGET $target/reconng
-ENV OUTPUT $output
 
 RUN mkdir -p /home/
 
@@ -25,6 +23,8 @@ RUN if [ -n "$DNS" ]; \
     fi;\
     pip install -r REQUIREMENTS
 
+ENV TARGET $target/reconng
+ENV OUTPUT $output
 
 RUN echo './recon-cli -m recon/domains-hosts/threatcrowd  -o SOURCE="$target" -o PROXY="$http_proxy" -o NAMESERVER="$DNS" -x | grep host > $output/threatcrowd.txt' > run.sh
 RUN echo './recon-cli -m recon/domains-hosts/bing_domain_web  -o SOURCE="$target" -o PROXY="$http_proxy" -o NAMESERVER="$DNS"  -x | grep host > $output/bing_domain_web.txt' >> run.sh

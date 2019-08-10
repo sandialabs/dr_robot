@@ -8,11 +8,12 @@ import socket
 import threading
 import requests
 import glob
+from urllib.parse import urlparse
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from concurrent.futures import ThreadPoolExecutor
 from itertools import repeat
 import sqlite3
-from os.path import dirname, getsize, isfile, exists
+from os.path import dirname, getsize, isfile, exists, isdir
 from os import walk, makedirs, getcwd
 
 from docker.errors import APIError, BuildError, ContainerError, ImageNotFound
@@ -116,11 +117,12 @@ class Robot:
         for scanner in scanners:
             try:
                 scanner.build()
+                print(f"[*] Running the following docker containers: {[scanner.name for scanner in scanners]}")
                 scanner.run()
             except BuildError as er:
-                print(f"Build Error encountered {er}")
+                print(f"[!] Build Error encountered {er}")
                 if "net/http" in str(er):
-                    print("This could be a proxy issue, see https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
+                    print("[!] This could be a proxy issue, see https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
                 if not self.dns:
                     print(f"\t[!] No DNS set. This could be an issue")
                     self._print("No DNS set. This could be an issue")
@@ -535,17 +537,17 @@ class Robot:
         Returns:
             (List) of Tuples (hostname, ip)
         """
-        ip_regex = re.compile(
-                r"(?:(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)\.){3}(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)")
-        hostname_reg = re.compile(r"([A-Za-z0-9\-]*\.?)*\." + self.domain)
-
+        
         results = []
         for item in tqdm(data):
-            hostname = hostname_reg.search(item.rstrip())
-            ip = ip_regex.search(item.rstrip())
-            hostname = hostname.group() if hostname else None
-            ip = ip.group() if ip else None
-            
+            hostname = None
+            ip = None
+            try:
+                socket.inet_pton(socket.AF_INET, item.rstrip())
+                ip = item.rstrip()
+            except socket.error:
+                hostname = urlparse(item.rstrip()).netloc
+
             if hostname is None and ip is None:
                 continue
 
@@ -557,9 +559,9 @@ class Robot:
                     ip = socket.gethostbyname(hostname)
 
             except socket.herror as er:
-                logger.exception(f"{ip}{hostname}: Host cannot be resolved, not adding")
+                logger.exception(f"{ip} {hostname}: Host cannot be resolved, not adding")
             except Exception as er:
-                logger.exception(f"{ip}{hostname}: Error with socker")
+                logger.exception(f"{ip} {hostname}: Error with socket")
             finally:
                 results += [(hostname, ip)] 
 
@@ -582,13 +584,13 @@ class Robot:
                 "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0"
                 }
         try:
-            http = requests.get(f"http://{ip}", headers=headers, timeout=3, verify=False).headers
+            http = requests.get(f"http://{ip}", headers=headers, timeout=1, verify=False).headers
             http = str(http)
         except Exception as er:
             logger.exception(f"Could not retrieve http header for ip: {ip}")
             pass
         try:
-            https = requests.get(f"https://{ip}", headers=headers, timeout=3, verify=False).headers
+            https = requests.get(f"https://{ip}", headers=headers, timeout=1, verify=False).headers
             https = str(https)
         except:
             logger.exception(f"Could not retrieve https header for ip: {ip}")
@@ -886,7 +888,12 @@ class Robot:
 
         """
         print("[*] Rebuilding DB")
-        output_files = kwargs.get("files", None)
+        filenames = kwargs.get("files", None)
+        output_files = [] 
+        for root, dirs, files in walk(self.OUTPUT_DIR, topdown=True):
+            dirs = [d for d in filenames if isdir(d)]
+            for f in files:
+                output_files += [join_abs(root, f)] 
         self._hostname_aggregation(False, output_files=output_files)
         self._grab_headers()
         print("[*] Rebuilding complete")

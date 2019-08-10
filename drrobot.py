@@ -156,14 +156,15 @@ def parse_args(scanners={}, enumeration={}, webtools={}, upload_dest={}, server=
     parser_rebuild = subparser.add_parser('rebuild',
                                           help="Rebuild the database with additional files/all files from previous runtime")
 
+    parser_rebuild.add_argument("domain",
+                                type=str,
+                                help="Domain to dump output of")
+
     parser_rebuild.add_argument("-f",
                                 "--files",
                                 nargs="*",
                                 help="Additional files to supply outside of the ones in the config file")
 
-    parser_rebuild.add_argument("domain",
-                                type=str,
-                                help="Domain to dump output of")
     ##########################
     #DUMPDB
     ##########################
@@ -391,6 +392,8 @@ if __name__ == '__main__':
 
             for output in gen_dict_extract("output_file", tools):
                 files += [output]
+            for folder in gen_dict_extract("output_folder", tools):
+                files += [folder]
 
             drrobot.rebuild(files=files)
 

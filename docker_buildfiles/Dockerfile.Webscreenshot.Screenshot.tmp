@@ -3,10 +3,6 @@ FROM ubuntu:latest
 ENV http_proxy $proxy
 ENV https_proxy $proxy
 ENV DNS $dns
-ENV TARGET $target
-ENV OUTPUT $output/webscreenshot
-ENV INFILE $infile
-ENV TOOL $tool_web
 
 
 RUN if [ -n "$DNS" ]; \
@@ -32,6 +28,12 @@ RUN if [ -n "$DNS" ]; \
     then echo "nameserver $DNS" > /etc/resolv.conf;\
     fi;\
     pip install -r requirements.txt
+
+
+ENV TARGET $target
+ENV OUTPUT $output/webscreenshot
+ENV INFILE $infile
+ENV TOOL $tool_web
 
 RUN mkdir -p $OUTPUT 
 

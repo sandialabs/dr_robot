@@ -139,15 +139,15 @@ class Docker:
         """
         try:
             with tqdm() as pbar:
-                pbar.set_description(f"{self.name} Progress")
+                pbar.set_description(f"Docker container {self.name}, running...")
                 while True:
                     self.container.reload()
                     time.sleep(5)
                     self.status = self.container.status
-                    pbar.update()
+                    pbar.refresh()
 
         except docker.errors.NotFound:
-            print(f"[*] Docker container {self._docker_options['docker_name']} exited")
+            self._print(f"[*] Docker container {self._docker_options['docker_name']} exited")
             self.status = 'exited'
         except AttributeError:
             print("Container is None")

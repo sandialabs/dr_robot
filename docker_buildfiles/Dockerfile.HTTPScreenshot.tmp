@@ -3,9 +3,6 @@ FROM ubuntu:latest
 ENV http_proxy $proxy
 ENV https_proxy $proxy
 ENV DNS $dns
-ENV TARGET $target
-ENV OUTPUT $output/httpscreenshot
-ENV INFILE $infile
 
 RUN if [ -n "$DNS" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
@@ -32,6 +29,10 @@ RUN cd httpscreenshot \
     && wget https://chromedriver.storage.googleapis.com/2.44/chromedriver_linux64.zip \
     && unzip -o chromedriver_linux64.zip \
     && ln -s /httpscreenshot/chromedriver /usr/bin/chromedriver
+
+ENV TARGET $target
+ENV OUTPUT $output/httpscreenshot
+ENV INFILE $infile
 
 RUN mkdir -p $output 
 WORKDIR $output

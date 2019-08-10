@@ -3,11 +3,6 @@ FROM ubuntu:18.04
 ENV http_proxy $proxy
 ENV https_proxy $proxy
 ENV DNS $dns
-ENV TOOL $tool_nmap
-ENV PORTS "80,8080,443,8888"
-ENV TARGET $target
-ENV OUTPUT $output/nmap_screenshot
-ENV INFILE  $infile
 
 RUN if [ -n "$DNS" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\
@@ -25,6 +20,12 @@ RUN if [ -n "$DNS" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\
     wget -O wkhtml.deb https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb \
     && dpkg -i  wkhtml.deb
+
+ENV TOOL $tool_nmap
+ENV PORTS "80,8080,443,8888"
+ENV TARGET $target
+ENV OUTPUT $output/nmap_screenshot
+ENV INFILE  $infile
 
 WORKDIR $output
 
