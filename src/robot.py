@@ -361,7 +361,7 @@ class Robot:
             dump_hostnames (Bool): if hostnames should be dumped
             dump_headers (Bool): if headers should be dumped
 
-        Return:
+        Returns:
 
         """
         try:
@@ -434,7 +434,7 @@ class Robot:
         """
         def build_db(ips, cursor):
             """
-            Clojue that takes in a list of ips and creates a large transaction for inserts.
+            Closure that takes in a list of ips and creates a large transaction for inserts.
 
             Args:
                 ips (Dict): ips, hostnames to insert
@@ -476,8 +476,8 @@ class Robot:
 
             dbconn = sqlite3.connect(self.dbfile)
             dbcurs = dbconn.cursor()
-            dbcurs.execute("PRAGMA foreign_keys=1") #Enable foreign key support
-            # Simpel database that contains list of domains to run against
+            dbcurs.execute("PRAGMA foreign_keys=1") # Enable foreign key support
+            # Simple database that contains list of domains to run against
             dbcurs.execute("""
                             CREATE TABLE IF NOT EXISTS domains (
                                 domain VARCHAR PRIMARY KEY,
@@ -664,9 +664,9 @@ class Robot:
 
         Args:
             (None)
-        Returns:
-            (Dict) file_index: Dictionary of dictionaries containing ip, hostname information from various phases of Dr.Robot 
 
+        Returns:
+            (Dict) file_index: Dictionary of dictionaries containing ip, hostname information from various phases of Dr. ROBOT 
         """
         if not exists(self.dbfile):
             self._print("No database file found. Exiting")

@@ -166,7 +166,7 @@ class Slack(Forum):
         #file_ids = []
         for root, dirs, files in walk(file_location):
             for filename in files:
-                #TODO add optional parameters for adjusting size. Implement file splitting
+                # TODO add optional parameters for adjusting size. Implement file splitting
                 print(f"[...] Uploading {filename}")
                 if stat(join_abs(root, filename)).st_size / 1024 ** 2 > max_filesize:
                     print(f"[!]\tFile {filename} is to big, ignoring for now")
@@ -196,5 +196,3 @@ class Slack(Forum):
         #except Exception as ex:
         #    print(str(ex))
         #    logger.exception(ex)
-
-
