@@ -497,7 +497,8 @@ class Robot:
                                 http_headers TEXT,
                                 https_headers TEXT,
                                 domain VARCHAR,
-                                FOREIGN KEY(domain) REFERENCES domains(domain)
+                                FOREIGN KEY(domain) REFERENCES domains(domain),
+                                UNIQUE(ip, hostname)
                             )
                             """)
             # Quickly create entry in domains table. 
