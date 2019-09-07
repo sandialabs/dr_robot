@@ -1,13 +1,11 @@
 import importlib
 import json
-from xml.dom.minidom import parseString
 import dicttoxml
 import logging
 import re
 import socket
 import threading
 import requests
-import glob
 import mmap
 from urllib.parse import urlparse
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -23,9 +21,11 @@ from tqdm import tqdm
 from . import join_abs
 from .ansible import Ansible
 from .dockerize import Docker
+from .aggregation import Aggregation
 
 
 logger = logging.getLogger(__name__)
+
 
 class Robot:
     def __init__(self, **kwargs):
@@ -45,21 +45,22 @@ class Robot:
         Returns:
 
         """
+        self.domain = kwargs.get("domain", None)
+        self.ROOT_DIR = kwargs.get("root_dir")
+        if self.domain:
+            self.OUTPUT_DIR = join_abs(self.ROOT_DIR, "output", self.domain)
         self.scanners = kwargs.get("scanners", {})
         self.webtools = kwargs.get("webtools", {})
         self.enumeration = kwargs.get("enumeration", {})
         self.boards = kwargs.get("boards", {})
         self.dns = kwargs.get("dns", None)
         self.proxy = kwargs.get("proxy", None)
-        self.domain = kwargs.get("domain", None)
         self.verbose = kwargs.get("verbose", False)
         self.dbfile = kwargs.get("dbfile")
+        self.aggregation = Aggregation(
+            kwargs.get("dbfile"), self.domain, self.OUTPUT_DIR)
 
-        self.ROOT_DIR = kwargs.get("root_dir")
-        if self.domain:
-            self.OUTPUT_DIR = join_abs(self.ROOT_DIR, "output", self.domain)
-
-        #Disable warnings for insecure requests
+        # Disable warnings for insecure requests
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
     def _print(self, msg):
@@ -106,24 +107,36 @@ class Robot:
             options.update({"verbose": self.verbose})
             output_dir = self.OUTPUT_DIR
             if options.get("output_folder", None):
-                output_dir = join_abs(self.OUTPUT_DIR, options.get("output_folder"))
+                output_dir = join_abs(
+                    self.OUTPUT_DIR, options.get("output_folder"))
 
-            self._print(f"Creating scanner for {scan} with options: {json.dumps(options, indent=4)}")
+            self._print(
+                f"Creating scanner for {scan} with options: {json.dumps(options, indent=4)}")
 
-            scanners += [Docker(active_config_path=join_abs(dirname(__file__), '..', scan_dict['active_conf']),
-                         default_config_path=join_abs(dirname(__file__), '..', scan_dict['default_conf']),
-                         docker_options=options,
-                         output_dir=output_dir)]
+            scanners += [
+                Docker(
+                    active_config_path=join_abs(
+                        dirname(__file__),
+                        '..',
+                        scan_dict['active_conf']),
+                    default_config_path=join_abs(
+                        dirname(__file__),
+                        '..',
+                        scan_dict['default_conf']),
+                    docker_options=options,
+                    output_dir=output_dir)]
 
         for scanner in scanners:
             try:
                 scanner.build()
-                print(f"[*] Running the following docker containers: {[scanner.name for scanner in scanners]}")
+                print(
+                    f"[*] Running the following docker containers: {[scanner.name for scanner in scanners]}")
                 scanner.run()
             except BuildError as er:
                 print(f"[!] Build Error encountered {er}")
                 if "net/http" in str(er):
-                    print("[!] This could be a proxy issue, see https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
+                    print(
+                        "[!] This could be a proxy issue, see https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
                 if not self.dns:
                     print(f"\t[!] No DNS set. This could be an issue")
                     self._print("No DNS set. This could be an issue")
@@ -144,17 +157,24 @@ class Robot:
                 logger.exception(f"[!] APIError: {scanner.name}")
 
             except KeyError:
-                print(f"[!] KeyError Output or Docker Name is not defined!!: {scanner.name}")
-                logger.exception(f"[!] KeyError Output or Docker Name is not defined!!: {scanner.name}")
+                print(
+                    f"[!] KeyError Output or Docker Name is not defined!!: {scanner.name}")
+                logger.exception(
+                    f"[!] KeyError Output or Docker Name is not defined!!: {scanner.name}")
 
             except OSError:
-                print(f"[!] Output directory could not be created, please verify permissions")
-                logger.exception(f"[!] Output directory could not be created, please verify permissions")
+                print(
+                    f"[!] Output directory could not be created, please verify permissions")
+                logger.exception(
+                    f"[!] Output directory could not be created, please verify permissions")
 
         threads = list()
         self._print("Threading scanners")
         for scanner in scanners:
-            threads += [threading.Thread(target=scanner.update_status, daemon=True)]
+            threads += [
+                threading.Thread(
+                    target=scanner.update_status,
+                    daemon=True)]
 
         for thread in threads:
             thread.start()
@@ -162,7 +182,6 @@ class Robot:
         return (threads, scanners)
 
     def _run_ansible(self, ansible_mods, infile):
-
         """
         Create ansible object generated from dictionary containing the ansible objects to be built.
 
@@ -202,12 +221,15 @@ class Robot:
                 print("[*)\t Executing Ansible on main thread")
                 attr['infile'] = infile
                 attr['domain'] = self.domain
-                attr['ansible_file_location'] = join_abs(self.ROOT_DIR, "ansible_plays")
+                attr['ansible_file_location'] = join_abs(
+                    self.ROOT_DIR, "ansible_plays")
                 attr['output_dir'] = self.OUTPUT_DIR
-                attr['ansible_arguments'] = ansible_json.get("ansible_arguments")
+                attr['ansible_arguments'] = ansible_json.get(
+                    "ansible_arguments")
                 attr['verbose'] = self.verbose
 
-                self._print(f"Creating ansible {ansible} with attributes\n\t {attr}")
+                self._print(
+                    f"Creating ansible {ansible} with attributes\n\t {attr}")
                 ansible_mod = Ansible(**attr)
 
                 ansible_mod.run()
@@ -247,17 +269,19 @@ class Robot:
         threads = []
         for tool, tool_dict in webtools.items():
             try:
-                output_file_loc = join_abs(self.ROOT_DIR, "output", self.domain, tool_dict.get('output_file', tool))
+                output_file_loc = join_abs(
+                    self.ROOT_DIR, "output", self.domain, tool_dict.get(
+                        'output_file', tool))
                 attr = {
-                        "proxies": {'http': self.proxy, 'https': self.proxy},
-                        "api_key": tool_dict.get('api_key', None),
-                        "domain": self.domain,
-                        "output_file": output_file_loc,
-                        "username": tool_dict.get('username', None),
-                        "password": tool_dict.get('password', None),
-                        "endpoint": tool_dict.get('endpoint', None),
-                        "verbose": self.verbose,
-                        }
+                    "proxies": {'http': self.proxy, 'https': self.proxy},
+                    "api_key": tool_dict.get('api_key', None),
+                    "domain": self.domain,
+                    "output_file": output_file_loc,
+                    "username": tool_dict.get('username', None),
+                    "password": tool_dict.get('password', None),
+                    "endpoint": tool_dict.get('endpoint', None),
+                    "verbose": self.verbose,
+                }
                 self._print(f"Building webtool {tool} with options \n\t{attr}")
                 """
                 module contains the modules loaded in from web_resources relative to __main__
@@ -267,13 +291,18 @@ class Robot:
                 module = importlib.import_module('..web_resources', __name__)
                 tool_class = getattr(module, tool_dict.get('class_name'))
                 tool_class_obj = tool_class(**attr)
-                threads += [threading.Thread(target=tool_class_obj.do_query, daemon=True)]
+                threads += [
+                    threading.Thread(
+                        target=tool_class_obj.do_query,
+                        daemon=True)]
 
             except KeyError:
-                print(f"[!] Error locating key for tool. Check error log for details")
+                print(
+                    f"[!] Error locating key for tool. Check error log for details")
                 logger.exception("Key Error in run_webtools method")
             except json.JSONDecodeError:
-                print(f"[!] Failure authenticating to service. Check error log for details")
+                print(
+                    f"[!] Failure authenticating to service. Check error log for details")
                 logger.exception(f"Failure authenticating to service.")
             except ValueError:
                 print("[!] Value Error thrown. Check error log for details")
@@ -315,15 +344,15 @@ class Robot:
         for dest, dest_json in upload_dest.items():
             try:
                 attr = {
-                        "api_key": dest_json.get('api_key'),
-                        "username": dest_json.get('username'),
-                        "domain": self.domain,
-                        "url": dest_json.get('url'),
-                        "port": dest_json.get('port'),
-                        "team_name": dest_json.get('team_name'),
-                        "channel_name": dest_json.get('channel_name'),
-                        "filepath": filepath,
-                        }
+                    "api_key": dest_json.get('api_key'),
+                    "username": dest_json.get('username'),
+                    "domain": self.domain,
+                    "url": dest_json.get('url'),
+                    "port": dest_json.get('port'),
+                    "team_name": dest_json.get('team_name'),
+                    "channel_name": dest_json.get('channel_name'),
+                    "filepath": filepath,
+                }
 
                 self._print(f"Uploading to {dest} with options \n\t{attr}")
 
@@ -353,397 +382,6 @@ class Robot:
 
         return threads
 
-    def _dump_db_to_file(self, dump_ips=True, dump_hostnames=True, dump_headers=False):
-        """
-        Dump the contents of ips and hostnames columns from the database into two files that can be used for further enumeration
-
-        Args:
-            dump_ips (Bool): if ips should be dumped
-            dump_hostnames (Bool): if hostnames should be dumped
-            dump_headers (Bool): if headers should be dumped
-
-        Returns:
-
-        """
-        try:
-            dbconn = sqlite3.connect(self.dbfile)
-            dbcurs = dbconn.cursor()
-            
-            self._print(f"Creating sqlite file {self.dbfile}")
-
-            ips = dbcurs.execute(f"""SELECT DISTINCT ip 
-                                    FROM data 
-                                    WHERE domain='{self.domain.replace('.', '_')}' 
-                                    AND ip IS NOT NULL"""
-                                    ).fetchall()
-            hostnames = dbcurs.execute(f"""SELECT DISTINCT hostname 
-                                            FROM data 
-                                            WHERE domain='{self.domain.replace('.', '_')}'
-                                            AND hostname IS NOT NULL"""
-                                        ).fetchall()
-
-            self._print(f"Fetching all ips with command 'SELECT DISTINCT ip FROM data WHERE domain={self.domain.replace('.', '_')} AND ip IS NOT NULL'")
-            self._print(f"Fetching all hostnames with command 'SELECT DISTINCT hostname FROM data WHERE domain={self.domain.replace('.', '_')} AND hostname IS NOT NULL'")
-            """
-                Header options require there to have been a scan otherwise there will be no output but that should be expected.
-                Might change db to a dataframe later... possible
-            """
-            headers = dbcurs.execute(f"""SELECT DISTINCT ip, hostname, http_headers, https_headers 
-                                        FROM data 
-                                        WHERE domain='{self.domain.replace('.', '_')}' 
-                                        AND (http_headers IS NOT NULL 
-                                        AND https_headers IS NOT NULL)"""
-                                        ).fetchall()
-
-            self._print(f"SELECT DISTINCT ip, hostname, http_headers, https_headers FROM data WHERE domain={self.domain.replace('.', '_')} AND (http_headers IS NOT NULL AND https_headers IS NOT NULL)")
-
-            if dump_ips:
-                self._print("Dumping to aggregated_ips.txt")
-                with open(join_abs(self.OUTPUT_DIR, 'aggregated', 'aggregated_ips.txt'), 'w') as f:
-                    f.writelines("\n".join(list(ip[0] for ip in ips)))
-
-            if dump_hostnames:
-                self._print("Dumping to aggregated_hostnames.txt")
-                with open(join_abs(self.OUTPUT_DIR, 'aggregated', 'aggregated_hostnames.txt'), 'w') as f:
-                    f.writelines("\n".join(list(f"{host[0]}" for host in hostnames)))
-
-                self._print("Dumping to aggregated_protocol_hostnames.txt")
-                with open(join_abs(self.OUTPUT_DIR, 'aggregated', 'aggregated_protocol_hostnames.txt'), 'w') as f:
-                    f.writelines("\n".join(list(f"https://{host[0]}\nhttp://{host[0]}" for host in hostnames)))
-
-            if dump_headers:
-                KEYS = ["Ip", "Hostname", "Http", "Https"]
-                for row in headers:
-                    r = dict(zip(KEYS, row))
-                    with open(join_abs(self.OUTPUT_DIR, "headers", f"{r['Hostname']}_headers.txt"), 'w') as f:
-                        f.write(json.dumps(r, indent=2))
-        finally:
-            dbconn.close()
-
-    def _hostname_aggregation(self, verify=None, output_files=[], output_folders=[]):
-        """
-        Create an aggregated dictionary of all tool outputs that we can use to run further host enumeration on.
-        This dictionary will be uploaded to a small sqlite3 database under the name "drrobot.db"
-
-        Args:
-            verify (String): Filename to be used as baseline for IP/Hostnames already known and scanned. Due to changes in the code base this is not enabled at the moment.
-            output_files (List): filenames that we should be looking for when reading in files.
-            output_folders (List): folder names that contain the output of specific tools
-
-        Returns:
-
-        """
-        def build_db(ips, cursor):
-            """
-            Closure that takes in a list of ips and creates a large transaction for inserts.
-
-            Args:
-                ips (Dict): ips, hostnames to insert
-                cursor (sqlite3.connection.cursor): to execute in our sqlite instance
-
-            Returns:
-
-            """
-            cursor.execute('BEGIN TRANSACTION')
-            domain = self.domain.replace(".","_")
-            try:
-                for host, ip in ips:
-                    cursor.execute("""INSERT INTO data 
-                                        (ip, hostname, http_headers, https_headers, domain) 
-                                        VALUES (?,?, NULL, NULL, ?);""", 
-                                        (ip, host, domain))
-            except:
-                print(f"Issue with the following data: {ip} {host} {domain}")
-
-            cursor.execute('COMMIT')
-
-        def read_file(filename):
-            """
-            Generator for large file reading. Reads file in chunks for insert into database.
-
-            Args:
-                filename (str): filename to open and read from
-
-            Returns:
-
-            """
-            with open(join_abs(self.OUTPUT_DIR, filename), 'r') as f:
-                chunks = []
-                chunk_size = 10000
-                for line in f:
-                    chunks += [line]
-                    if len(chunks) >= chunk_size:
-                        yield chunks
-                        chunks = []
-                yield chunks
-        try:
-
-            dbconn = sqlite3.connect(self.dbfile)
-            dbcurs = dbconn.cursor()
-            dbcurs.execute("PRAGMA foreign_keys=1") # Enable foreign key support
-            # Simple database that contains list of domains to run against
-            dbcurs.execute("""
-                            CREATE TABLE IF NOT EXISTS domains (
-                                domain VARCHAR PRIMARY KEY,
-                                UNIQUE(domain)
-                            )
-                            """)
-            # Setup database to keep all data from all targets. This allows us to use a single model for hosting with Django
-            dbcurs.execute("""
-                            CREATE TABLE IF NOT EXISTS data (
-                                domainid INTEGER PRIMARY KEY,
-                                ip VARCHAR,
-                                hostname VARCHAR,
-                                http_headers TEXT,
-                                https_headers TEXT,
-                                domain VARCHAR,
-                                FOREIGN KEY(domain) REFERENCES domains(domain),
-                                UNIQUE(ip, hostname)
-                            )
-                            """)
-            # Quickly create entry in domains table. 
-            dbcurs.execute(f"INSERT OR IGNORE INTO domains(domain) VALUES ('{self.domain.replace('.', '_')}')")
-            dbconn.commit()
-
-            all_files = []
-            for name in output_files:
-                if isfile(join_abs(self.OUTPUT_DIR, name)):
-                    all_files += [join_abs(self.OUTPUT_DIR, name)]
-                elif isfile(name):
-                    all_files += [name]
-                else:
-                    print(f"[!] File {name} does not exist, verify scan results")
-
-            for folder in output_folders:
-                for root, dirs, files in walk(join_abs(self.OUTPUT_DIR, folder)):
-                    for f in files:
-                        if isfile(join_abs(root, f)):
-                            all_files += [join_abs(root,f)]
-
-            self._print(f"Parsing all files {all_files}")
-            all_ips =[]
-            for filename in all_files:
-                print(f"[*] Parsing file: {filename}")
-                all_ips += self._reverse_ip_lookup(filename)
-                # for data in read_file(join_abs(filename)):
-                #     all_ips += self._reverse_ip_lookup(data)
-            build_db(all_ips, dbcurs)
-            dbconn.commit()
-        finally:
-            dbconn.close()
-
-    def _reverse_ip_lookup(self, filename):
-        """
-
-        Args:
-            data (str): ambiguous string, either ip or hostname.
-            hostname_reg (re): compiled regex for hostname grouping
-            ip_regex (re): compiled regex for ip grouping
-
-        Returns:
-            (List) of Tuples (hostname, ip)
-        """
-        print("Extracting ips and hostnames from text")
-        ip_reg = re.compile(r"(?:(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)\.){3}(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)")
-        #hostname_reg = re.compile(r"([A-Za-z0-9\-]*\.?)*\." + self.domain)
-        hostname_reg = re.compile(r"([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]))*?\."+self.domain)
-        results = []
-        with open(filename, "r") as f:
-            for line in tqdm(f.readlines()):
-                host = hostname_reg.match(line) 
-                if host:
-                    host = host.group()
-                ip = ip_reg.match(line)
-                if ip:
-                    ip = ip.group()
-                try:
-                    if host is not None and ip is None:
-                        ip = socket.gethostbyname(host)
-                    if ip is not None and host is None:
-                        host = socket.gethostbyaddr(ip)
-                except:
-                    pass
-                if host or ip:
-                    results += [(host, ip)]
-
-            # print("Extracting ips")
-            # for ip in tqdm(ips):
-            #     hostname = None
-            #     try:
-            #         hostname = socket.gethostbyaddr(ip)
-            #         hostname = hostname[0]
-            #     except:
-            #         results += [(hostname, ip)]
-
-        return results
-
-    @staticmethod
-    def grab_header(ip):
-        """
-        Grabs the headers of a given ip.
-        Args:
-            ip (str) ip address
-
-        Returns:
-            (Dict) ip : (http, https)  tuple of http, https headers
-        """
-        http = None
-        https = None
-        # May add option later to set UserAgent
-        headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0"
-                }
-        try:
-            http = requests.get(f"http://{ip}", headers=headers, timeout=1, verify=False).headers
-            http = str(http)
-        except Exception as er:
-            logger.exception(f"Could not retrieve http header for ip: {ip}")
-            pass
-        try:
-            https = requests.get(f"https://{ip}", headers=headers, timeout=1, verify=False).headers
-            https = str(https)
-        except:
-            logger.exception(f"Could not retrieve https header for ip: {ip}")
-            pass
-        return ip , (http, https)
-
-    def _grab_headers(self):
-        """
-        Function to do mass header grabbing.
-        Commits all headers to the sqlite3 database given the ip.
-
-        Args:
-
-        Returns:
-
-        """
-
-        dbconn = sqlite3.connect(self.dbfile)
-        dbcurs = dbconn.cursor()
-
-        print("[*] Grabbing headers from ips and hostnames")
-        ips = dbcurs.execute(f"""SELECT ip 
-                                    FROM data 
-                                    WHERE ip IS NOT NULL 
-                                    AND domain='{self.domain.replace('.','_')}'"""
-                                ).fetchall()
-        ips = [item[0] for item in ips]
-        # Threading is done against the staticmethod. Feel free to change the max_workers if your system allows.
-        # May add option to specify threaded workers.
-        with ThreadPoolExecutor(max_workers=40) as pool:
-            ip_headers = dict(tqdm(pool.map(Robot.grab_header,
-                                            ips),
-                                   total=len(ips)))
-        dbcurs.execute('BEGIN TRANSACTION')
-        domain_rep = self.domain.replace(".", "_")
-        for ip, (http, https) in ip_headers.items():
-            dbcurs.execute(f"""UPDATE data 
-                                SET http_headers=?, https_headers=? 
-                                WHERE ip = ? 
-                                AND domain= ? 
-                                LIMIT 1;""", 
-                                (http, https, ip, domain_rep))
-        dbcurs.execute("COMMIT")
-
-        hostnames = dbcurs.execute(f"""SELECT ip 
-                                    FROM data 
-                                    WHERE ip IS NOT NULL 
-                                    AND domain='{self.domain.replace('.','_')}'"""
-                                ).fetchall()
-        hostnames = [item[0] for item in hostnames]
-        with ThreadPoolExecutor(max_workers=40) as pool:
-            hostname_headers = dict(tqdm(pool.map(Robot.grab_header,
-                                            hostnames),
-                                   total=len(hostnames)))
-        dbcurs.execute('BEGIN TRANSACTION')
-        domain_rep = self.domain.replace(".", "_")
-        for hostname, (http, https) in hostname_headers.items():
-            dbcurs.execute(f"""UPDATE data 
-                                SET http_headers=?, https_headers=? 
-                                WHERE hostname = ? 
-                                AND domain= ? 
-                                LIMIT 1;""", 
-                                (http, https, hostname, domain_rep))
-        dbcurs.execute("COMMIT")
-
-        dbconn.close()
-
-    def _gen_output(self):
-        """
-        Generate output file from target information in sqlite3 database
-
-        Args:
-            (None)
-
-        Returns:
-            (Dict) file_index: Dictionary of dictionaries containing ip, hostname information from various phases of Dr. ROBOT 
-        """
-        if not exists(self.dbfile):
-            self._print("No database file found. Exiting")
-            return
-
-        dbconn = sqlite3.connect(self.dbfile)
-        dbcurs = dbconn.cursor()
-
-        db_headers = dbcurs.execute(f"""SELECT * 
-                                        FROM data 
-                                        WHERE domain='{self.domain.replace('.','_')}' 
-                                        AND (http_headers IS NOT NULL OR https_headers IS NOT NULL)"""
-                                        ).fetchall()
-        db_ips = dbcurs.execute(f"""SELECT DISTINCT ip, hostname 
-                                    FROM data 
-                                    WHERE domain='{self.domain.replace('.', '_')}'"""
-                                    ).fetchall()
-
-        """
-        (IP, HOSTNAME, HTTP, HTTPS)
-        """
-        file_index = {}
-        """
-            Need to be smarter about this:
-
-            Multiple different sql queries
-                1. Grabs all those with headers:
-                    most likely that if they have headers they have a screenshot
-                    glob can run and take it's time.
-                2. Grab all unique ips
-                2a. Grab all unique hostnames
-
-                3. Update json with all documents
-        """
-        self._print(f"How many ip/hostnames with header information found {len(db_headers)}")
-        for _, ip, hostname, http, https, domainname in db_headers:
-            ip_screenshots = glob.glob("**/*{}*".format(ip), recursive=True)
-            hostname_screeshots = glob.glob("**/*{}*".format(hostname), recursive=True)
-        
-            image_files = []
-            for _file in ip_screenshots:
-                image_files += [join_abs(getcwd(), _file)]
-            for _file in hostname_screeshots:
-                image_files += [join_abs(getcwd(), _file)]
-            file_index[ip] = {
-                        "hostnames" : [hostname],
-                        "http_header" : http,
-                        "https_header" : https,
-                        "images" : image_files
-                    }
-
-        self._print(f"How many ip/hostnames {len(db_ips)}")
-
-        for ip, hostname in db_ips:
-            if ip not in file_index:
-                file_index[ip] = {
-                            "hostnames" : [hostname],
-                            "http_header" : "",
-                            "https_header" : "",
-                            "images" : [] 
-                        }
-            elif hostname not in file_index[ip]['hostnames']:
-                    file_index[ip]['hostnames'] += [hostname]
-        return file_index
-        
-
-
     def gather(self, **kwargs):
         """
         This begins our gather process. Starts by looking at webtools and scanners for initial ip and hostname gathering.
@@ -772,13 +410,17 @@ class Robot:
 
         scanners_dockers = kwargs.get('scanners_dockers', {})
 
-        output_folders += [v.get('output_folder') for _, v in scanners_dockers.items() if v.get("output_folder")]
-        output_files += [v.get('output_file') for _, v in scanners_dockers.items() if v.get('output_file')]
+        output_folders += [v.get('output_folder') for _,
+                           v in scanners_dockers.items() if v.get("output_folder")]
+        output_files += [v.get('output_file') for _,
+                         v in scanners_dockers.items() if v.get('output_file')]
 
         scanners_ansible = kwargs.get('scanners_ansible', {})
 
-        output_folders += [v.get('output_folder', None) for _, v in scanners_ansible.items() if v.get("output_folder")]
-        output_files += [v.get('output_file', None) for _, v in scanners_ansible.items() if v.get("output_file")]
+        output_folders += [v.get('output_folder', None)
+                           for _, v in scanners_ansible.items() if v.get("output_folder")]
+        output_files += [v.get('output_file', None)
+                         for _, v in scanners_ansible.items() if v.get("output_file")]
 
         for folder in output_folders:
             if not exists(join_abs(self.OUTPUT_DIR, folder)):
@@ -811,10 +453,13 @@ class Robot:
         if verify:
             print(f"[*] Omit addresses gathered from web tool: {verify}")
 
-        self._hostname_aggregation(verify=verify, output_folders=output_folders, output_files=output_files)
-        self._dump_db_to_file()
+        self.aggregation.aggregate(
+            verify=verify,
+            output_folders=output_folders,
+            output_files=output_files)
+        self.aggregation.dump_to_file()
         if kwargs.get("headers", False):
-            self._grab_headers()
+            self.aggregation.headers()
         print("[*] Gather complete")
 
     def inspection(self, **kwargs):
@@ -835,9 +480,8 @@ class Robot:
 
         if infile is None:
             print("[*] No file provided, dumping db for input")
-            db_file_loc = self.dbfile
-            if getsize(db_file_loc) > 0:
-                self._dump_db_to_file()
+            if getsize(self.dbfile) > 0:
+                self.aggregation.dump_to_file()
             else:
                 print("[!] \tDatabase file is empty. Have you ran gather?")
         elif not isfile(infile):
@@ -854,7 +498,8 @@ class Robot:
         post_enum_ansible = kwargs.get("post_enum_ansible")
 
         if post_enum_ansible:
-            print("[*] Custom modules will be run on main thread due to possibility of user input")
+            print(
+                "[*] Custom modules will be run on main thread due to possibility of user input")
             self._run_ansible(post_enum_ansible, infile)
 
         print("[*] Inspection Done")
@@ -899,14 +544,14 @@ class Robot:
         """
         print("[*] Rebuilding DB")
         filenames = kwargs.get("files", None)
-        output_files = [] 
+        output_files = []
         output_files += [f for f in filenames if isfile(f)]
         for root, dirs, files in walk(self.OUTPUT_DIR, topdown=True):
             dirs = [d for d in filenames if isdir(d)]
             for f in files:
-                output_files += [join_abs(root, f)] 
-        self._hostname_aggregation(False, output_files=output_files)
-        self._grab_headers()
+                output_files += [join_abs(root, f)]
+        self.aggregation.aggregate(False, output_files=output_files)
+        self.aggregation.headers()
         print("[*] Rebuilding complete")
 
     def generate_output(self, _format, output_file):
@@ -915,14 +560,14 @@ class Robot:
 
         Args:
             _format:        format of output file [xml, json]
-            output_file:    (Optional) filename to dump contents too 
+            output_file:    (Optional) filename to dump contents too
 
         Returns:
             (None)
         """
         if not output_file:
             output_file = join_abs(self.OUTPUT_DIR, f"output.{_format}")
-        file_index = self._gen_output()  
+        file_index = self._gen_output()
         if 'json' in _format:
             print("Generating JSON")
             try:
@@ -950,7 +595,7 @@ class Robot:
             **kwargs
         """
         print(f"[*] Dumping sqllite3 file for {self.domain.replace('.', '_')}")
-        self._dump_db_to_file(dump_headers=True)
+        self.aggregation.dump_to_file(dump_headers=True)
         print(f"[*] Headers will be found under header folder in your domains output")
 
     def serve(self, **kwargs):
@@ -968,32 +613,41 @@ class Robot:
         options.update({"dns": self.dns or None})
         options.update({"verbose": self.verbose})
         options.update({"volumes": {
-                join_abs(self.ROOT_DIR, "dbs") : {
-                        'bind': "/root/dr_robot/dbs",
+            join_abs(self.ROOT_DIR, "dbs"): {
+                'bind': "/root/dr_robot/dbs",
                         'mode': 'rw'
-                    },
-                join_abs(self.ROOT_DIR ,"serve_api", "drrobot") : {
-                        'bind': "/root/dr_robot",
-                        'mode': 'rw'
-                    }
-                }
-            })
+            },
+            join_abs(self.ROOT_DIR, "serve_api", "drrobot"): {
+                'bind': "/root/dr_robot",
+                'mode': 'rw'
+            }
+        }
+        })
         output_dir = join_abs(self.ROOT_DIR, "dbs")
 
-        self._print(f"Building django container with options: {json.dumps(options, indent=4)}")
+        self._print(
+            f"Building django container with options: {json.dumps(options, indent=4)}")
 
-        server = Docker(active_config_path=join_abs(dirname(__file__), '..', options['active_conf']),
-                     default_config_path=join_abs(dirname(__file__), '..', options['default_conf']),
-                     docker_options=options,
-                     output_dir=output_dir)
-        
+        server = Docker(
+            active_config_path=join_abs(
+                dirname(__file__),
+                '..',
+                options['active_conf']),
+            default_config_path=join_abs(
+                dirname(__file__),
+                '..',
+                options['default_conf']),
+            docker_options=options,
+            output_dir=output_dir)
+
         try:
             server.build()
             server.run()
         except BuildError as er:
             print(f"Build Error encountered {er}")
             if "net/http" in str(er):
-                print("This could be a proxy issue, see https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
+                print(
+                    "This could be a proxy issue, see https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
             if not self.dns:
                 print(f"\t[!] No DNS set. This could be an issue")
                 self._print("No DNS set. This could be an issue")

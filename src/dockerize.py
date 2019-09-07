@@ -7,6 +7,8 @@ import json
 from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
+
+
 class Docker:
     def __init__(self, **kwargs):
         """
@@ -43,7 +45,8 @@ class Docker:
         try:
             self.container.kill()
         except docker.errors.APIError as er:
-            self._print("Error when trying to send kill signal to docker container.")
+            self._print(
+                "Error when trying to send kill signal to docker container.")
 
     def _init_config(self):
         """
@@ -56,18 +59,22 @@ class Docker:
 
         """
         if isfile(self._default_config_path):
-            logger.info(f"Creating Dockerfile for {self._docker_options['name']}")
+            logger.info(
+                f"Creating Dockerfile for {self._docker_options['name']}")
         elif not isfile(self._default_config_path):
-            raise OSError('Default configuration file is not found, please fix')
+            raise OSError(
+                'Default configuration file is not found, please fix')
 
         self.name = self._docker_options['name']
         self.network_mode = self._docker_options['network_mode']
-        self._print(f"Making config with args:{json.dumps(self._docker_options, indent=4)}")
+        self._print(
+            f"Making config with args:{json.dumps(self._docker_options, indent=4)}")
 
         with open(self._default_config_path, 'r') as cfg:
             t = Template(cfg.read())
         with open(self._active_config_path, 'w') as out:
-            out.write(t.safe_substitute({k : v if v else '\'\'' for k,v in self._docker_options.items()}))
+            out.write(t.safe_substitute(
+                {k: v if v else '\'\'' for k, v in self._docker_options.items()}))
 
     def build(self):
         """
@@ -83,9 +90,9 @@ class Docker:
         print(f"[*] Building Docker image: {self.name}")
         with open(self._active_config_path, 'rb') as f:
             _, _ = client.images.build(fileobj=f,
-                    tag=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
-                    rm=True,
-                    network_mode=self.network)
+                                       tag=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
+                                       rm=True,
+                                       network_mode=self.network)
             self.status = "built"
         self._print(f"""Built with options:
                         -f {self._active_config_path}
@@ -109,24 +116,31 @@ class Docker:
         volumes = self._docker_options.get("volumes", None)
         if volumes is None:
             volumes = {
-                    self.OUTPUT_DIR: {
-                        'bind': self._docker_options['output'],
-                        'mode': 'rw'
-                        }
-                    }
-        self.container = client.containers.run(image=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
-                dns=[self._docker_options.get('dns')] if self._docker_options.get('dns', None) else None,
-                auto_remove=True,
-                tty=True,
-                detach=True,
-                command=self._docker_options.get('command', None),
-                ports=self._docker_options.get('ports', None),
-                volumes=volumes)
+                self.OUTPUT_DIR: {
+                    'bind': self._docker_options['output'],
+                    'mode': 'rw'
+                }
+            }
+        self.container = client.containers.run(
+            image=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
+            dns=[
+                self._docker_options.get('dns')] if self._docker_options.get(
+                'dns',
+                None) else None,
+            auto_remove=True,
+            tty=True,
+            detach=True,
+            command=self._docker_options.get(
+                'command',
+                None),
+            ports=self._docker_options.get(
+                'ports',
+                    None),
+            volumes=volumes)
 
         self.status = self.container.status
 
         self._print(f"mount point specified here: {volumes}")
-
 
     def update_status(self):
         """
@@ -139,7 +153,8 @@ class Docker:
         """
         try:
             with tqdm() as pbar:
-                pbar.set_description(f"Docker container {self.name}, running...")
+                pbar.set_description(
+                    f"Docker container {self.name}, running...")
                 while True:
                     self.container.reload()
                     time.sleep(5)
@@ -147,7 +162,8 @@ class Docker:
                     pbar.refresh()
 
         except docker.errors.NotFound:
-            self._print(f"[*] Docker container {self._docker_options['docker_name']} exited")
+            self._print(
+                f"[*] Docker container {self._docker_options['docker_name']} exited")
             self.status = 'exited'
         except AttributeError:
             print("Container is None")

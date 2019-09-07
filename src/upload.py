@@ -9,6 +9,8 @@ from . import join_abs
 import time
 
 logger = logging.getLogger(__name__)
+
+
 class Forum(ABC):
     def __init__(self, **kwargs):
         """
@@ -52,12 +54,12 @@ class Mattermost(Forum):
         """
         super().__init__(**kwargs)
         self.inst = Driver({
-            'url' : self.url,
-            'verify' : False,
-            'token' : self.api_key,
-            'username' : self.username,
-            'port' : kwargs.get('port', 8065)
-            })
+            'url': self.url,
+            'verify': False,
+            'token': self.api_key,
+            'username': self.username,
+            'port': kwargs.get('port', 8065)
+        })
         self.team_name = kwargs.get("team_name", None)
         self.channel_name = kwargs.get("channel_name", None)
         self.filepath = kwargs.get("filepath", None)
@@ -66,28 +68,37 @@ class Mattermost(Forum):
         file_ids = []
         for root, dirs, files in walk(file_location):
             for filename in files:
-                #TODO add optional parameters for adjusting size. Implement file splitting
+                # TODO add optional parameters for adjusting size. Implement
+                # file splitting
                 print(f"[...] Uploading {filename}")
                 if stat(join_abs(root, filename)).st_size / 1024 ** 2 > 49:
                     print(f"[!]\tFile {filename} is to big, ignoring for now")
                     continue
                 else:
-                    file_ids += [self.inst.files.upload_file(channel_id=channel_id,
-                        files={'files': (filename, open(join_abs(root, filename), 'rb'))}
-                        )['file_infos'][0]['id']]
+                    file_ids += [
+                        self.inst.files.upload_file(
+                            channel_id=channel_id,
+                            files={
+                                'files': (
+                                    filename,
+                                    open(
+                                        join_abs(
+                                            root,
+                                            filename),
+                                        'rb'))})['file_infos'][0]['id']]
                     if len(file_ids) >= 5:
                         self.inst.posts.create_post(options={
                             'channel_id': channel_id,
                             'message': f"Recon Data {datetime.datetime.now()}",
                             'file_ids': file_ids
-                            })
+                        })
                         file_ids = []
         if len(file_ids) > 0:
             self.inst.posts.create_post(options={
                 'channel_id': channel_id,
                 'message': f"Recon Data {datetime.datetime.now()}",
                 'file_ids': file_ids
-                })
+            })
 
     def upload(self, **kwargs):
         """
@@ -104,7 +115,8 @@ class Mattermost(Forum):
             self.inst.login()
 
             team_id = self.inst.teams.get_team_by_name(self.team_name)['id']
-            channel_id = self.inst.channels.get_channel_by_name(channel_name=self.channel_name, team_id=team_id)['id']
+            channel_id = self.inst.channels.get_channel_by_name(
+                channel_name=self.channel_name, team_id=team_id)['id']
         except exceptions.NoAccessTokenProvided as er:
             print(f"[!] NoAccessTokenProvided {er}")
             logger.exception()
@@ -114,15 +126,20 @@ class Mattermost(Forum):
 
         try:
             if isfile(self.filepath):
-                file_ids = [self.inst.files.upload_file(channel_id=channel_id,
-                    files={'files': (basename(self.filepath), open(join_abs(self.filepath), 'rb'))}
-                    )['file_infos'][0]['id']]
+                file_ids = [
+                    self.inst.files.upload_file(
+                        channel_id=channel_id, files={
+                            'files': (
+                                basename(
+                                    self.filepath), open(
+                                    join_abs(
+                                        self.filepath), 'rb'))})['file_infos'][0]['id']]
 
                 self.inst.posts.create_post(options={
                     'channel_id': channel_id,
                     'message': f"Recon Data {datetime.datetime.now()}",
                     'file_ids': file_ids
-                    })
+                })
 
             elif isdir(self.filepath):
                 file_location = abspath(self.filepath)
@@ -138,6 +155,7 @@ class Mattermost(Forum):
         except OSError as er:
             print(f"[!] File not found {er}")
             logger.exception()
+
 
 class Slack(Forum):
     def __init__(self, **kwargs):
@@ -166,9 +184,11 @@ class Slack(Forum):
         #file_ids = []
         for root, dirs, files in walk(file_location):
             for filename in files:
-                # TODO add optional parameters for adjusting size. Implement file splitting
+                # TODO add optional parameters for adjusting size. Implement
+                # file splitting
                 print(f"[...] Uploading {filename}")
-                if stat(join_abs(root, filename)).st_size / 1024 ** 2 > max_filesize:
+                if stat(join_abs(root, filename)).st_size / \
+                        1024 ** 2 > max_filesize:
                     print(f"[!]\tFile {filename} is to big, ignoring for now")
                     continue
                 else:
@@ -177,11 +197,11 @@ class Slack(Forum):
     def upload(self, **kwargs):
         sc = slack.WebClient(self.api_key)
 
-        #try:
+        # try:
         if isfile(self.filepath):
             sc.files_upload(
-                    channels=self.channel_name,
-                    file=self.filepath)
+                channels=self.channel_name,
+                file=self.filepath)
 
         elif isdir(self.filepath):
             print(self.filepath)
@@ -191,8 +211,8 @@ class Slack(Forum):
             for filename, filepath in self._get_files(file_location):
                 print(filename, filepath)
                 sc.files_upload(
-                        channels=self.channel_name,
-                        file=filepath)
-        #except Exception as ex:
+                    channels=self.channel_name,
+                    file=filepath)
+        # except Exception as ex:
         #    print(str(ex))
         #    logger.exception(ex)

@@ -26,6 +26,9 @@ pytest = "*"
 pytest-cov = "*"
 tox = "*"
 pytest-runner = "*"
+"flake8" = "*"
+pylint = "*"
+"autopep8" = "*"
 
 [requires]
 python_version = "3"
