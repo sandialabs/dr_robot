@@ -8,6 +8,7 @@ import socket
 import threading
 import requests
 import glob
+import mmap
 from urllib.parse import urlparse
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from concurrent.futures import ThreadPoolExecutor
@@ -445,11 +446,14 @@ class Robot:
             """
             cursor.execute('BEGIN TRANSACTION')
             domain = self.domain.replace(".","_")
-            for host, ip in ips:
-                cursor.execute("""INSERT OR IGNORE INTO data 
-                                    (ip, hostname, http_headers, https_headers, domain) 
-                                    VALUES (?,?, NULL, NULL, ?);""", 
-                                    (ip, host, domain))
+            try:
+                for host, ip in ips:
+                    cursor.execute("""INSERT INTO data 
+                                        (ip, hostname, http_headers, https_headers, domain) 
+                                        VALUES (?,?, NULL, NULL, ?);""", 
+                                        (ip, host, domain))
+            except:
+                print(f"Issue with the following data: {ip} {host} {domain}")
 
             cursor.execute('COMMIT')
 
@@ -493,7 +497,8 @@ class Robot:
                                 http_headers TEXT,
                                 https_headers TEXT,
                                 domain VARCHAR,
-                                FOREIGN KEY(domain) REFERENCES domains(domain)
+                                FOREIGN KEY(domain) REFERENCES domains(domain),
+                                UNIQUE(ip, hostname)
                             )
                             """)
             # Quickly create entry in domains table. 
@@ -519,14 +524,15 @@ class Robot:
             all_ips =[]
             for filename in all_files:
                 print(f"[*] Parsing file: {filename}")
-                for data in read_file(join_abs(filename)):
-                    all_ips += self._reverse_ip_lookup(data)
+                all_ips += self._reverse_ip_lookup(filename)
+                # for data in read_file(join_abs(filename)):
+                #     all_ips += self._reverse_ip_lookup(data)
             build_db(all_ips, dbcurs)
             dbconn.commit()
         finally:
             dbconn.close()
 
-    def _reverse_ip_lookup(self, data):
+    def _reverse_ip_lookup(self, filename):
         """
 
         Args:
@@ -537,33 +543,37 @@ class Robot:
         Returns:
             (List) of Tuples (hostname, ip)
         """
-        
+        print("Extracting ips and hostnames from text")
+        ip_reg = re.compile(r"(?:(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)\.){3}(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)")
+        #hostname_reg = re.compile(r"([A-Za-z0-9\-]*\.?)*\." + self.domain)
+        hostname_reg = re.compile(r"([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]))*?\."+self.domain)
         results = []
-        for item in tqdm(data):
-            hostname = None
-            ip = None
-            try:
-                socket.inet_pton(socket.AF_INET, item.rstrip())
-                ip = item.rstrip()
-            except socket.error:
-                hostname = urlparse(item.rstrip()).netloc
+        with open(filename, "r") as f:
+            for line in tqdm(f.readlines()):
+                host = hostname_reg.match(line) 
+                if host:
+                    host = host.group()
+                ip = ip_reg.match(line)
+                if ip:
+                    ip = ip.group()
+                try:
+                    if host is not None and ip is None:
+                        ip = socket.gethostbyname(host)
+                    if ip is not None and host is None:
+                        host = socket.gethostbyaddr(ip)
+                except:
+                    pass
+                if host or ip:
+                    results += [(host, ip)]
 
-            if hostname is None and ip is None:
-                continue
-
-            try:
-                if not hostname and ip:
-                    hostname = socket.gethostbyaddr(ip)
-                    hostname = hostname[0]
-                if not ip and hostname:
-                    ip = socket.gethostbyname(hostname)
-
-            except socket.herror as er:
-                logger.exception(f"{ip} {hostname}: Host cannot be resolved, not adding")
-            except Exception as er:
-                logger.exception(f"{ip} {hostname}: Error with socket")
-            finally:
-                results += [(hostname, ip)] 
+            # print("Extracting ips")
+            # for ip in tqdm(ips):
+            #     hostname = None
+            #     try:
+            #         hostname = socket.gethostbyaddr(ip)
+            #         hostname = hostname[0]
+            #     except:
+            #         results += [(hostname, ip)]
 
         return results
 
