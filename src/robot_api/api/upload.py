@@ -5,8 +5,9 @@ import logging
 import datetime
 from os import walk, stat
 from os.path import exists, abspath, isdir, isfile, basename
-from . import join_abs
 import time
+
+from robot_api.parse import join_abs
 
 logger = logging.getLogger(__name__)
 

@@ -2,12 +2,11 @@
 
 import codecs
 
-from setuptools import setup
-
+from setuptools import setup, find_packages
 
 setup(
     name="Dr.ROBOT",
-    version="1.0.0",
+    version="1.1.2",
     package_dir={"":"src"},
     url='https://github.com/sandialabs/dr_robot',
     author='Aleksandar Straumann',
@@ -23,12 +22,24 @@ setup(
         'python'
         ],
     long_description=codecs.open('README.md', encoding="utf8").read(),
+    include_package_data=True,
     entry_points={
-
+        'console_scripts':['drrobot=robot_api.cli:run']
         },
     install_requires=[
-        #'python-dotenv>=0.8.2',
-
+        'docker==4.0.2',
+        'dnspython==1.16.0',
+        'requests',
+        'netaddr',
+        'mattermostdriver==6.2.0',
+        'shodan=1.15.0',
+        'certifi',
+        'beautifulsoup4==4.8.0',
+        'argparse',
+        'tqdm',
+        'dicttoxml==1.7.4',
+        'slackclient==2.1.0',
+        'django==2.2.5'
         ],
     setup_requires=[
         'pytest-runner'
@@ -36,5 +47,4 @@ setup(
     tests_require=[
         'pytest',
         ]
-
 )

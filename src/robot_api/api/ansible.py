@@ -2,7 +2,7 @@ import logging
 import os
 import subprocess
 from string import Template
-from . import join_abs
+from robot_api.parse import join_abs
 
 logger = logging.getLogger(__name__)
 

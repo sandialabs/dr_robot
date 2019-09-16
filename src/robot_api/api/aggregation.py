@@ -1,10 +1,14 @@
-from . import join_abs
 import json
 from xml.dom.minidom import parseString
 import socket
 import sqlite3
 import glob
+from os import walk
+import logging
+from concurrent.futures import ThreadPoolExecutor
+from tqdm import tqdm
 
+from robot_api.parse import join_abs
 
 class Aggregation:
     def __init__(self, db_filename, domain, output_dir):
@@ -73,7 +77,7 @@ class Aggregation:
         finally:
             dbconn.close()
 
-    def _build_db(ips, cursor):
+    def _build_db(self, ips, cursor):
         cursor.execute('BEGIN TRANSACTION')
         domain = self.domain.replace(".", "_")
         try:
@@ -87,7 +91,7 @@ class Aggregation:
 
         cursor.execute('COMMIT')
 
-    def _read_file(filename):
+    def _read_file(self, filename):
         with open(join_abs(self.OUTPUT_DIR, filename), 'r') as f:
             chunks = []
             chunk_size = 10000
@@ -148,15 +152,16 @@ class Aggregation:
                         if isfile(join_abs(root, f)):
                             all_files += [join_abs(root, f)]
 
-            self._print(f"Parsing all files {all_files}")
             all_ips = []
             for filename in all_files:
                 print(f"[*] Parsing file: {filename}")
                 all_ips += self._reverse_ip_lookup(filename)
                 # for data in read_file(join_abs(filename)):
                 #     all_ips += self._reverse_ip_lookup(data)
-            build_db(all_ips, dbcurs)
+            self._build_db(all_ips, dbcurs)
             dbconn.commit()
+        except Exception as e:
+            print(e)
         finally:
             dbconn.close()
 
@@ -189,7 +194,7 @@ class Aggregation:
 
         return results
 
-    @staticmethod
+    #@staticmethod
     def _get_headers(ip):
         http = None
         https = None
@@ -233,7 +238,7 @@ class Aggregation:
         # Threading is done against the staticmethod. Feel free to change the max_workers if your system allows.
         # May add option to specify threaded workers.
         with ThreadPoolExecutor(max_workers=40) as pool:
-            ip_headers = dict(tqdm(pool.map(Robot.grab_header,
+            ip_headers = dict(tqdm(pool.map(self._get_headers,
                                             ips),
                                    total=len(ips)))
         dbcurs.execute('BEGIN TRANSACTION')
@@ -254,7 +259,7 @@ class Aggregation:
                                    ).fetchall()
         hostnames = [item[0] for item in hostnames]
         with ThreadPoolExecutor(max_workers=40) as pool:
-            hostname_headers = dict(tqdm(pool.map(Robot.grab_header,
+            hostname_headers = dict(tqdm(pool.map(self._get_headers,
                                                   hostnames),
                                          total=len(hostnames)))
         dbcurs.execute('BEGIN TRANSACTION')
@@ -272,7 +277,7 @@ class Aggregation:
 
     def _gen_output(self):
         if not exists(self.dbfile):
-            self._print("No database file found. Exiting")
+            print("No database file found. Exiting")
             return
 
         dbconn = sqlite3.connect(self.dbfile)

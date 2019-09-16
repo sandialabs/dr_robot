@@ -4,22 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-docker = "*"
-dnspython = "*"
-requests = "*"
-netaddr = "*"
-mattermostdriver = "*"
-shodan = "*"
-certifi = "*"
-typing = "*"
-argparse = "*"
-tqdm = "*"
-"bs4" = "*"
-sphinx = "*"
-sphinx-rtd-theme = "*"
-slackclient = "*"
-dicttoxml = "*"
-django = ">=2.2.4"
+drrobot = {editable = true,path = "."}
+dr-robot = {editable = true,path = "."}
 
 [dev-packages]
 pytest = "*"
@@ -29,6 +15,8 @@ pytest-runner = "*"
 "flake8" = "*"
 pylint = "*"
 "autopep8" = "*"
+sphinx = "*"
+sphinx-rtd-theme = "*"
 
 [requires]
 python_version = "3"

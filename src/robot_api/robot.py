@@ -9,7 +9,6 @@ import requests
 import mmap
 from urllib.parse import urlparse
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
-from concurrent.futures import ThreadPoolExecutor
 from itertools import repeat
 import sqlite3
 from os.path import dirname, getsize, isfile, exists, isdir
@@ -18,10 +17,8 @@ from os import walk, makedirs, getcwd
 from docker.errors import APIError, BuildError, ContainerError, ImageNotFound
 from tqdm import tqdm
 
-from . import join_abs
-from .ansible import Ansible
-from .dockerize import Docker
-from .aggregation import Aggregation
+from robot_api.api import Ansible, Docker, Aggregation
+from robot_api.parse import join_abs
 
 
 logger = logging.getLogger(__name__)
@@ -116,12 +113,10 @@ class Robot:
             scanners += [
                 Docker(
                     active_config_path=join_abs(
-                        dirname(__file__),
-                        '..',
+                        self.ROOT_DIR,
                         scan_dict['active_conf']),
                     default_config_path=join_abs(
-                        dirname(__file__),
-                        '..',
+                        self.ROOT_DIR,
                         scan_dict['default_conf']),
                     docker_options=options,
                     output_dir=output_dir)]
@@ -163,8 +158,6 @@ class Robot:
                     f"[!] KeyError Output or Docker Name is not defined!!: {scanner.name}")
 
             except OSError:
-                print(
-                    f"[!] Output directory could not be created, please verify permissions")
                 logger.exception(
                     f"[!] Output directory could not be created, please verify permissions")
 
@@ -457,7 +450,9 @@ class Robot:
             verify=verify,
             output_folders=output_folders,
             output_files=output_files)
+
         self.aggregation.dump_to_file()
+
         if kwargs.get("headers", False):
             self.aggregation.headers()
         print("[*] Gather complete")

@@ -1,41 +1,24 @@
-from os import makedirs
-from os import path
+from os import makedirs, path, environ
 import logging
 import json
 import sys
 from shutil import copy
 from enum import Enum
 from sqlite3 import DatabaseError
+import pkg_resources
 
-from src.robot import Robot
-from src import join_abs
-from src import parse
+from robot_api.robot import Robot
+from robot_api.parse import  parse_args, join_abs
+from robot_api.config import load_config, generate_configs, tool_check, get_config
 
-try:
-    import errno
-except BaseException:
-    from os import errno
 
-ROOT_DIR = path.dirname(path.abspath(__file__))
-USER_CONFIG = path.join(ROOT_DIR, 'configs', 'user_config.json')
+ROOT_DIR = path.join(environ.get("HOME","."),".drrobot")
 
+generate_configs()
 
 class Mode(Enum):
     DOCKER = 1
     ANSIBLE = 2
-
-
-if not path.isfile(USER_CONFIG) and path.isfile(
-    path.join(
-        ROOT_DIR,
-        'configs',
-        'default_config.json')):
-    copy(path.join(ROOT_DIR, 'configs', 'default_config.json'), USER_CONFIG)
-elif not path.isfile(path.join(ROOT_DIR, 'configs', 'default_config.json')):
-    print("default_config.json does not exist and user_config.json does not exist. \
-            checkout the file via git.")
-    sys.exit(1)
-
 
 def setup_logger():
     logger = logging.getLogger()
@@ -61,21 +44,21 @@ def setup_logger():
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-    logging.getLogger("urllib3.connectionpool").disabled = True
+    logging.getLogger("urllib3.connectionpool").disabled = True 
 
     return logger
 
 
-if __name__ == '__main__':
+def run():
     try:
         if not path.exists(join_abs(ROOT_DIR, "logs")):
             makedirs(join_abs(ROOT_DIR, "logs"))
 
         log = setup_logger()
 
-        tools = parse.load_config(USER_CONFIG)
+        tools = load_config(get_config())
 
-        parser = parse.parse_args(**tools, root_dir=ROOT_DIR)
+        parser = parse_args(**tools, root_dir=ROOT_DIR)
 
         if not len(sys.argv) > 1:
             parser.print_help()
@@ -85,10 +68,10 @@ if __name__ == '__main__':
 
         log.debug(args)
 
-        parse.tool_check()
+        tool_check()
 
         drrobot = Robot(root_dir=ROOT_DIR,
-                        user_config=USER_CONFIG,
+                        user_config=get_config(),
                         **tools,
                         dns=getattr(args, 'dns', None),
                         proxy=getattr(args, 'proxy', None),
@@ -299,7 +282,11 @@ if __name__ == '__main__':
         print("[!] KeyboardInterrup, exiting...")
     except OSError as er:
         log.error(er)
-        print(f"[!] {er}")
+        print(f"[!] e {er}")
     except TypeError as er:
         log.error(er)
         print(f"[!] {er}")
+
+
+if __name__ == "__main__":
+    run()

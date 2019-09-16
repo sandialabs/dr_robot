@@ -32,7 +32,7 @@ class Docker:
         self.container = None
         self.status = None
         self.name = None
-        self.network = "bridge"
+        self.network = "host"
 
         self.OUTPUT_DIR = kwargs.get('output_dir', None)
 
@@ -88,18 +88,20 @@ class Docker:
         client = docker.from_env()
         self._init_config()
         print(f"[*] Building Docker image: {self.name}")
-        with open(self._active_config_path, 'rb') as f:
-            _, _ = client.images.build(fileobj=f,
-                                       tag=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
-                                       rm=True,
-                                       network_mode=self.network)
-            self.status = "built"
+        print(client)
         self._print(f"""Built with options:
                         -f {self._active_config_path}
                         -t {self._docker_options['docker_name']}:{self._docker_options['docker_name']}
                         --rm
                         --network {self.network}
                     """)
+        with open(self._active_config_path, 'rb') as f:
+            _, _ = client.images.build(fileobj=f,
+                                       tag=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
+                                       rm=True,
+                                       network_mode=self.network,
+                                       use_config_proxy=True)
+            self.status = "built"
 
     def run(self):
         """
