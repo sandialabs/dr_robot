@@ -61,7 +61,7 @@ class Ansible:
         try:
             system_replacements = {
                 "infile": self.infile,
-                "outfile": self.output_dir,
+                "outdir": self.output_dir,
                 "config": self.ansible_file
             }
 
