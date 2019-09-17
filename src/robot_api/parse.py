@@ -188,11 +188,5 @@ def parse_args(
     parser_output.add_argument("domain",
                                type=str,
                                help="Domain to dump output of")
-    ##########################
-    # SERVE
-    ##########################
-
-    parser_serve = subparser.add_parser(
-        "serve", help="Serve database file in docker container using django")
 
     return parser

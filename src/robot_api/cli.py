@@ -265,13 +265,6 @@ def run():
             else:
                 print("[!] DB file does not exists, try running gather first")
 
-        if args.actions in "serve":
-            # TODO Add check for running container
-            print("Serving drrobot container. \
-                    (Warning, you will have to stop the container on your own)"
-                  )
-            drrobot.serve(server=tools.get("server"))
-
     except json.JSONDecodeError as er:
         print(f"[!] JSON load error, configuration file is bad.\n {er}")
         log.error(er)

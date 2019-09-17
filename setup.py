@@ -5,7 +5,7 @@ import codecs
 from setuptools import setup, find_packages
 
 setup(
-    name="Dr.ROBOT",
+    name="drrobot",
     version="1.1.2",
     package_dir={"":"src"},
     url='https://github.com/sandialabs/dr_robot',

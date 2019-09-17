@@ -4,7 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-drrobot = {editable = true,path = "."}
 dr-robot = {editable = true,path = "."}
 
 [dev-packages]
