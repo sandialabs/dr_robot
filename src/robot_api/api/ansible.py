@@ -2,9 +2,11 @@ import logging
 import os
 import subprocess
 from string import Template
-from . import join_abs
+from robot_api.parse import join_abs
 
 logger = logging.getLogger(__name__)
+
+
 class Ansible:
     def __init__(self, **kwargs):
         """
@@ -26,16 +28,17 @@ class Ansible:
         self.ansible_arguments = kwargs.get('ansible_arguments')
         self.ansible_file = kwargs.get('ansible_file_location', None)
         if not self.ansible_file:
-            raise TypeError("argument ansible_file must be of type string, not 'NoneType'")
-
+            raise TypeError(
+                "argument ansible_file must be of type string, not 'NoneType'")
 
         self.domain = kwargs.get('domain', None)
         if not self.domain:
-            raise TypeError("argument domain must be of type string, not 'NoneType'")
+            raise TypeError(
+                "argument domain must be of type string, not 'NoneType'")
         self.output_dir = kwargs.get('output_dir')
         self.infile = kwargs.get('infile', None)
         if not self.infile:
-            self.infile = join_abs(self.output_dir,"aggregated")
+            self.infile = join_abs(self.output_dir, "aggregated")
 
         self.verbose = kwargs.get('verbose', False)
         self.final_command = None
@@ -57,20 +60,21 @@ class Ansible:
         """
         try:
             system_replacements = {
-                    "infile": self.infile,
-                    "outfile": self.output_dir,
-                    "config": self.ansible_file
-                    }
+                "infile": self.infile,
+                "outdir": self.output_dir,
+                "config": self.ansible_file
+            }
 
             extra_flags = self.ansible_arguments.get('extra_flags', None)
             extra_replace_string = ""
-            
+
             self._print(f"building with extra flags {extra_flags}")
 
             if extra_flags:
                 for k, v in extra_flags.items():
                     cur_str = Template(v)
-                    extra_replace_string += cur_str.safe_substitute(system_replacements) + " "
+                    extra_replace_string += cur_str.safe_substitute(
+                        system_replacements) + " "
 
             flags = Template(self.ansible_arguments.get("flags"))
             config = Template(self.ansible_arguments.get("config"))
@@ -81,15 +85,15 @@ class Ansible:
             all the flags are added to the flags argument to be input into the final command
             """
             substitutes = {
-                    "flags" : flags.safe_substitute(extra=extra_replace_string),
-                    "config" : config.safe_substitute(system_replacements)
-                    }
+                "flags": flags.safe_substitute(extra=extra_replace_string),
+                "config": config.safe_substitute(system_replacements)
+            }
 
             t = Template(self.ansible_base)
             self.final_command = t.safe_substitute(substitutes)
 
             self._print(f"Final ansible command {self.final_command}")
-        except:
+        except BaseException:
             raise TypeError("NoneType object supplied in Dict build")
 
     def run(self):
@@ -103,7 +107,11 @@ class Ansible:
         """
         try:
             self.build()
-            call = subprocess.check_output(self.final_command, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
+            call = subprocess.check_output(
+                self.final_command,
+                shell=True,
+                stderr=subprocess.STDOUT,
+                universal_newlines=True)
         except subprocess.CalledProcessError as er:
             print(f"[!] {er} : {er.output}")
             logger.exception("Called Process Error Ansible")

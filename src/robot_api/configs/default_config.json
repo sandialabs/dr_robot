@@ -5,7 +5,6 @@
         {
             "short_name": "shodan",
             "class_name": "Shodan",
-            "default" : false,
             "description" : "Query SHODAN for publicly facing sites of given domain",
             "output_file" : "shodan.txt",
             "api_key" : null,
@@ -17,7 +16,6 @@
         {
             "short_name" : "arin",
             "class_name": "Arin",
-            "default" : false,
             "description" : "Query ARIN for public CIDR ranges. This is better as a brute force option as the ranges",
             "output_file" : "arin.txt",
             "api_key" : null,
@@ -28,7 +26,6 @@
         {
             "short_name" : "hack",
             "class_name" : "HackerTarget",
-            "default" : false,
             "description" : "This query will display the forward DNS records discovered using the data sets outlined above.",
             "api_call_unused" : "https://api.hackertarget.com/hostsearch/?q=example.com",
             "output_file" : "hacker.txt"
@@ -37,7 +34,6 @@
         {
             "short_name" : "dump",
             "class_name" : "Dumpster",
-            "default" : false,
             "description" : "Use the limited response of DNSDumpster. Requires API access for better results.",
             "output_file" : "dumpster.txt"
         },
@@ -45,7 +41,6 @@
         {
             "short_name" : "virus",
             "class_name" : "VirusTotal",
-            "default" : false,
             "description" : "Utilize VirusTotal's Observer Subdomain Search",
             "output_file" : "virustotal.txt"
         }
@@ -90,7 +85,6 @@
     {
         "Aquatone" : {
             "name": "Aquatone",
-            "default" : true,
             "mode" : "DOCKER",
             "network_mode": "host",
             "docker_name": "aqua",
@@ -103,7 +97,6 @@
         },
         "Sublist3r": {
             "name": "Sublist3r",
-            "default" : true,
             "mode" : "DOCKER",
             "network_mode": "host",
             "docker_name": "sub",
@@ -116,7 +109,6 @@
         },
         "Subbrute": {
             "name": "Subbrute",
-            "default" : false,
             "mode" : "DOCKER",
             "network_mode": "host",
             "docker_name" : "brute",
@@ -129,7 +121,6 @@
         },
         "Subfinder": {
             "name": "Subfinder",
-            "default" : false,
             "mode" : "DOCKER",
             "docker_name" : "sfinder",
             "network_mode": "host",
@@ -142,7 +133,6 @@
         },
         "Knock": {
             "name": "Knock",
-            "default" : false,
             "mode" : "DOCKER",
             "network_mode": "host",
             "docker_name" : "knock",
@@ -156,7 +146,6 @@
         },
         "Amass": {
             "name": "Amass",
-            "default" : false,
             "mode" : "DOCKER",
             "network_mode": "host",
             "docker_name" : "amass",
@@ -169,7 +158,6 @@
         },
         "Reconng": {
             "name": "Reconng",
-            "default" : false,
             "mode" : "DOCKER",
             "network_mode": "host",
             "docker_name" : "recon",
@@ -182,7 +170,6 @@
         },
         "Altdns": {
             "name": "Altdns",
-            "default" : false,
             "mode" : "DOCKER",
             "network_mode": "host",
             "docker_name" : "altdns",
@@ -196,7 +183,6 @@
         },
         "Anubis": {
             "name": "Anubis",
-            "default" : false,
             "mode" : "DOCKER",
             "network_mode": "host",
             "docker_name" : "anubis",
@@ -209,7 +195,6 @@
         } ,
         "CTExposer": {
             "name": "CTExpose",
-            "default" : false,
             "mode" : "DOCKER",
             "network_mode": "host",
             "docker_name" : "ctexpo",
@@ -222,7 +207,6 @@
         },
         "CTFR": {
             "name": "CTFR",
-            "default" : false,
             "mode" : "DOCKER",
             "network_mode": "host",
             "docker_name" : "ctfr",
@@ -250,15 +234,14 @@
                 "extra_flags":{
                     "1" : "variable_host=localhost",
                     "2" : "variable_user=user", 
-                    "3" : "infile=$infile/aggregated_protocol_hostnames.txt",
+                    "3" : "infile=$infile",
                     "4" : "outfile=$outfile/httpscreenshots.tar",
                     "5" : "outfolder=$outfile/httpscreenshots"
                 }
             },
             "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: httpscreenshot.tar and unpacked httpscreenshots",
             "output" : "/tmp/output",
-            "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt",
-            "enabled" : false
+            "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt"
         },
         "Eyewitness": {
             "name" : "Eyewitness",
@@ -274,15 +257,14 @@
                 "extra_flags":{
                     "1" : "variable_host=localhost",
                     "2" : "variable_user=user", 
-                    "3" : "infile=$infile/aggregated_ips.txt",
+                    "3" : "infile=$infile",
                     "4" : "outfile=$outfile/Eyewitness.tar",
                     "5" : "outfolder=$outfile/Eyewitness"
                 }
             },
             "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: Eyewitness.tar and unpacked in Eyewitness",
             "output" : "/tmp/output",
-            "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt",
-            "enabled" : false
+            "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt"
         },
         "Nmap" : {
             "name" : "Nmap Screenshot",
@@ -295,7 +277,6 @@
             "description" : "Post enumeration tool for screen grabbing websites. (Chrome is not installed in the dockerfile due. Options are chromium-browser/firefox/wkhtmltoimage)",
             "output" : "/tmp/output",
             "infile" : "/tmp/output/aggregated/aggregated_hostnames.txt",
-            "enabled" : false,
             "tool_nmap" : "chromium-browser"
         },
         "Webscreenshot" : {
@@ -309,7 +290,6 @@
             "description" : "Post enumeration tool for screen grabbing websites. (Chrome is not installed in the dockerfile due. Options are chromium-browser/firefox/wkhtmltoimage)",
             "output" : "/tmp/output",
             "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt",
-            "enabled" : false,
             "tool_web" : "phantomjs"
         }
     }
