@@ -69,18 +69,6 @@
             
         }
     },
-    "Serve" : {
-        "name" : "Django",
-        "command" : "python manage.py runserver 0.0.0.0:8888",
-        "docker_name": "django",
-        "network_mode": "host",
-        "default_conf": "serve_api/Dockerfile.Django.tmp",
-        "active_conf": "serve_api/Dockerfile.Django",
-        "description" : "Django container for hosting database",
-        "ports" : {
-            "8888" : "8888"
-         }
-    },
     "Scanners" :
     {
         "Aquatone" : {
