@@ -32,7 +32,6 @@ class Docker:
         self.container = None
         self.status = None
         self.name = None
-        self.network = "host"
 
         self.OUTPUT_DIR = kwargs.get('output_dir', None)
 
@@ -66,7 +65,7 @@ class Docker:
                 'Default configuration file is not found, please fix')
 
         self.name = self._docker_options['name']
-        self.network_mode = self._docker_options['network_mode']
+        self.network_mode = self._docker_options.get('network_mode', 'host')
         self._print(
             f"Making config with args:{json.dumps(self._docker_options, indent=4)}")
 
@@ -93,13 +92,13 @@ class Docker:
                         -f {self._active_config_path}
                         -t {self._docker_options['docker_name']}:{self._docker_options['docker_name']}
                         --rm
-                        --network {self.network}
+                        --network {self.network_mode}
                     """)
         with open(self._active_config_path, 'rb') as f:
             _, _ = client.images.build(fileobj=f,
                                        tag=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
                                        rm=True,
-                                       network_mode=self.network,
+                                       network_mode=self.network_mode,
                                        use_config_proxy=True)
             self.status = "built"
 
@@ -125,13 +124,11 @@ class Docker:
             }
         self.container = client.containers.run(
             image=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
-            dns=[
-                self._docker_options.get('dns')] if self._docker_options.get(
-                'dns',
-                None) else None,
+            # dns=[self._docker_options.get('dns')] if self._docker_options.get('dns', None) else None, # REMOVED in latest due to issues :/
             auto_remove=True,
             tty=True,
             detach=True,
+            network_mode=self.network_mode,
             command=self._docker_options.get(
                 'command',
                 None),

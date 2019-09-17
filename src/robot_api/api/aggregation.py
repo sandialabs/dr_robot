@@ -3,7 +3,9 @@ from xml.dom.minidom import parseString
 import socket
 import sqlite3
 import glob
-from os import walk
+import re
+import requests
+from os import walk, path 
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
@@ -15,6 +17,7 @@ class Aggregation:
         self.dbfile = db_filename
         self.domain = domain
         self.output_dir = output_dir
+        self.logger = logging.getLogger(__name__)
 
     def dump_to_file(
             self,
@@ -82,7 +85,9 @@ class Aggregation:
         domain = self.domain.replace(".", "_")
         try:
             for host, ip in ips:
-                cursor.execute("""INSERT INTO data
+                if len(host) > 1:
+                    host = host[0]
+                cursor.execute("""INSERT OR IGNORE INTO data
                                     (ip, hostname, http_headers, https_headers, domain)
                                     VALUES (?,?, NULL, NULL, ?);""",
                                (ip, host, domain))
@@ -126,8 +131,9 @@ class Aggregation:
                                 http_headers TEXT,
                                 https_headers TEXT,
                                 domain VARCHAR,
+                                found TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
                                 FOREIGN KEY(domain) REFERENCES domains(domain),
-                                UNIQUE(ip, hostname)
+                                UNIQUE(hostname)
                             )
                             """)
             # Quickly create entry in domains table.
@@ -137,7 +143,7 @@ class Aggregation:
 
             all_files = []
             for name in output_files:
-                if isfile(join_abs(self.output_dir, name)):
+                if path.isfile(join_abs(self.output_dir, name)):
                     all_files += [join_abs(self.output_dir, name)]
                 elif isfile(name):
                     all_files += [name]
@@ -177,10 +183,10 @@ class Aggregation:
         with open(filename, "r") as f:
             for line in tqdm(f.readlines()):
                 host = hostname_reg.match(line)
-                if host:
-                    host = host.group()
+                if host is not None:
+                    host = host.group(1)
                 ip = ip_reg.match(line)
-                if ip:
+                if ip is not None:
                     ip = ip.group()
                 try:
                     if host is not None and ip is None:
@@ -194,7 +200,7 @@ class Aggregation:
 
         return results
 
-    #@staticmethod
+    @staticmethod
     def _get_headers(ip):
         http = None
         https = None
@@ -210,7 +216,6 @@ class Aggregation:
                 verify=False).headers
             http = str(http)
         except Exception as er:
-            logger.exception(f"Could not retrieve http header for ip: {ip}")
             pass
         try:
             https = requests.get(
@@ -220,7 +225,6 @@ class Aggregation:
                 verify=False).headers
             https = str(https)
         except BaseException:
-            logger.exception(f"Could not retrieve https header for ip: {ip}")
             pass
         return ip, (http, https)
 
@@ -238,7 +242,7 @@ class Aggregation:
         # Threading is done against the staticmethod. Feel free to change the max_workers if your system allows.
         # May add option to specify threaded workers.
         with ThreadPoolExecutor(max_workers=40) as pool:
-            ip_headers = dict(tqdm(pool.map(self._get_headers,
+            ip_headers = dict(tqdm(pool.map(Aggregation._get_headers,
                                             ips),
                                    total=len(ips)))
         dbcurs.execute('BEGIN TRANSACTION')
@@ -248,18 +252,18 @@ class Aggregation:
                                 SET http_headers=?, https_headers=?
                                 WHERE ip = ?
                                 AND domain= ?
-                                LIMIT 1;""",
+                                """,
                            (http, https, ip, domain_rep))
         dbcurs.execute("COMMIT")
 
-        hostnames = dbcurs.execute(f"""SELECT ip
+        hostnames = dbcurs.execute(f"""SELECT hostname
                                     FROM data
                                     WHERE ip IS NOT NULL
                                     AND domain='{self.domain.replace('.','_')}'"""
                                    ).fetchall()
         hostnames = [item[0] for item in hostnames]
         with ThreadPoolExecutor(max_workers=40) as pool:
-            hostname_headers = dict(tqdm(pool.map(self._get_headers,
+            hostname_headers = dict(tqdm(pool.map(Aggregation._get_headers,
                                                   hostnames),
                                          total=len(hostnames)))
         dbcurs.execute('BEGIN TRANSACTION')
@@ -268,8 +272,8 @@ class Aggregation:
             dbcurs.execute(f"""UPDATE data
                                 SET http_headers=?, https_headers=?
                                 WHERE hostname = ?
-                                AND domain= ?
-                                LIMIT 1;""",
+                                AND domain= ?;""",
+                                #LIMIT 1;""",
                            (http, https, hostname, domain_rep))
         dbcurs.execute("COMMIT")
 

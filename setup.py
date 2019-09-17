@@ -27,19 +27,19 @@ setup(
         'console_scripts':['drrobot=robot_api.cli:run']
         },
     install_requires=[
-        'docker==4.0.2',
-        'dnspython==1.16.0',
+        'docker',
+        'dnspython',
         'requests',
         'netaddr',
-        'mattermostdriver==6.2.0',
-        'shodan=1.15.0',
+        'mattermostdriver',
+        'shodan',
         'certifi',
-        'beautifulsoup4==4.8.0',
+        'beautifulsoup4',
         'argparse',
         'tqdm',
-        'dicttoxml==1.7.4',
-        'slackclient==2.1.0',
-        'django==2.2.5'
+        'dicttoxml',
+        'slackclient',
+        'django'
         ],
     setup_requires=[
         'pytest-runner'
