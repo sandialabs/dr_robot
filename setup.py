@@ -33,7 +33,7 @@ setup(
         'mattermostdriveri==6.2.0',
         'shodan==1.15.0',
         'certifi',
-        'beautifulsoup4==3.2.1',
+        'beautifulsoup4==4.8.0',
         'argparse',
         'tqdm==4.36.0',
         'dicttoxml',
