@@ -2,9 +2,8 @@ FROM python:3.7-slim
 
 ENV http_proxy $proxy
 ENV https_proxy $proxy
-ENV DNS $dns
 
-RUN if [ -n "$DNS" ]; \
+RUN if [ -n "$dns" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\
  	apt-get update && apt-get install -y --no-install-recommends \
             build-essential \
@@ -15,22 +14,18 @@ RUN if [ -n "$DNS" ]; \
         && rm -rf /var/lib/apt/lists/*
 
 
-RUN if [ -n "$DNS" ]; \
+RUN if [ -n "$dns" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\
  	git clone https://github.com/jonluca/Anubis.git anubis
 
 
 WORKDIR /anubis
 
-RUN if [ -n "$DNS" ]; \
+RUN if [ -n "$dns" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\
  	pip3 install -r requirements.txt; \
 	pip3 install .
 
-ENV TARGET $target
-ENV OUTPUT $output/anubis.txt
-ENV INFILE  $infile
-
 RUN mkdir -p $output
 
-ENTRYPOINT anubis -t "$$TARGET" -o $$OUTPUT -i
+ENTRYPOINT anubis -t "$target" -o $output/anubis.txt -i

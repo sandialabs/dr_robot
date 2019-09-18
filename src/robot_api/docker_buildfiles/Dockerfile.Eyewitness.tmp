@@ -2,18 +2,17 @@ FROM phusion/baseimage
 
 ENV http_proxy $proxy
 ENV https_proxy $proxy
-ENV DNS $dns
 
 ARG user=eyewitness
 
-RUN if [ -n "$DNS" ]; \
+RUN if [ -n "$dns" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     apt-get update && \
     apt-get install -y git wget && \
 	rm -rf /var/lib/apt/lists/*
 
-RUN if [ -n "$DNS" ]; \
+RUN if [ -n "$dns" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     export uid=1000 gid=1000 && \
@@ -24,7 +23,7 @@ RUN if [ -n "$DNS" ]; \
 
 WORKDIR /home/$$user
 
-RUN if [ -n "$DNS" ]; \
+RUN if [ -n "$dns" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
 	  git clone https://github.com/ChrisTruncer/EyeWitness.git && \
@@ -38,8 +37,4 @@ RUN cd setup && \
     chown -R $$user:$$user /home/$$user/EyeWitness && \
     mkdir -p /tmp/EyeWitness
 
-ENV TARGET $target
-ENV OUTPUT $output/Eyewitness
-ENV INFILE  $infile
-
-ENTRYPOINT mkdir -p $output && python EyeWitness.py -d $output -f $infile --no-prompt --web --threads 40 --max-retries 1
+ENTRYPOINT mkdir -p $output/Eyewitness && python EyeWitness.py -d $output -f $infile --no-prompt --web --threads 40 --max-retries 1

@@ -1,11 +1,10 @@
 import json
-from xml.dom.minidom import parseString
 import socket
 import sqlite3
+from os import path, getcwd
 import glob
 import re
 import requests
-from os import walk, path 
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
@@ -166,17 +165,17 @@ class Aggregation:
             for name in output_files:
                 if path.isfile(join_abs(self.output_dir, name)):
                     all_files += [join_abs(self.output_dir, name)]
-                elif isfile(name):
+                elif path.isfile(name):
                     all_files += [name]
                 else:
                     print(
                         f"[!] File {name} does not exist, verify scan results")
 
             for folder in output_folders:
-                for root, dirs, files in walk(
+                for root, dirs, files in path.walk(
                         join_abs(self.output_dir, folder)):
                     for f in files:
-                        if isfile(join_abs(root, f)):
+                        if path.isfile(join_abs(root, f)):
                             all_files += [join_abs(root, f)]
 
             all_ips = []

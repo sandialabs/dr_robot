@@ -4,21 +4,17 @@ WORKDIR /root
 
 ENV http_proxy $proxy
 ENV https_proxy $proxy
-ENV DNS $dns
 
-RUN if [ -n "$$DNS" ];\
+RUN if [ -n "$dns" ];\
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
 	apt install -y git ;\
     pip install dnspython;
 
-RUN if [ -n "$$DNS" ];\
+RUN if [ -n "$dns" ];\
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     git clone https://github.com/TheRook/subbrute.git subbrute
-
-ENV TARGET $target
-ENV OUTPUT $output
 
 RUN mkdir -p $output
 

@@ -5,30 +5,26 @@ ENV https_proxy $proxy
 ENV DNS $dns
 
 
-RUN if [ -n "$$DNS" ]; \
-    then echo "nameserver $DNS" >> /etc/resolv.conf;\
+RUN if [ -n "$dns" ]; \
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     apt-get install git
 
-RUN if [ -n "$DNS" ]; \
-    then echo "nameserver $DNS" >> /etc/resolv.conf;\
+RUN if [ -n "$dns" ]; \
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     cat /etc/resolv.conf ;\
     git clone https://github.com/infosec-au/altdns.git altdns
 
 WORKDIR altdns
 
-RUN if [ -n "$DNS" ]; \
-    then echo "nameserver $DNS" >> /etc/resolv.conf;\
+RUN if [ -n "$dns" ]; \
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     python setup.py install
 
 RUN cp $infile /tmp/infile.txt; \
     echo $target >> /tmp/infile.txt
-
-ENV INFILE $infile
-ENV TARGET $target
-ENV OUTPUT $output
 
 RUN mkdir -p $output
 

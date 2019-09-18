@@ -2,7 +2,6 @@ FROM golang:1.11.4-alpine3.7 AS build-env
 
 ENV http_proxy $proxy
 ENV https_proxy $proxy
-ENV DNS $dns
 
 RUN apk add --no-cache --upgrade git openssh-client ca-certificates
 RUN go get -u github.com/golang/dep/cmd/dep
@@ -11,9 +10,6 @@ WORKDIR /go/src/app
 # Install
 RUN go get -u github.com/subfinder/subfinder
 
-ENV TARGET $target
-ENV OUTPUT $output/subfinder.json
-
 RUN mkdir -p $output
 
-ENTRYPOINT subfinder -d "$target" -o $$OUTPUT -oJ 
+ENTRYPOINT subfinder -d "$target" -o $output/subfinder.json -oJ 

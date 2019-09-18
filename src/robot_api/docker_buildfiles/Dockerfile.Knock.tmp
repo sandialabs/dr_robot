@@ -3,25 +3,22 @@ FROM python:2.7
 WORKDIR /home
 ENV http_proxy $proxy
 ENV https_proxy $proxy
-ENV DNS $dns
 
-RUN mkdir -p $output
-
-RUN if [ -n "$DNS" ]; \
+RUN if [ -n "$dns" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     apt-get update && \
     apt-get install -y git python-dnspython && \
 	  rm -rf /var/lib/apt/lists/*
 
-RUN if [ -n "$DNS" ]; \
+RUN if [ -n "$dns" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     git clone https://github.com/guelfoweb/knock.git /home/knock
 
 WORKDIR /home/knock
 
-RUN if [ -n "$DNS" ]; \
+RUN if [ -n "$dns" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     python setup.py install
@@ -34,6 +31,7 @@ ENV TARGET $target
 ENV OUTPUT $output
 ENV VT_KEY $vt_key
 
+RUN mkdir -p $output
 WORKDIR $output
 
 ENTRYPOINT knockpy -c $target

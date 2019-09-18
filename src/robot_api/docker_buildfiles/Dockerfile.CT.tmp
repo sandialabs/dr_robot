@@ -2,30 +2,27 @@ FROM python:3.6
 
 ENV http_proxy $proxy
 ENV https_proxy $proxy
-ENV DNS $dns
 
-RUN if [ -n "$DNS" ]; \
+RUN if [ -n "$dns" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\
  	apt-get update && apt-get install -y --no-install-recommends \
             python-dev \
 			git 
 
 
-RUN if [ -n "$DNS" ]; \
+RUN if [ -n "$dns" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\
  	git clone https://github.com/chris408/ct-exposer.git ctexposure
 
 
 WORKDIR /ctexposure
 
-RUN if [ -n "$DNS" ]; \
+RUN if [ -n "$dns" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\
  	pip3 install -r requirements.txt
 
-ENV TARGET $target
-ENV OUTPUT $output/ctexposure.txt
 ENV INFILE  $infile
 
 RUN mkdir -p $output
 
-ENTRYPOINT python ct-exposer.py -d "$$TARGET" -m -u > $$OUTPUT
+ENTRYPOINT python ct-exposer.py -d "$target" -m -u > $output/ctexposure.txt

@@ -19,8 +19,4 @@ ENV HOME /
 
 RUN mkdir -p $output
 
-ENV TARGET $target
-ENV OUTPUT $output/amass.txt
-ENV INFILE  $infile
-
-ENTRYPOINT amass enum --passive -d "$target" -o $$OUTPUT
+ENTRYPOINT amass enum --passive -d "$target" -o $output/amass.txt 

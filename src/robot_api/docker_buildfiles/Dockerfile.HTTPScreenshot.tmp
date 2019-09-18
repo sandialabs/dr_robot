@@ -2,22 +2,21 @@ FROM ubuntu:latest
 
 ENV http_proxy $proxy
 ENV https_proxy $proxy
-ENV DNS $dns
 
-RUN if [ -n "$DNS" ]; \
+RUN if [ -n "$dns" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     apt-get update \
     && apt-get install -y wget git python-dev python-pip libfontconfig unzip firefox
 
-RUN if [ -n "$DNS" ]; \
+RUN if [ -n "$dns" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
     && dpkg -i google-chrome-stable_current_amd64.deb || true \
     && apt-get -y -f install
 
-RUN if [ -n "$DNS" ]; \
+RUN if [ -n "$dns" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     git clone https://github.com/Sandarmann/httpscreenshot.git
@@ -29,10 +28,6 @@ RUN cd httpscreenshot \
     && wget https://chromedriver.storage.googleapis.com/2.44/chromedriver_linux64.zip \
     && unzip -o chromedriver_linux64.zip \
     && ln -s /httpscreenshot/chromedriver /usr/bin/chromedriver
-
-ENV TARGET $target
-ENV OUTPUT $output/httpscreenshot
-ENV INFILE $infile
 
 RUN mkdir -p $output 
 WORKDIR $output
