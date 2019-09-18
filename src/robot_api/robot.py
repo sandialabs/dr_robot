@@ -1,28 +1,17 @@
 import importlib
 import json
-import dicttoxml
+from urllib.parse import urlparse
 import logging
-import re
-import socket
 import threading
 import requests
-import mmap
-from urllib.parse import urlparse
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
-from itertools import repeat
-import sqlite3
-from os.path import dirname, getsize, isfile, exists, isdir
-from os import walk, makedirs, getcwd
-
+import dicttoxml
 from docker.errors import APIError, BuildError, ContainerError, ImageNotFound
-from tqdm import tqdm
-
 from robot_api.api import Ansible, Docker, Aggregation
 from robot_api.parse import join_abs
 
 
 logger = logging.getLogger(__name__)
-
 
 class Robot:
     def __init__(self, **kwargs):
@@ -571,9 +560,6 @@ class Robot:
 
     def dumpdb(self, **kwargs):
         """Dumps the contents of the db file.
-
-        Args:
-            **kwargs
         """
         print(f"[*] Dumping sqllite3 file for {self.domain.replace('.', '_')}")
         self.aggregation.dump_to_file(dump_headers=True)
