@@ -14,8 +14,7 @@ logger = logging.getLogger(__name__)
 
 class Forum(ABC):
     def __init__(self, **kwargs):
-        """
-        ABC class
+        """ABC class
         Args:
             **kwargs:
                 api_key : (String) [Optional] api key for service
@@ -33,8 +32,7 @@ class Forum(ABC):
 
     @abstractmethod
     def upload(self, **kwargs):
-        """
-        Abstractmethod to be used in order to keep instantiation and execution simple in calling function
+        """Abstractmethod to be used in order to keep instantiation and execution simple in calling function
         Args:
             **kwargs: Any extra values needed for execution.
 
@@ -46,8 +44,7 @@ class Forum(ABC):
 
 class Mattermost(Forum):
     def __init__(self, **kwargs):
-        """
-        Initialize Mattermost class which extends Chat ABC
+        """Initialize Mattermost class which extends Chat ABC
         Args:
             **kwargs: args to pass to Chat ABC
             team_channel : (String) required for posting to channel
@@ -102,8 +99,7 @@ class Mattermost(Forum):
             })
 
     def upload(self, **kwargs):
-        """
-        File upload
+        """File upload
 
         Args:
             **kwargs:
@@ -160,8 +156,7 @@ class Mattermost(Forum):
 
 class Slack(Forum):
     def __init__(self, **kwargs):
-        """
-        Initialize Slack Client
+        """Initialize Slack Client
         """
         super().__init__(**kwargs)
 
@@ -169,8 +164,7 @@ class Slack(Forum):
         self.filepath = kwargs.get("filepath", None)
 
     def _get_files(self, file_location, max_filesize=50):
-        """
-        Generator to grab individual files for upload
+        """Generator to grab individual files for upload
 
         Args:
             file_location:      Location of file(s) to upload

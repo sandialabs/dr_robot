@@ -8,6 +8,11 @@ except BaseException:
     from os import errno
 
 def generate_configs():
+    """Loads configuration files and templates into users home directory.
+
+    Returns:
+        None
+    """
 
     CONFIG_DIR = path.join(environ.get("HOME","."),".drrobot")
     if not path.exists(CONFIG_DIR):
@@ -44,6 +49,9 @@ def generate_configs():
                 f.write(contents)
 
 def tool_check():
+    """Checks if Docker or Ansible exists
+        
+    """
 
     TOOLS = ["ansible", "docker"]
     for name in TOOLS:
@@ -52,10 +60,20 @@ def tool_check():
             Popen([name], stdout=dnull, stderr=dnull).communicate()
         except OSError as e:
             if e.errno == errno.ENOENT:
-                print(f"[!!] Tool {name} not found in path.")
+                print(f"[!!] Tool {name} not found in path. If we error out it is your fault.")
 
 
 def load_config(config):
+    """Load all data from the json file in the USERS home directory
+
+    Returns:
+        A dict of the USER defined tools and their options for running them :
+
+        { "scanners" : {...},
+        "webtools" : {...},
+        "enumeration" : {...},
+        "upload_dest" : {...},
+    """
 
     with open(config, 'r') as f:
         config = json.load(f)
@@ -68,8 +86,12 @@ def load_config(config):
     return {"scanners": scanners,
             "webtools": webtools,
             "enumeration": enumeration,
-            "upload_dest": upload_dest,
-            "server": serve}
+            "upload_dest": upload_dest}
 
 def get_config():
+    """Utility to fetch the path to the configuration file. If HOME is not defined just check the current directory.
+
+    Returns:
+        A string path that points to the config.json file.
+    """
     return path.join(environ.get("HOME", "."), ".drrobot", "config.json")

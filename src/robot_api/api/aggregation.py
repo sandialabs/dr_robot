@@ -14,6 +14,11 @@ from robot_api.parse import join_abs
 
 class Aggregation:
     def __init__(self, db_filename, domain, output_dir):
+        """Initialize aggregation object
+
+        Returns:
+
+        """
         self.dbfile = db_filename
         self.domain = domain
         self.output_dir = output_dir
@@ -24,6 +29,17 @@ class Aggregation:
             dump_ips=True,
             dump_hostnames=True,
             dump_headers=False):
+        """Dumps contents of database to three seperate files: with protocol (http/https), hostname only, and ip only
+        
+        Args:
+            dump_ips: dump ips (true/false) 
+            dump_hostnames: dump hostnames with and without protocol (true/false) 
+            dump_headers: dump headers to output firectory under headers/<hostname>_headers.txt (true/false) 
+
+
+        Returns:
+            
+        """
         dbconn = sqlite3.connect(self.dbfile)
         try:
             dbcurs = dbconn.cursor()
@@ -81,6 +97,14 @@ class Aggregation:
             dbconn.close()
 
     def _build_db(self, ips, cursor):
+        """Takes in ip/hostname data and inserts them into the database
+        
+        Args:
+            ips: list of tupes (host, ip)
+            cursor: database cursor object
+
+        Returns:
+        """
         cursor.execute('BEGIN TRANSACTION')
         domain = self.domain.replace(".", "_")
         try:
@@ -96,18 +120,15 @@ class Aggregation:
 
         cursor.execute('COMMIT')
 
-    def _read_file(self, filename):
-        with open(join_abs(self.OUTPUT_DIR, filename), 'r') as f:
-            chunks = []
-            chunk_size = 10000
-            for line in f:
-                chunks += [line]
-                if len(chunks) >= chunk_size:
-                    yield chunks
-                    chunks = []
-            yield chunks
+    def aggregate(self, output_files=[], output_folders=[]):
+        """Aggregates all output from scanners into the database
 
-    def aggregate(self, verify=None, output_files=[], output_folders=[]):
+        Args:
+            output_files: list of output files referenced in config.json
+            output_folders: list of folders to include all files for aggregation
+
+        Returns:
+        """
         try:
 
             dbconn = sqlite3.connect(self.dbfile)
@@ -172,6 +193,14 @@ class Aggregation:
             dbconn.close()
 
     def _reverse_ip_lookup(self, filename):
+        """Read in filesnames and use regex to extract all ips and hostnames.
+
+        Args:
+            filename: string to filename to parse
+
+        Returns:
+            A list of tuples containing the extracted host and ip
+        """
         print("Extracting ips and hostnames from text")
         ip_reg = re.compile(
             r"(?:(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)\.){3}(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)")
@@ -202,6 +231,14 @@ class Aggregation:
 
     @staticmethod
     def _get_headers(ip):
+        """Static method for request to scrape header information from ip
+
+        Args:
+            ip: string to make request to
+
+        Returns:
+            ip/hostname and tuple containing headers
+        """
         http = None
         https = None
         # May add option later to set UserAgent
@@ -229,6 +266,11 @@ class Aggregation:
         return ip, (http, https)
 
     def headers(self):
+        """Attempts to grab header data for all ips/hostnames
+
+        Returns:
+
+        """
         dbconn = sqlite3.connect(self.dbfile)
         dbcurs = dbconn.cursor()
 
@@ -280,6 +322,12 @@ class Aggregation:
         dbconn.close()
 
     def _gen_output(self):
+        """Generate dictionary containing all data from the database
+
+        Returns:
+            A dictionary containing all data from database
+
+        """
         if not exists(self.dbfile):
             print("No database file found. Exiting")
             return

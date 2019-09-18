@@ -17,10 +17,20 @@ ROOT_DIR = path.join(environ.get("HOME","."),".drrobot")
 generate_configs()
 
 class Mode(Enum):
+    """Class for simple option handling when loading the config file.
+
+    Leave for extending upon later
+
+    """
     DOCKER = 1
     ANSIBLE = 2
 
 def setup_logger():
+    """Setup our logging instance. 
+        
+    Returns: 
+        A logger for writing to two seperate files depending on error or debug messages
+    """
     logger = logging.getLogger()
     logger.setLevel(logging.NOTSET)
     formatter = logging.Formatter(
@@ -50,6 +60,11 @@ def setup_logger():
 
 
 def run():
+    """Main method for running Dr.ROBOT. 
+
+    Returns:
+        Nothing.
+    """
     try:
         if not path.exists(join_abs(ROOT_DIR, "logs")):
             makedirs(join_abs(ROOT_DIR, "logs"))

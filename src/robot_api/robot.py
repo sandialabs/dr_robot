@@ -26,30 +26,23 @@ logger = logging.getLogger(__name__)
 
 class Robot:
     def __init__(self, **kwargs):
-        """
-        Initialize Robot object.
+        """Initialize Robot object.
 
         Args:
-            scanners (Dict): dictionary of scanners and their options
-            webtools (Dict): dictionary of webtools and their options
-            enumeration (Dict): dictionary of enumerations and their options
-            boards (Dict): dictionary of boards and their options
             dns (str): Added DNS for host configuration
             proxy (str): Proxy url of format "http://proxy.foo.bar:port
             domain (str): Target domain
-            root_dir (str): Path to directory of drrobot.py
+            root_dir (str): Base directory containing config.json and template folders
+            verbose (bool): verbose output on/off
+            dbfile (str): Alternative database file to use
 
         Returns:
-
+            None
         """
         self.domain = kwargs.get("domain", None)
         self.ROOT_DIR = kwargs.get("root_dir")
         if self.domain:
             self.OUTPUT_DIR = join_abs(self.ROOT_DIR, "output", self.domain)
-        self.scanners = kwargs.get("scanners", {})
-        self.webtools = kwargs.get("webtools", {})
-        self.enumeration = kwargs.get("enumeration", {})
-        self.boards = kwargs.get("boards", {})
         self.dns = kwargs.get("dns", None)
         self.proxy = kwargs.get("proxy", None)
         self.verbose = kwargs.get("verbose", False)
@@ -61,14 +54,20 @@ class Robot:
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
     def _print(self, msg):
+        """Helper method for verbose output
+
+        Returns:
+            None
+        """
         if self.verbose:
             print("\t[D] " + msg)
         logger.debug(msg)
 
     def _run_dockers(self, dockers):
-        """
-        Build Docker objects composed of dictionary of arguments.
-        These Docker objects are a wrapper around the Docker module.
+        """Build Docker containers provided dictionary of arguments for building
+
+        Dockerize is a wrapper around the docker module. This module allows Dr.ROBOT to specify
+        required arguments for building its containers
 
         Args:
             dockers (Dict): dictionary with all docker objects to build
@@ -77,22 +76,19 @@ class Robot:
                 {
                 "Aquatone" : {
                     "name": "Aquatone",
-                    "default" : 1,
                     "docker_name": "aqua",
                     "default_conf": "docker_buildfiles/Dockerfile.Aquatone.tmp",
                     "active_conf": "docker_buildfiles/Dockerfile.Aquatone",
                     "description": "AQUATONE is a set of tools for performing reconnaissance on domain names",
                     "src": "https://github.com/michenriksen/aquatone",
                     "output": "/aqua",
-                    "output_file": "aquatone.txt" #OPTIONAL
                     "output_dir" : "aquatone"
                   }
                 }
 
         Returns:
-            (List) Threads of Docker objects
+            A tuple containing the threads and the scanners being ran
 
-        Currently error handling is done outside of the docker module. This may be subject to change.
         """
         scanners = []
         self._print(f"Creating scanners{dockers.keys()}")
@@ -175,8 +171,7 @@ class Robot:
         return (threads, scanners)
 
     def _run_ansible(self, ansible_mods, infile):
-        """
-        Create ansible object generated from dictionary containing the ansible objects to be built.
+        """Create ansible objects from dictionary containing the ansible configurations.
 
         Args:
             ansible_mods (Dict): Dictionary of ansible modules to build and run.
@@ -211,7 +206,6 @@ class Robot:
             try:
                 attr = {}
                 print("[*] Running {ansible} as ansible Module")
-                print("[*)\t Executing Ansible on main thread")
                 attr['infile'] = infile
                 attr['domain'] = self.domain
                 attr['ansible_file_location'] = join_abs(
@@ -376,8 +370,7 @@ class Robot:
         return threads
 
     def gather(self, **kwargs):
-        """
-        This begins our gather process. Starts by looking at webtools and scanners for initial ip and hostname gathering.
+        """Starts domain reconnaisance of target domain using the supplied tools
 
         Args:
             webtools (Dict): webtool dict
@@ -439,15 +432,14 @@ class Robot:
         if verify and webtools:
             for k in webtools:
                 if verify.lower() in k.lower():
-                    verify = self.webtools[k].get('output_folder', None)
+                    verify = webtools[k].get('output_folder', None)
                     if not verify:
-                        verify = self.webtools[k].get('output_file', None)
+                        verify = webtools[k].get('output_file', None)
                     break
         if verify:
             print(f"[*] Omit addresses gathered from web tool: {verify}")
 
         self.aggregation.aggregate(
-            verify=verify,
             output_folders=output_folders,
             output_files=output_files)
 
@@ -458,9 +450,7 @@ class Robot:
         print("[*] Gather complete")
 
     def inspection(self, **kwargs):
-        """
-        Inspection function to being the post enumeration step. This will use enumeration tools to gather further information
-        from the targets found in gather.
+        """Starts inspection of target domain given the aggregated data from the gather phase
 
         Args:
             post_enum_dockers (Dict): enumeration tools that use docker as their base
@@ -507,8 +497,7 @@ class Robot:
                 raise KeyboardInterrupt
 
     def upload(self, **kwargs):
-        """
-        Upload function to access modules with respect to their given forum/chat/service api.
+        """Uploads files under filepath to upload destination
 
         Args:
             upload_dest (str): module name for upload destination.
@@ -528,8 +517,7 @@ class Robot:
         print(f"[*] Upload Done")
 
     def rebuild(self, **kwargs):
-        """
-        Function to allow rebuilding of the sqlite3 database.
+        """Rebuilds sqlite3 database by parsing output files found under HOME directory
 
         Args:
             files (List): list of files to include in this rebuild.
@@ -545,13 +533,12 @@ class Robot:
             dirs = [d for d in filenames if isdir(d)]
             for f in files:
                 output_files += [join_abs(root, f)]
-        self.aggregation.aggregate(False, output_files=output_files)
+        self.aggregation.aggregate(output_files=output_files)
         self.aggregation.headers()
         print("[*] Rebuilding complete")
 
     def generate_output(self, _format, output_file):
-        """
-        Function to translate contents of sqlite3 file into an alternative text format (Json, XML, etc.)
+        """Dumps contents of sqlite3 file into an alternative text format (Json, XML, etc.)
 
         Args:
             _format:        format of output file [xml, json]
@@ -583,8 +570,7 @@ class Robot:
                 self._print(str(er))
 
     def dumpdb(self, **kwargs):
-        """
-        Function to dump the contents of the db file.
+        """Dumps the contents of the db file.
 
         Args:
             **kwargs

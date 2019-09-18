@@ -4,6 +4,15 @@ import pkg_resources
 from os import devnull, environ, path, makedirs
 
 def join_abs(*args):
+    """Utility method to call abspath and join without having to write it out every single time
+
+    Args:
+        *args: Multiple string like parameters to be joined 
+
+    Returns:
+        string to the absolute path pointed to by *args
+
+    """
     return path.abspath(path.join(*args))
 
 def parse_args(
@@ -11,8 +20,19 @@ def parse_args(
         enumeration={},
         webtools={},
         upload_dest={},
-        server={},
         root_dir="."):
+    """Generate the argparse options given the configuration file.
+
+    Args:
+        scanners: dict of scanners defined in config.json
+        enumeration: dict of enumeration tools defined in config.json
+        webtools: dict of webtools defined in config.json
+        upload_dest: List of upload locations defined in config.json
+        root_dir: Root directory of the config.json 
+
+    Returns:
+        parser given all available options provided at cli
+    """
 
     parser = argparse.ArgumentParser(description="Docker DNS recon tool")
 

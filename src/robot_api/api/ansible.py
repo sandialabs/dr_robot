@@ -15,10 +15,20 @@ class Ansible:
         Args:
 
             **kwargs: {
-                "ansible_substitutes" : keywords to replace at run time for python job
-                "ansible_file_location" : path to ansible playbooks
-                "domain" : domain to scan
-                "infile" : file to upload to ansible server for scan
+                "ansible_arguments" : {
+                    "config" : "$config/httpscreenshot_play.yml",
+                    "flags": "-e '$extra' -i configs/ansible_inventory",
+                    "extra_flags":{
+                        "1" : "variable_host=localhost",
+                        "2" : "variable_user=user", 
+                        "3" : "infile=$infile",
+                        "4" : "outfile=$outfile/httpscreenshots.tar",
+                        "5" : "outfolder=$outfile/httpscreenshots"
+                    }
+                },
+                "ansible_file_location" : "location",
+                "verbose" : True,
+                "domain" : "target.domain"
             }
 
         Returns:
@@ -44,13 +54,14 @@ class Ansible:
         self.final_command = None
 
     def _print(self, msg):
+        """Utility for logging
+        """
         if self.verbose:
             print("[D] " + msg)
         logger.debug(msg)
 
     def build(self):
-        """
-        Build the final command for the ansible process.
+        """Build the final command for the ansible process.
         Uses the arguments provided in the ansible_arguments
 
         Args:
@@ -97,8 +108,7 @@ class Ansible:
             raise TypeError("NoneType object supplied in Dict build")
 
     def run(self):
-        """
-        Run the final command built at runtime
+        """Run the final command built at runtime
 
         Args:
 
