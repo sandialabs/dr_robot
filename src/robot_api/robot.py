@@ -1,5 +1,7 @@
 import importlib
 import json
+from os import makedirs
+from os.path import exists
 from urllib.parse import urlparse
 import logging
 import threading
@@ -264,7 +266,7 @@ class Robot:
                 tool_class contains the class object with the name specified in the default/user config file.
                 tool_class_obj contains the instantiated object using the tool_class init method.
                 """
-                module = importlib.import_module('..web_resources', __name__)
+                module = importlib.import_module('robot_api.api.web_resources', __name__)
                 tool_class = getattr(module, tool_dict.get('class_name'))
                 tool_class_obj = tool_class(**attr)
                 threads += [

@@ -30,7 +30,7 @@ setup(
         'docker==4.0.2',
         'requests',
         'netaddr==0.7.19',
-        'mattermostdriveri==6.2.0',
+        'mattermostdriver==6.2.0',
         'shodan==1.15.0',
         'certifi',
         'beautifulsoup4==4.8.0',
