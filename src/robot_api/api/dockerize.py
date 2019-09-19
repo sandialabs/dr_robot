@@ -19,6 +19,7 @@ import time
 import json
 from tqdm import tqdm
 import docker
+from docker.errors import APIError, BuildError, ContainerError, ImageNotFound
 
 LOG = logging.getLogger(__name__)
 
@@ -41,6 +42,8 @@ class Docker:
 
         self._default_config_path = kwargs.get('default_config_path', None)
         self._active_config_path = kwargs.get('active_config_path', None)
+        self.name = self._docker_options['name']
+        self.network_mode = self._docker_options.get('network_mode', 'host')
 
         self.verbose = kwargs.get('verbose', False)
         self.container = None
@@ -79,8 +82,6 @@ class Docker:
             raise OSError(
                 'Default configuration file is not found, please fix')
 
-        self.name = self._docker_options['name']
-        self.network_mode = self._docker_options.get('network_mode', 'host')
         self._print(f"Making config with args:{json.dumps(self._docker_options, indent=4)}")
 
         with open(self._default_config_path, 'r') as cfg:
@@ -101,23 +102,57 @@ class Docker:
         Returns:
 
         """
-        client = docker.from_env()
-        self._init_config()
-        print(f"[*] Building Docker image: {self.name}")
-        print(client)
-        self._print(f"""Built with options:
-                        -f {self._active_config_path}
-                        -t {self._docker_options['docker_name']}:{self._docker_options['docker_name']}
-                        --rm
-                        --network {self.network_mode}
-                    """)
-        with open(self._active_config_path, 'rb') as _file:
-            _, _ = client.images.build(fileobj=_file,
-                                       tag=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
-                                       rm=True,
-                                       network_mode=self.network_mode,
-                                       use_config_proxy=True)
-            self.status = "built"
+        try:
+            client = docker.from_env()
+            self._init_config()
+            print(f"[*] Building Docker image: {self.name}")
+            print(client)
+            self._print(f"""Built with options:
+                            -f {self._active_config_path}
+                            -t {self._docker_options['docker_name']}:{self._docker_options['docker_name']}
+                            --rm
+                            --network {self.network_mode}
+                        """)
+            with open(self._active_config_path, 'rb') as _file:
+                _, _ = client.images.build(fileobj=_file,
+                                           tag=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
+                                           rm=True,
+                                           network_mode=self.network_mode,
+                                           use_config_proxy=True)
+                self.status = "built"
+        except BuildError as error:
+            print(f"[!] Build Error encountered {er}")
+            if "net/http" in str(error):
+                print("[!] This could be a proxy issue, see " +
+                      "https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
+            if not self.dns:
+                print(f"\t[!] No DNS set. This could be an issue")
+                self._print("No DNS set. This could be an issue")
+            if not self.proxy:
+                print(f"\t[!] No PROXY set. This could be an issue")
+                self._print("No PROXY set. This could be an issue")
+
+        except ContainerError:
+            print(f"[!] Container Error: {self.name}")
+            LOG.exception("[!] Container Error: %s", self.name)
+
+        except ImageNotFound:
+            print(f"[!] ImageNotFound: {self.name}")
+            LOG.exception("[!] ImageNotFound: %s", self.name)
+
+        except APIError:
+            print(f"[!] APIError: {self.name}")
+            LOG.exception("[!] APIError: %s", self.name)
+
+        except KeyError:
+            print(f"[!] KeyError Output or Docker Name " +
+                  "is not defined!!: {scanner.name}")
+            LOG.exception("[!] KeyError Output or Docker Name " +
+                          "is not defined!!: %s", self.name)
+
+        except OSError:
+            LOG.exception("[!] Output directory could not be created, " +
+                          "please verify permissions")
 
     def run(self):
         """

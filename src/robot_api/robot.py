@@ -15,14 +15,14 @@ Attributess:
 import importlib
 import json
 from os import makedirs, walk
-from os.path import exists, isfile, getsize
+from os.path import exists, isfile, getsize, isdir
 import logging
+import multiprocessing
 import threading
 from xml.dom.minidom import parseString
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import dicttoxml
-from docker.errors import APIError, BuildError, ContainerError, ImageNotFound
 from robot_api.api import Ansible, Docker, Aggregation
 from robot_api.parse import join_abs
 
@@ -124,58 +124,25 @@ class Robot:
                     docker_options=options,
                     output_dir=output_dir)]
 
+        self._print("Threading builds")
+        build_threads = [multiprocessing.Process(target=scanner.build) for scanner in scanners]
+        for build in build_threads:
+            build.daemon = True
+            build.start()
+
+        for build in build_threads:
+            build.join()
+
+        self._print("Running scanners")
         for scanner in scanners:
-            try:
-                scanner.build()
-                print(f"[*] Running the following docker containers: " +
-                      "{[scanner.name for scanner in scanners]}")
-                scanner.run()
-            except BuildError as error:
-                print(f"[!] Build Error encountered {er}")
-                if "net/http" in str(error):
-                    print("[!] This could be a proxy issue, see " +
-                          "https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
-                if not self.dns:
-                    print(f"\t[!] No DNS set. This could be an issue")
-                    self._print("No DNS set. This could be an issue")
-                if not self.proxy:
-                    print(f"\t[!] No PROXY set. This could be an issue")
-                    self._print("No PROXY set. This could be an issue")
+            scanner.run()
 
-            except ContainerError:
-                print(f"[!] Container Error: {scanner.name}")
-                LOG.exception("[!] Container Error: %s", scanner.name)
+        status_threads = [multiprocessing.Process(target=scanner.update_status) for scanner in scanners]
+        for stat in status_threads:
+            stat.daemon = True
+            stat.start()
 
-            except ImageNotFound:
-                print(f"[!] ImageNotFound: {scanner.name}")
-                LOG.exception("[!] ImageNotFound: %s", scanner.name)
-
-            except APIError:
-                print(f"[!] APIError: {scanner.name}")
-                LOG.exception("[!] APIError: %s", scanner.name)
-
-            except KeyError:
-                print(f"[!] KeyError Output or Docker Name " +
-                      "is not defined!!: {scanner.name}")
-                LOG.exception("[!] KeyError Output or Docker Name " +
-                              "is not defined!!: %s", scanner.name)
-
-            except OSError:
-                LOG.exception("[!] Output directory could not be created, " +
-                              "please verify permissions")
-
-        threads = list()
-        self._print("Threading scanners")
-        for scanner in scanners:
-            threads += [
-                threading.Thread(
-                    target=scanner.update_status,
-                    daemon=True)]
-
-        for thread in threads:
-            thread.start()
-
-        return (threads, scanners)
+        return (status_threads, scanners)
 
     def _run_ansible(self, ansible_mods, infile):
         """Create ansible objects from dictionary containing the configurations.

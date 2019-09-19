@@ -96,7 +96,8 @@ def start_gather(drrobot, tools, parser):
     webtools = {
         k: v for k, v in tools.get("webtools").items() if getattr(args, k)
         }
-    print(f"Webtools:\n{webtools}")
+    if webtools:
+        print(f"Webtools:\n{webtools}")
 
     scanners_dockers = {k: v for k, v
                         in tools.get("scanners").items()
