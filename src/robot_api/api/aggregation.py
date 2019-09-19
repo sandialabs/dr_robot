@@ -153,7 +153,7 @@ class Aggregation:
         try:
             while not queue.empty():
                 host, ipv4 = queue.get()
-                if len(host) > 1:
+                if host is not None and len(host) > 1:
                     host = host[0]
                 cursor.execute("""INSERT OR IGNORE INTO data
                         (ip, hostname, http_headers, https_headers, domain)
