@@ -299,6 +299,8 @@ def run():
         if not path.exists(join_abs(ROOT_DIR, "dbs")):
             makedirs(join_abs(ROOT_DIR, "dbs"))
 
+        create_dirs(parser)
+
         if args.actions in "gather":
             start_gather(drrobot, tools, parser)
 

@@ -19,7 +19,7 @@ import time
 import json
 from tqdm import tqdm
 import docker
-from docker.errors import APIError, BuildError, ContainerError, ImageNotFound
+from docker.errors import APIError, BuildError, ContainerError, ImageNotFound, NotFound
 
 LOG = logging.getLogger(__name__)
 
@@ -118,22 +118,13 @@ class Docker:
                                            rm=True,
                                            network_mode=self.network_mode,
                                            use_config_proxy=True)
-                self.status = "built"
+            self.status = "built"
         except BuildError as error:
             print("[!] Build Error encountered. Check logs")
             LOG.exception("[!] BuildError: %s", self.name)
             if "net/http" in str(error):
                 print("[!] This could be a proxy issue, see " +
                       "https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
-
-        except ContainerError:
-            print(f"[!] Container Error: {self.name}")
-            LOG.exception("[!] Container Error: %s", self.name)
-
-        except ImageNotFound:
-            print(f"[!] ImageNotFound: {self.name}")
-            LOG.exception("[!] ImageNotFound: %s", self.name)
-
         except APIError:
             print(f"[!] APIError: {self.name}")
             LOG.exception("[!] APIError: %s", self.name)
@@ -156,34 +147,54 @@ class Docker:
 
         """
         print(f"[*] Running container {self._docker_options['docker_name']}")
+
         client = docker.from_env()
 
-        volumes = self._docker_options.get("volumes", None)
-        if volumes is None:
-            volumes = {
-                self.OUTPUT_DIR: {
-                    'bind': self._docker_options['output'],
-                    'mode': 'rw'
+        try:
+            volumes = self._docker_options.get("volumes", None)
+            if volumes is None:
+                volumes = {
+                    self.OUTPUT_DIR: {
+                        'bind': self._docker_options['output'],
+                        'mode': 'rw'
+                    }
                 }
-            }
-        self.container = client.containers.run(
-            image=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
-            # dns=[self._docker_options.get('dns')] if self._docker_options.get('dns', None) else None, # REMOVED in latest due to issues :/
-            auto_remove=True,
-            tty=True,
-            detach=True,
-            network_mode=self.network_mode,
-            command=self._docker_options.get(
-                'command',
-                None),
-            ports=self._docker_options.get(
-                'ports',
+            self.container = client.containers.run(
+                image=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
+                # dns=[self._docker_options.get('dns')] if self._docker_options.get('dns', None) else None, # REMOVED in latest due to issues :/
+                auto_remove=True,
+                tty=True,
+                detach=True,
+                network_mode=self.network_mode,
+                command=self._docker_options.get(
+                    'command',
                     None),
-            volumes=volumes)
+                ports=self._docker_options.get(
+                    'ports',
+                        None),
+                volumes=volumes)
 
-        self.status = self.container.status
+            self.status = self.container.status
 
-        self._print(f"mount point specified here: {volumes}")
+            self._print(f"mount point specified here: {volumes}")
+
+        except ImageNotFound:
+            print(f"[!] ImageNotFound: {self.name}")
+            LOG.exception("[!] ImageNotFound: %s", self.name)
+        except ContainerError:
+            print(f"[!] Container Error: {self.name}")
+            LOG.exception("[!] Container Error: %s", self.name)
+        except APIError:
+            print(f"[!] APIError: {self.name}")
+            LOG.exception("[!] APIError: %s", self.name)
+        except KeyError:
+            print(f"[!] KeyError Output or Docker Name " +
+                  "is not defined!!: {scanner.name}")
+            LOG.exception("[!] KeyError Output or Docker Name " +
+                          "is not defined!!: %s", self.name)
+        except OSError:
+            LOG.exception("[!] Output directory could not be created, " +
+                          "please verify permissions")
 
     def update_status(self):
         """
@@ -204,7 +215,7 @@ class Docker:
                     self.status = self.container.status
                     pbar.refresh()
 
-        except docker.errors.NotFound:
+        except NotFound:
             self._print(f"[*] Docker container {self._docker_options['docker_name']} exited")
             self.status = 'exited'
         except AttributeError:

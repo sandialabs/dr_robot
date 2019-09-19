@@ -131,7 +131,6 @@ class Robot:
         for build in build_threads:
             build.join()
 
-        scanners = [scanner for scanner in scanners if scanner.status == "built"]
         self._print("Running scanners")
         for scanner in scanners:
             scanner.run()
