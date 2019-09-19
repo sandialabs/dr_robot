@@ -120,7 +120,7 @@ class Docker:
                                            use_config_proxy=True)
                 self.status = "built"
         except BuildError as error:
-            print("[!] Build Error encounterer")
+            print("[!] Build Error encountered. Check logs")
             LOG.exception("[!] BuildError: %s", self.name)
             if "net/http" in str(error):
                 print("[!] This could be a proxy issue, see " +
@@ -137,13 +137,11 @@ class Docker:
         except APIError:
             print(f"[!] APIError: {self.name}")
             LOG.exception("[!] APIError: %s", self.name)
-
         except KeyError:
             print(f"[!] KeyError Output or Docker Name " +
                   "is not defined!!: {scanner.name}")
             LOG.exception("[!] KeyError Output or Docker Name " +
                           "is not defined!!: %s", self.name)
-
         except OSError:
             LOG.exception("[!] Output directory could not be created, " +
                           "please verify permissions")

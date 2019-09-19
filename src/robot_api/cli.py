@@ -93,17 +93,19 @@ def start_gather(drrobot, tools, parser):
     """
     args = parser.parse_args()
     print("Beginning gather")
+    verbose = getattr(args, "verbose", False)
     webtools = {
         k: v for k, v in tools.get("webtools").items() if getattr(args, k)
         }
-    if webtools:
+    if verbose:
         print(f"Webtools:\n{webtools}")
 
     scanners_dockers = {k: v for k, v
                         in tools.get("scanners").items()
                         if getattr(args, k)
                         is True and Mode[v["mode"]] == Mode.DOCKER}
-    print(f"Scanners as Dockers: \
+    if verbose:
+        print(f"Scanners as Dockers: \
         {json.dumps(scanners_dockers, indent=4)}")
 
     scanners_ansible = {k: v for k, v
@@ -111,8 +113,8 @@ def start_gather(drrobot, tools, parser):
                         if getattr(args, k)
                         is True
                         and Mode[v["mode"]] == Mode.ANSIBLE}
-    print(
-        f"Scanners as Ansible Play: \
+    if verbose:
+        print(f"Scanners as Ansible Play: \
                 {json.dumps(scanners_ansible, indent=4)}")
 
     if not webtools and \
