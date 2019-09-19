@@ -48,7 +48,6 @@ class Docker:
         self.verbose = kwargs.get('verbose', False)
         self.container = None
         self.status = None
-        self.name = None
 
         self.OUTPUT_DIR = kwargs.get('output_dir', None)
 
@@ -121,16 +120,11 @@ class Docker:
                                            use_config_proxy=True)
                 self.status = "built"
         except BuildError as error:
-            print(f"[!] Build Error encountered {er}")
+            print("[!] Build Error encounterer")
+            LOG.exception("[!] BuildError: %s", self.name)
             if "net/http" in str(error):
                 print("[!] This could be a proxy issue, see " +
                       "https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
-            if not self.dns:
-                print(f"\t[!] No DNS set. This could be an issue")
-                self._print("No DNS set. This could be an issue")
-            if not self.proxy:
-                print(f"\t[!] No PROXY set. This could be an issue")
-                self._print("No PROXY set. This could be an issue")
 
         except ContainerError:
             print(f"[!] Container Error: {self.name}")

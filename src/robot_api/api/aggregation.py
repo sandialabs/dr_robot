@@ -17,7 +17,8 @@ from os import path, getcwd, walk
 import glob
 import re
 import logging
-from concurrent.futures import ThreadPoolExecutor
+import multiprocessing
+from functools import partial
 from tqdm import tqdm
 import requests
 
@@ -138,19 +139,20 @@ class Aggregation:
         finally:
             dbconn.close()
 
-    def _build_db(self, ips, cursor):
+    def _build_db(self, queue, cursor):
         """Takes in ip/hostname data and inserts them into the database
 
         Args:
-            ips: list of tupes (host, ip)
-            cursor: database cursor object
+            queue (multiprocessing.Queue): list of tupes (host, ip)
+            cursor (sqlite3.cursor): database cursor object
 
         Returns:
         """
         cursor.execute('BEGIN TRANSACTION')
         domain = self.domain.replace(".", "_")
         try:
-            for host, ipv4 in ips:
+            while not queue.empty():
+                host, ipv4 = queue.get()
                 if len(host) > 1:
                     host = host[0]
                 cursor.execute("""INSERT OR IGNORE INTO data
@@ -220,20 +222,21 @@ class Aggregation:
                         if path.isfile(join_abs(root, _file)):
                             all_files += [join_abs(root, _file)]
 
-            all_ips = []
-            for filename in all_files:
-                print(f"[*] Parsing file: {filename}")
-                all_ips += self._reverse_ip_lookup(filename)
-                # for data in read_file(join_abs(filename)):
-                #     all_ips += self._reverse_ip_lookup(data)
-            self._build_db(all_ips, dbcurs)
+            # multi_queue = multiprocessing.Queue()
+            qu_manager = multiprocessing.Manager()
+            pool = multiprocessing.Pool(5) 
+            queue = qu_manager.Queue()
+            reverse_partial = partial(self._reverse_ip_lookup, queue)
+            pool.map(reverse_partial, all_files)
+            pool.close()
+            self._build_db(queue, dbcurs)
             dbconn.commit()
         except sqlite3.Error:
             self.logger.exception("Error in aggregation")
         finally:
             dbconn.close()
 
-    def _reverse_ip_lookup(self, filename):
+    def _reverse_ip_lookup(self, queue, filename):
         """Read in filesnames and use regex to extract all ips and hostnames.
 
         Args:
@@ -242,7 +245,6 @@ class Aggregation:
         Returns:
             A list of tuples containing the extracted host and ip
         """
-        print("Extracting ips and hostnames from text")
         ip_reg = re.compile(
             r"(?:(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)\.){3}(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)")
         # hostname_reg = re.compile(r"([A-Za-z0-9\-]*\.?)*\." + self.domain)
@@ -251,7 +253,7 @@ class Aggregation:
             self.domain)
         results = []
         with open(filename, "r") as _file:
-            for line in tqdm(_file.readlines()):
+            for line in tqdm(_file.readlines(), desc=f"{filename} parsing..."):
                 _host = hostname_reg.match(line)
                 if _host is not None:
                     _host = _host.group(1)
@@ -266,12 +268,11 @@ class Aggregation:
                 except Exception:
                     pass
                 if _host or _ip:
-                    results += [(_host, _ip)]
+                    queue.put((_host, _ip))
 
         return results
 
-    @staticmethod
-    def _get_headers(target):
+    def _get_headers(self, queue, target):
         """Static method for request to scrape header information from ip
 
         Args:
@@ -295,6 +296,8 @@ class Aggregation:
             http = str(http)
         except requests.ConnectionError:
             pass
+        except OSError:
+            pass
         try:
             https = requests.get(
                 f"https://{target}",
@@ -304,7 +307,10 @@ class Aggregation:
             https = str(https)
         except requests.ConnectionError:
             pass
-        return target, (http, https)
+        except OSError:
+            pass
+        queue.put([target, (http, https)])
+        # return target, (http, https)
 
     def headers(self):
         """Attempts to grab header data for all ips/hostnames
@@ -325,13 +331,19 @@ class Aggregation:
         # Threading is done against the staticmethod.
         # Feel free to change the max_workers if your system allows.
         # May add option to specify threaded workers.
-        with ThreadPoolExecutor(max_workers=40) as pool:
-            ip_headers = dict(tqdm(pool.map(Aggregation._get_headers,
-                                            ips),
-                                   total=len(ips)))
+        pool = multiprocessing.Pool(10)
+        qu_manager = multiprocessing.Manager()
+        queue = qu_manager.Queue()
+        get_headers_partial = partial(self._get_headers, queue)
+        _ = list(tqdm(pool.imap_unordered(get_headers_partial, ips), total=len(ips), desc="Getting headers for ip..."))
+        pool.close()
+        pool.join()
+
+        print("Updating database with ip headers")
         dbcurs.execute('BEGIN TRANSACTION')
         domain_rep = self.domain.replace(".", "_")
-        for ipv4, (http, https) in ip_headers.items():
+        while not queue.empty():
+            ipv4, (http, https) = queue.get()
             dbcurs.execute(f"""UPDATE data
                                 SET http_headers=?, https_headers=?
                                 WHERE ip = ?
@@ -346,13 +358,21 @@ class Aggregation:
                                 AND domain='{self.domain.replace('.','_')}'"""
                                    ).fetchall()
         hostnames = [item[0] for item in hostnames]
-        with ThreadPoolExecutor(max_workers=40) as pool:
-            hostname_headers = dict(tqdm(pool.map(Aggregation._get_headers,
-                                                  hostnames),
-                                         total=len(hostnames)))
+        # with ThreadPoolExecutor(max_workers=40) as pool:
+        # with ThreadPoolExecutor(max_workers=40) as pool:
+        pool = multiprocessing.Pool(10)
+        queue = qu_manager.Queue()
+        get_headers_partial = partial(self._get_headers, queue)
+        _ = list(tqdm(pool.map(get_headers_partial, hostnames), total=len(hostnames), desc="Getting headers for host..."))
+
+        pool.close()
+        pool.join()
+
+        print("Updating database with hostname headers")
         dbcurs.execute('BEGIN TRANSACTION')
         domain_rep = self.domain.replace(".", "_")
-        for hostname, (http, https) in hostname_headers.items():
+        while not queue.empty():
+            hostname, (http, https) = queue.get()
             dbcurs.execute(f"""UPDATE data
                                 SET http_headers=?, https_headers=?
                                 WHERE hostname = ?

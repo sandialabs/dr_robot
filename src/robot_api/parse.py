@@ -178,6 +178,12 @@ def parse_args(
         nargs="*",
         help="Additional files to supply outside of the config file")
 
+    parser_rebuild.add_argument(
+        "--headers",
+        action="store_true",
+        default=False,
+        help="Rebuild with headers")
+
     ##########################
     # DUMPDB
     ##########################

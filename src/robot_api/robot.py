@@ -18,7 +18,6 @@ from os import makedirs, walk
 from os.path import exists, isfile, getsize, isdir
 import logging
 import multiprocessing
-import threading
 from xml.dom.minidom import parseString
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -125,9 +124,8 @@ class Robot:
                     output_dir=output_dir)]
 
         self._print("Threading builds")
-        build_threads = [multiprocessing.Process(target=scanner.build) for scanner in scanners]
+        build_threads = [multiprocessing.Process(target=scanner.build, daemon=True) for scanner in scanners]
         for build in build_threads:
-            build.daemon = True
             build.start()
 
         for build in build_threads:
@@ -137,9 +135,8 @@ class Robot:
         for scanner in scanners:
             scanner.run()
 
-        status_threads = [multiprocessing.Process(target=scanner.update_status) for scanner in scanners]
+        status_threads = [multiprocessing.Process(target=scanner.update_status, daemon=True) for scanner in scanners]
         for stat in status_threads:
-            stat.daemon = True
             stat.start()
 
         return (status_threads, scanners)
@@ -253,7 +250,7 @@ class Robot:
                 tool_class = getattr(module, tool_dict.get('class_name'))
                 tool_class_obj = tool_class(**attr)
                 threads += [
-                    threading.Thread(
+                    multiprocessing.Process(
                         target=tool_class_obj.do_query,
                         daemon=True)]
 
@@ -321,7 +318,7 @@ class Robot:
                 board_class = getattr(module, dest_json.get('class_name'))
                 obj = board_class(**attr)
 
-                threads += [threading.Thread(target=obj.upload, daemon=True)]
+                threads += [multiprocessing.Process(target=obj.upload, daemon=True)]
             except KeyError:
                 print("[!] Key error: check your config. " +
                       "See error log for details")
@@ -514,7 +511,8 @@ class Robot:
             for _file in files:
                 output_files += [join_abs(root, _file)]
         self.aggregation.aggregate(output_files=output_files)
-        self.aggregation.headers()
+        if kwargs.get("headers", False):
+            self.aggregation.headers()
         print("[*] Rebuilding complete")
 
     def generate_output(self, _format, output_file):

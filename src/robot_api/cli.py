@@ -202,6 +202,7 @@ def start_rebuild(drrobot, tools, parser):
     """
     args = parser.parse_args()
     files = getattr(args, "files", None)
+    headers = getattr(args, "headers", False)
     if files is None:
         files = []
 
@@ -223,7 +224,7 @@ def start_rebuild(drrobot, tools, parser):
     for folder in gen_dict_extract("output_folder", tools):
         files += [folder]
 
-    drrobot.rebuild(files=files)
+    drrobot.rebuild(files=files, headers=headers)
 
 
 def start_dumpdb(drrobot, parser):
@@ -324,7 +325,7 @@ def run():
         print("[!] KeyboardInterrup, exiting...")
     except OSError as error:
         log.error(error)
-        print(f"[!] e {error}")
+        print(f"[!] OSError {error}")
     except TypeError as error:
         log.error(error)
         print(f"[!] {error}")

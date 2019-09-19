@@ -99,7 +99,7 @@
             "name": "Turbolist3r",
             "mode" : "DOCKER",
             "network_mode": "host",
-            "docker_name": "sub",
+            "docker_name": "turbo",
             "default_conf": "docker_buildfiles/Dockerfile.Turbolist3r.tmp",
             "active_conf": "docker_buildfiles/Dockerfile.Turbolist3r",
             "description": "Turbolist3r is a fork of the sublist3r subdomain discovery tool",
