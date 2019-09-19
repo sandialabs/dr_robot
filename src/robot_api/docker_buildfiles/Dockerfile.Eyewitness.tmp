@@ -5,14 +5,14 @@ ENV https_proxy $proxy
 
 ARG user=eyewitness
 
-RUN if [ -n "$dns" ]; \
+RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     apt-get update && \
     apt-get install -y git wget && \
 	rm -rf /var/lib/apt/lists/*
 
-RUN if [ -n "$dns" ]; \
+RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     export uid=1000 gid=1000 && \
@@ -23,7 +23,7 @@ RUN if [ -n "$dns" ]; \
 
 WORKDIR /home/$$user
 
-RUN if [ -n "$dns" ]; \
+RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
 	  git clone https://github.com/ChrisTruncer/EyeWitness.git && \

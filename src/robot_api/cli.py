@@ -38,7 +38,7 @@ def setup_logger():
     logger = logging.getLogger()
     logger.setLevel(logging.NOTSET)
     formatter = logging.Formatter(
-        '%(asctime)s [%(levelname)-5s|%(name)s] \t%(message)s')
+            '%(asctime)s [%(levelname)-5s|%(name)s] %(lineno)d: \t%(message)s')
 
     handler = logging.FileHandler(
         filename=join_abs(

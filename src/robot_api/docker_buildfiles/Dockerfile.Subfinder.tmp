@@ -3,11 +3,11 @@ FROM golang:1.11.4-alpine3.7 AS build-env
 ENV http_proxy $proxy
 ENV https_proxy $proxy
 
-RUN if [ -n "$dns" ]; \
+RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
 	apk add --no-cache --upgrade git openssh-client ca-certificates
-RUN if [ -n "$dns" ]; \
+RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
 	go get -u github.com/golang/dep/cmd/dep
@@ -15,7 +15,7 @@ RUN if [ -n "$dns" ]; \
 WORKDIR /go/src/app
 
 # Install
-RUN if [ -n "$dns" ]; \
+RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
 	go get -u github.com/subfinder/subfinder
