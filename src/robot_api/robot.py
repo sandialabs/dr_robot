@@ -20,6 +20,7 @@ import logging
 import multiprocessing
 from xml.dom.minidom import parseString
 import requests
+import docker
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import dicttoxml
 from robot_api.api import Ansible, Docker, Aggregation
@@ -127,6 +128,10 @@ class Robot:
         build_threads = [multiprocessing.Process(target=scanner.build, daemon=True) for scanner in scanners]
         for build in build_threads:
             build.start()
+
+        client = docker.from_env()
+        while client.containers.list():
+            print(client.containers.list())
 
         for build in build_threads:
             build.join()

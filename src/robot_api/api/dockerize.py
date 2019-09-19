@@ -105,7 +105,6 @@ class Docker:
             client = docker.from_env()
             self._init_config()
             print(f"[*] Building Docker image: {self.name}")
-            print(client)
             self._print(f"""Built with options:
                             -f {self._active_config_path}
                             -t {self._docker_options['docker_name']}:{self._docker_options['docker_name']}

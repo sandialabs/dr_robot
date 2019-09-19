@@ -294,7 +294,7 @@ class Dumpster(WebTool):
             LOG.exception(f"[!] Request failed SHODAN")
         except IndexError:
             LOG.exception(f"[!] No CSRF in response SHODAN")
-        print("\n[*] End Dumpster Query")
+        print("[*] End Dumpster Query")
 
 
 class HackerTarget(WebTool):
@@ -334,7 +334,7 @@ class HackerTarget(WebTool):
             LOG.exception(f"[!] Request failed HackerTarget")
         except OSError as er:
             LOG.exception("OSError in HackerTarget")
-        print("\n[*] End HackerTarget Query")
+        print("[*] End HackerTarget Query")
 
 
 class VirusTotal(WebTool):
@@ -388,4 +388,4 @@ class VirusTotal(WebTool):
             LOG.exception("[!] Request failed Virus")
         except OSError:
             LOG.exception("OSError in Virus")
-        print("\n[*] End VirtusTotal Query")
+        print("[*] End VirtusTotal Query")
