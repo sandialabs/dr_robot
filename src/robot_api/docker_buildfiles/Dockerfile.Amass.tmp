@@ -3,7 +3,12 @@ FROM golang:1.12.6-alpine3.10 as build
 RUN if [ -n "$dns" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
-	apk --no-cache add git; go get github.com/OWASP/Amass; exit 0
+	apk --no-cache add git; 
+
+RUN if [ -n "$dns" ]; \
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
+    fi;\
+	go get github.com/OWASP/Amass; exit 0
 
 ENV GO111MODULE on
 
@@ -20,7 +25,6 @@ COPY --from=build /go/src/github.com/OWASP/Amass/wordlists/ /wordlists/
 
 ENV http_proxy $proxy
 ENV https_proxy $proxy
-ENV DNS $dns
 ENV HOME /
 
 RUN mkdir -p $output
