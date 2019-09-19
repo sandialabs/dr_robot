@@ -1,19 +1,41 @@
+# -*- coding: utf-8 -*-
+"""Aggregation Module
+
+This module handles all database interaction when aggregating data source.
+
+Attributes:
+    dbfile (str): location of database file to load
+    domain (str): target domain
+    output_dir (str): Where to dump files
+    logger (Logger): Module based logger
+
+"""
 import json
 import socket
 import sqlite3
-from os import path, getcwd
+from os import path, getcwd, walk
 import glob
 import re
-import requests
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
+import requests
 
 from robot_api.parse import join_abs
 
+
 class Aggregation:
+    """Aggregation module
+    """
     def __init__(self, db_filename, domain, output_dir):
         """Initialize aggregation object
+
+        Args:
+            dbfile (str): location of database file to load
+            domain (str): target domain
+            output_dir (str): Where to dump files
+            logger (Logger): Module based logger
+
 
         Returns:
 
@@ -28,76 +50,97 @@ class Aggregation:
             dump_ips=True,
             dump_hostnames=True,
             dump_headers=False):
-        """Dumps contents of database to three seperate files: with protocol (http/https), hostname only, and ip only
-        
+        """Dump database to file
+
+        Dumps contents of database to three seperate files:
+            1. File with protocol (http/https)
+            2. File with hostname only
+            3. File with ip only
+
         Args:
-            dump_ips: dump ips (true/false) 
-            dump_hostnames: dump hostnames with and without protocol (true/false) 
-            dump_headers: dump headers to output firectory under headers/<hostname>_headers.txt (true/false) 
+            dump_ips (bool): dump ips
+            dump_hostnames (bool): dump hostnames to file
+            dump_headers (bool): dump headers to output firectory under headers
 
 
         Returns:
-            
         """
         dbconn = sqlite3.connect(self.dbfile)
         try:
             dbcurs = dbconn.cursor()
 
-            ips = dbcurs.execute(f"""SELECT DISTINCT ip
-                                    FROM data
-                                    WHERE domain='{self.domain.replace('.', '_')}'
-                                    AND ip IS NOT NULL"""
-                                 ).fetchall()
-            hostnames = dbcurs.execute(f"""SELECT DISTINCT hostname
-                                            FROM data
-                                            WHERE domain='{self.domain.replace('.', '_')}'
-                                            AND hostname IS NOT NULL"""
-                                       ).fetchall()
+            ips = dbcurs.execute(
+                f"""SELECT DISTINCT ip
+                FROM data
+                WHERE domain='{self.domain.replace('.', '_')}'
+                AND ip IS NOT NULL""").fetchall()
+            hostnames = dbcurs.execute(
+                f"""SELECT DISTINCT hostname
+                    FROM data
+                    WHERE domain='{self.domain.replace('.', '_')}'
+                    AND hostname IS NOT NULL""").fetchall()
 
             """
-                Header options require there to have been a scan otherwise there will be no output but that should be expected.
+                Header options require there to have been a scan otherwise
+                there will be no output but that should be expected.
                 Might change db to a dataframe later... possible
             """
             headers = dbcurs.execute(
                 f"""SELECT DISTINCT ip, hostname, http_headers, https_headers
-                                        FROM data
-                                        WHERE domain='{self.domain.replace('.', '_')}'
-                                        AND (http_headers IS NOT NULL
-                                        AND https_headers IS NOT NULL)""").fetchall()
+                        FROM data
+                        WHERE domain='{self.domain.replace('.', '_')}'
+                        AND (http_headers IS NOT NULL
+                        AND https_headers IS NOT NULL)""").fetchall()
 
             if dump_ips:
-                with open(join_abs(self.output_dir, 'aggregated', 'aggregated_ips.txt'), 'w') as f:
-                    f.writelines("\n".join(list(ip[0] for ip in ips)))
+                with open(join_abs(self.output_dir,
+                                   'aggregated',
+                                   'aggregated_ips.txt'),
+                          'w') as _file:
+                    _file.writelines("\n".join(list(ip[0] for ip in ips)))
 
             if dump_hostnames:
-                with open(join_abs(self.output_dir, 'aggregated', 'aggregated_hostnames.txt'), 'w') as f:
-                    f.writelines(
+                with open(join_abs(self.output_dir,
+                                   'aggregated',
+                                   'aggregated_hostnames.txt'),
+                          'w') as _file:
+                    _file.writelines(
                         "\n".join(
                             list(
                                 f"{host[0]}" for host in hostnames)))
 
-                with open(join_abs(self.output_dir, 'aggregated', 'aggregated_protocol_hostnames.txt'), 'w') as f:
-                    f.writelines(
+                with open(join_abs(self.output_dir,
+                                   'aggregated',
+                                   'aggregated_protocol_hostnames.txt'),
+                          'w') as _file:
+                    _file.writelines(
                         "\n".join(
-                            list(
-                                f"https://{host[0]}\nhttp://{host[0]}" for host in hostnames)))
+                            list(f"https://{host[0]}\nhttp://{host[0]}"
+                                 for host in hostnames)))
 
             if dump_headers:
-                KEYS = ["Ip", "Hostname", "Http", "Https"]
+                keys = ["Ip", "Hostname", "Http", "Https"]
                 for row in headers:
-                    r = dict(zip(KEYS, row))
-                    with open(join_abs(self.output_dir, "headers", f"{r['Hostname']}_headers.txt"), 'w') as f:
-                        f.write(json.dumps(r, indent=2))
-        except Exception as e:
-            print("Failed to write to files in aggregated directory, exiting...")
-            print(e)
+                    _rows = dict(zip(keys, row))
+                    with open(join_abs(self.output_dir,
+                                       "headers",
+                                       f"{_rows['Hostname']}_headers.txt"),
+                              'w') as _file:
+                        _file.write(json.dumps(_rows, indent=2))
+        except sqlite3.Error:
+            print("Failed to write to files in aggregated directory, exiting")
+            self.logger.exception("Error in dump to file")
+            return
+        except OSError:
+            print("Failed to write to files in aggregated directory, exiting")
+            self.logger.exception("Error in dump to file")
             return
         finally:
             dbconn.close()
 
     def _build_db(self, ips, cursor):
         """Takes in ip/hostname data and inserts them into the database
-        
+
         Args:
             ips: list of tupes (host, ip)
             cursor: database cursor object
@@ -107,15 +150,15 @@ class Aggregation:
         cursor.execute('BEGIN TRANSACTION')
         domain = self.domain.replace(".", "_")
         try:
-            for host, ip in ips:
+            for host, ipv4 in ips:
                 if len(host) > 1:
                     host = host[0]
                 cursor.execute("""INSERT OR IGNORE INTO data
-                                    (ip, hostname, http_headers, https_headers, domain)
-                                    VALUES (?,?, NULL, NULL, ?);""",
-                               (ip, host, domain))
-        except BaseException:
-            print(f"Issue with the following data: {ip} {host} {domain}")
+                        (ip, hostname, http_headers, https_headers, domain)
+                        VALUES (?,?, NULL, NULL, ?);""", (ipv4, host, domain))
+        except sqlite3.Error:
+            print(f"Issue with the following data: {ipv4} {host} {domain}")
+            self.logger.exception("Error in _build_db")
 
         cursor.execute('COMMIT')
 
@@ -124,7 +167,7 @@ class Aggregation:
 
         Args:
             output_files: list of output files referenced in config.json
-            output_folders: list of folders to include all files for aggregation
+            output_folders: list of folders to for aggregation
 
         Returns:
         """
@@ -157,8 +200,7 @@ class Aggregation:
                             )
                             """)
             # Quickly create entry in domains table.
-            dbcurs.execute(
-                f"INSERT OR IGNORE INTO domains(domain) VALUES ('{self.domain.replace('.', '_')}')")
+            dbcurs.execute(f"INSERT OR IGNORE INTO domains(domain) VALUES ('{self.domain.replace('.', '_')}')")
             dbconn.commit()
 
             all_files = []
@@ -172,11 +214,11 @@ class Aggregation:
                         f"[!] File {name} does not exist, verify scan results")
 
             for folder in output_folders:
-                for root, dirs, files in path.walk(
+                for root, _, files in walk(
                         join_abs(self.output_dir, folder)):
-                    for f in files:
-                        if path.isfile(join_abs(root, f)):
-                            all_files += [join_abs(root, f)]
+                    for _file in files:
+                        if path.isfile(join_abs(root, _file)):
+                            all_files += [join_abs(root, _file)]
 
             all_ips = []
             for filename in all_files:
@@ -186,8 +228,8 @@ class Aggregation:
                 #     all_ips += self._reverse_ip_lookup(data)
             self._build_db(all_ips, dbcurs)
             dbconn.commit()
-        except Exception as e:
-            print(e)
+        except sqlite3.Error:
+            self.logger.exception("Error in aggregation")
         finally:
             dbconn.close()
 
@@ -203,37 +245,37 @@ class Aggregation:
         print("Extracting ips and hostnames from text")
         ip_reg = re.compile(
             r"(?:(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)\.){3}(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)")
-        #hostname_reg = re.compile(r"([A-Za-z0-9\-]*\.?)*\." + self.domain)
+        # hostname_reg = re.compile(r"([A-Za-z0-9\-]*\.?)*\." + self.domain)
         hostname_reg = re.compile(
             r"([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]))*?\." +
             self.domain)
         results = []
-        with open(filename, "r") as f:
-            for line in tqdm(f.readlines()):
-                host = hostname_reg.match(line)
-                if host is not None:
-                    host = host.group(1)
-                ip = ip_reg.match(line)
-                if ip is not None:
-                    ip = ip.group()
+        with open(filename, "r") as _file:
+            for line in tqdm(_file.readlines()):
+                _host = hostname_reg.match(line)
+                if _host is not None:
+                    _host = _host.group(1)
+                _ip = ip_reg.match(line)
+                if _ip is not None:
+                    _ip = _ip.group()
                 try:
-                    if host is not None and ip is None:
-                        ip = socket.gethostbyname(host)
-                    if ip is not None and host is None:
-                        host = socket.gethostbyaddr(ip)
-                except BaseException:
+                    if _host is not None and _ip is None:
+                        _ip = socket.gethostbyname(_host)
+                    if _ip is not None and _host is None:
+                        _host = socket.gethostbyaddr(_ip)
+                except Exception:
                     pass
-                if host or ip:
-                    results += [(host, ip)]
+                if _host or _ip:
+                    results += [(_host, _ip)]
 
         return results
 
     @staticmethod
-    def _get_headers(ip):
+    def _get_headers(target):
         """Static method for request to scrape header information from ip
 
         Args:
-            ip: string to make request to
+            target: string to make request to
 
         Returns:
             ip/hostname and tuple containing headers
@@ -246,23 +288,23 @@ class Aggregation:
         }
         try:
             http = requests.get(
-                f"http://{ip}",
+                f"http://{target}",
                 headers=headers,
                 timeout=1,
                 verify=False).headers
             http = str(http)
-        except Exception as er:
+        except requests.ConnectionError:
             pass
         try:
             https = requests.get(
-                f"https://{ip}",
+                f"https://{target}",
                 headers=headers,
                 timeout=1,
                 verify=False).headers
             https = str(https)
-        except BaseException:
+        except requests.ConnectionError:
             pass
-        return ip, (http, https)
+        return target, (http, https)
 
     def headers(self):
         """Attempts to grab header data for all ips/hostnames
@@ -275,12 +317,13 @@ class Aggregation:
 
         print("[*] Grabbing headers from ips and hostnames")
         ips = dbcurs.execute(f"""SELECT ip
-                                    FROM data
-                                    WHERE ip IS NOT NULL
-                                    AND domain='{self.domain.replace('.','_')}'"""
+                                FROM data
+                                WHERE ip IS NOT NULL
+                                AND domain='{self.domain.replace('.','_')}'"""
                              ).fetchall()
         ips = [item[0] for item in ips]
-        # Threading is done against the staticmethod. Feel free to change the max_workers if your system allows.
+        # Threading is done against the staticmethod.
+        # Feel free to change the max_workers if your system allows.
         # May add option to specify threaded workers.
         with ThreadPoolExecutor(max_workers=40) as pool:
             ip_headers = dict(tqdm(pool.map(Aggregation._get_headers,
@@ -288,19 +331,19 @@ class Aggregation:
                                    total=len(ips)))
         dbcurs.execute('BEGIN TRANSACTION')
         domain_rep = self.domain.replace(".", "_")
-        for ip, (http, https) in ip_headers.items():
+        for ipv4, (http, https) in ip_headers.items():
             dbcurs.execute(f"""UPDATE data
                                 SET http_headers=?, https_headers=?
                                 WHERE ip = ?
                                 AND domain= ?
                                 """,
-                           (http, https, ip, domain_rep))
+                           (http, https, ipv4, domain_rep))
         dbcurs.execute("COMMIT")
 
         hostnames = dbcurs.execute(f"""SELECT hostname
-                                    FROM data
-                                    WHERE ip IS NOT NULL
-                                    AND domain='{self.domain.replace('.','_')}'"""
+                                FROM data
+                                WHERE ip IS NOT NULL
+                                AND domain='{self.domain.replace('.','_')}'"""
                                    ).fetchall()
         hostnames = [item[0] for item in hostnames]
         with ThreadPoolExecutor(max_workers=40) as pool:
@@ -314,34 +357,33 @@ class Aggregation:
                                 SET http_headers=?, https_headers=?
                                 WHERE hostname = ?
                                 AND domain= ?;""",
-                                #LIMIT 1;""",
                            (http, https, hostname, domain_rep))
         dbcurs.execute("COMMIT")
 
         dbconn.close()
 
-    def _gen_output(self):
+    def gen_output(self):
         """Generate dictionary containing all data from the database
 
         Returns:
             A dictionary containing all data from database
 
         """
-        if not exists(self.dbfile):
+        if not path.exists(self.dbfile):
             print("No database file found. Exiting")
-            return
+            return None
 
         dbconn = sqlite3.connect(self.dbfile)
         dbcurs = dbconn.cursor()
 
         db_headers = dbcurs.execute(f"""SELECT *
-                                        FROM data
-                                        WHERE domain='{self.domain.replace('.','_')}'
-                                        AND (http_headers IS NOT NULL OR https_headers IS NOT NULL)"""
+                            FROM data
+                            WHERE domain='{self.domain.replace('.','_')}'
+                            AND (http_headers IS NOT NULL OR https_headers IS NOT NULL)"""
                                     ).fetchall()
         db_ips = dbcurs.execute(f"""SELECT DISTINCT ip, hostname
-                                    FROM data
-                                    WHERE domain='{self.domain.replace('.', '_')}'"""
+                            FROM data
+                            WHERE domain='{self.domain.replace('.', '_')}'"""
                                 ).fetchall()
 
         """
@@ -353,15 +395,16 @@ class Aggregation:
 
             Multiple different sql queries
                 1. Grabs all those with headers:
-                    most likely that if they have headers they have a screenshot
+                    most likely that if they have headers 
+                    they have a screenshot
                     glob can run and take it's time.
                 2. Grab all unique ips
                 2a. Grab all unique hostnames
 
                 3. Update json with all documents
         """
-        for _, ip, hostname, http, https, domainname in db_headers:
-            ip_screenshots = glob.glob("**/*{}*".format(ip), recursive=True)
+        for _, ipv4, hostname, http, https, _ in db_headers:
+            ip_screenshots = glob.glob("**/*{}*".format(ipv4), recursive=True)
             hostname_screeshots = glob.glob(
                 "**/*{}*".format(hostname), recursive=True)
 
@@ -370,21 +413,21 @@ class Aggregation:
                 image_files += [join_abs(getcwd(), _file)]
             for _file in hostname_screeshots:
                 image_files += [join_abs(getcwd(), _file)]
-            file_index[ip] = {
+            file_index[ipv4] = {
                 "hostnames": [hostname],
                 "http_header": http,
                 "https_header": https,
                 "images": image_files
             }
 
-        for ip, hostname in db_ips:
-            if ip not in file_index:
-                file_index[ip] = {
+        for ipv4, hostname in db_ips:
+            if ipv4 not in file_index:
+                file_index[ipv4] = {
                     "hostnames": [hostname],
                     "http_header": "",
                     "https_header": "",
                     "images": []
                 }
-            elif hostname not in file_index[ip]['hostnames']:
-                file_index[ip]['hostnames'] += [hostname]
+            elif hostname not in file_index[ipv4]['hostnames']:
+                file_index[ipv4]['hostnames'] += [hostname]
         return file_index

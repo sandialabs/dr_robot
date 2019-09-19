@@ -1,15 +1,22 @@
-from mattermostdriver import Driver, exceptions
-import slack
+# -*- coding: utf8 -*-
+""" Upload module
+
+This module handles the uploading of files and images to a
+supplied destination. This module contains one base class
+from which all modules are derived so Dr.ROBOT may call and treat
+all extended classes equally
+"""
 from abc import ABC, abstractmethod
 import logging
 import datetime
 from os import walk, stat
 from os.path import exists, abspath, isdir, isfile, basename
-import time
+from mattermostdriver import Driver, exceptions
+import slack
 
 from robot_api.parse import join_abs
 
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class Forum(ABC):
@@ -17,11 +24,11 @@ class Forum(ABC):
         """ABC class
         Args:
             **kwargs:
-                api_key : (String) [Optional] api key for service
-                username: (String) [Optional] username for service
-                password: (String) [Optional] password for service
-                url     : (String) [Optional] url for service
-                domain  : (String) [Optional] domain for service
+                api_key (str): api key for service
+                username (str): username for service
+                password (str): password for service
+                url (str): url for service
+                domain (str): domain for service
 
         """
         self.api_key = kwargs.get('api_key', None)
@@ -32,7 +39,10 @@ class Forum(ABC):
 
     @abstractmethod
     def upload(self, **kwargs):
-        """Abstractmethod to be used in order to keep instantiation and execution simple in calling function
+        """Abstractmethod
+
+        Method to be used in order to keep instantiation
+        and execution simple in calling function
         Args:
             **kwargs: Any extra values needed for execution.
 
@@ -46,9 +56,9 @@ class Mattermost(Forum):
     def __init__(self, **kwargs):
         """Initialize Mattermost class which extends Chat ABC
         Args:
-            **kwargs: args to pass to Chat ABC
-            team_channel : (String) required for posting to channel
-            channel_name : (String) required for posting to channel
+            **kwargs (dict): args to pass to Chat ABC
+            team_channel (str): required for posting to channel
+            channel_name (str): required for posting to channel
         """
         super().__init__(**kwargs)
         self.inst = Driver({
@@ -102,8 +112,7 @@ class Mattermost(Forum):
         """File upload
 
         Args:
-            **kwargs:
-                filepath: (String) optional filepath to check for files to upload
+            filepath (str): optional filepath to check for files to upload
         Returns:
 
         """
@@ -116,10 +125,10 @@ class Mattermost(Forum):
                 channel_name=self.channel_name, team_id=team_id)['id']
         except exceptions.NoAccessTokenProvided as er:
             print(f"[!] NoAccessTokenProvided {er}")
-            logger.exception()
+            LOG.exception()
         except exceptions.InvalidOrMissingParameters as er:
             print(f"[!] InvalidOrMissingParameters {er}")
-            logger.exception()
+            LOG.exception()
 
         try:
             if isfile(self.filepath):
@@ -143,15 +152,15 @@ class Mattermost(Forum):
 
                 self._upload_files(file_location, channel_id)
 
-        except exceptions.ContentTooLarge as er:
-            print(f"[!] ContentTooLarge {er}")
-            logger.exception()
-        except exceptions.ResourceNotFound as er:
-            print(f"[!] ResourceNotFound {er}")
-            logger.exception()
-        except OSError as er:
-            print(f"[!] File not found {er}")
-            logger.exception()
+        except exceptions.ContentTooLarge:
+            print(f"[!] ContentTooLarge in upload")
+            LOG.exception()
+        except exceptions.ResourceNotFound:
+            print(f"[!] ResourceNotFound in upload")
+            LOG.exception()
+        except OSError:
+            print(f"[!] File not found in upload")
+            LOG.exception()
 
 
 class Slack(Forum):
@@ -167,8 +176,8 @@ class Slack(Forum):
         """Generator to grab individual files for upload
 
         Args:
-            file_location:      Location of file(s) to upload
-            max_filesize:       Max allowed file size, in megabytes, for uploading
+            file_location (str): Location of file(s) to upload
+            max_filesize (int): Max allowed file size, in megabytes
 
         Returns:
             (Tuple) (filename, path to file)
@@ -176,8 +185,7 @@ class Slack(Forum):
         if not exists(file_location):
             return None
 
-        #file_ids = []
-        for root, dirs, files in walk(file_location):
+        for root, _, files in walk(file_location):
             for filename in files:
                 # TODO add optional parameters for adjusting size. Implement
                 # file splitting
@@ -190,11 +198,11 @@ class Slack(Forum):
                     yield (filename, join_abs(root, filename))
 
     def upload(self, **kwargs):
-        sc = slack.WebClient(self.api_key)
+        slack_client = slack.WebClient(self.api_key)
 
         # try:
         if isfile(self.filepath):
-            sc.files_upload(
+            slack_client.files_upload(
                 channels=self.channel_name,
                 file=self.filepath)
 
@@ -205,9 +213,9 @@ class Slack(Forum):
 
             for filename, filepath in self._get_files(file_location):
                 print(filename, filepath)
-                sc.files_upload(
+                slack_client.files_upload(
                     channels=self.channel_name,
                     file=filepath)
         # except Exception as ex:
         #    print(str(ex))
-        #    logger.exception(ex)
+        #    LOG.exception(ex)

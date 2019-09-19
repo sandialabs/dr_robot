@@ -1,10 +1,24 @@
+# -*- coding: utf-8 -*-
+"""Robot Module
+
+This module kicks off all things Dr.ROBOT. o
+
+Attributess:
+    domain (str): target domain for Dr.ROBOT
+    ROOT_DIR (str): path to config and template files
+    dns (str): Custom DNS server for building images
+    proxy (str): Proxy server to run commands against
+    verbose (bool): More output Yes/No
+    dbfile (str): Location of dbfile
+    aggregation (Aggregation): Module for aggregation
+"""
 import importlib
 import json
-from os import makedirs
-from os.path import exists
-from urllib.parse import urlparse
+from os import makedirs, walk
+from os.path import exists, isfile, getsize
 import logging
 import threading
+from xml.dom.minidom import parseString
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import dicttoxml
@@ -13,7 +27,7 @@ from robot_api.api import Ansible, Docker, Aggregation
 from robot_api.parse import join_abs
 
 
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 class Robot:
     def __init__(self, **kwargs):
@@ -52,12 +66,13 @@ class Robot:
         """
         if self.verbose:
             print("\t[D] " + msg)
-        logger.debug(msg)
+        LOG.debug(msg)
 
     def _run_dockers(self, dockers):
         """Build Docker containers provided dictionary of arguments for building
 
-        Dockerize is a wrapper around the docker module. This module allows Dr.ROBOT to specify
+        Dockerize is a wrapper around the docker module. 
+        This module allows Dr.ROBOT to specify
         required arguments for building its containers
 
         Args:
@@ -70,7 +85,8 @@ class Robot:
                     "docker_name": "aqua",
                     "default_conf": "docker_buildfiles/Dockerfile.Aquatone.tmp",
                     "active_conf": "docker_buildfiles/Dockerfile.Aquatone",
-                    "description": "AQUATONE is a set of tools for performing reconnaissance on domain names",
+                    "description": "AQUATONE is a set of tools for performing
+                                    reconnaissance on domain names",
                     "src": "https://github.com/michenriksen/aquatone",
                     "output": "/aqua",
                     "output_dir" : "aquatone"
@@ -94,8 +110,8 @@ class Robot:
                 output_dir = join_abs(
                     self.OUTPUT_DIR, options.get("output_folder"))
 
-            self._print(
-                f"Creating scanner for {scan} with options: {json.dumps(options, indent=4)}")
+            self._print(f"Creating scanner for {scan} with options: " +
+                        "{json.dumps(options, indent=4)}")
 
             scanners += [
                 Docker(
@@ -111,14 +127,14 @@ class Robot:
         for scanner in scanners:
             try:
                 scanner.build()
-                print(
-                    f"[*] Running the following docker containers: {[scanner.name for scanner in scanners]}")
+                print(f"[*] Running the following docker containers: " +
+                      "{[scanner.name for scanner in scanners]}")
                 scanner.run()
-            except BuildError as er:
+            except BuildError as error:
                 print(f"[!] Build Error encountered {er}")
-                if "net/http" in str(er):
-                    print(
-                        "[!] This could be a proxy issue, see https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
+                if "net/http" in str(error):
+                    print("[!] This could be a proxy issue, see " +
+                          "https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
                 if not self.dns:
                     print(f"\t[!] No DNS set. This could be an issue")
                     self._print("No DNS set. This could be an issue")
@@ -128,25 +144,25 @@ class Robot:
 
             except ContainerError:
                 print(f"[!] Container Error: {scanner.name}")
-                logger.exception(f"[!] Container Error: {scanner.name}")
+                LOG.exception("[!] Container Error: %s", scanner.name)
 
             except ImageNotFound:
                 print(f"[!] ImageNotFound: {scanner.name}")
-                logger.exception(f"[!] ImageNotFound: {scanner.name}")
+                LOG.exception("[!] ImageNotFound: %s", scanner.name)
 
             except APIError:
                 print(f"[!] APIError: {scanner.name}")
-                logger.exception(f"[!] APIError: {scanner.name}")
+                LOG.exception("[!] APIError: %s", scanner.name)
 
             except KeyError:
-                print(
-                    f"[!] KeyError Output or Docker Name is not defined!!: {scanner.name}")
-                logger.exception(
-                    f"[!] KeyError Output or Docker Name is not defined!!: {scanner.name}")
+                print(f"[!] KeyError Output or Docker Name " +
+                      "is not defined!!: {scanner.name}")
+                LOG.exception("[!] KeyError Output or Docker Name " +
+                              "is not defined!!: %s", scanner.name)
 
             except OSError:
-                logger.exception(
-                    f"[!] Output directory could not be created, please verify permissions")
+                LOG.exception("[!] Output directory could not be created, " +
+                              "please verify permissions")
 
         threads = list()
         self._print("Threading scanners")
@@ -162,10 +178,10 @@ class Robot:
         return (threads, scanners)
 
     def _run_ansible(self, ansible_mods, infile):
-        """Create ansible objects from dictionary containing the ansible configurations.
+        """Create ansible objects from dictionary containing the configurations.
 
         Args:
-            ansible_mods (Dict): Dictionary of ansible modules to build and run.
+            ansible_mods (Dict): Dictionary of ansible modules to build and run
             infile (Strings): Path to file for upload to ansible server
 
             Example:
@@ -184,7 +200,6 @@ class Robot:
                                 "4" : "outfolder=$outfile/Eyewitness"
                             }
                         },
-                        "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: Eyewitness.tar and unpacked in Eyewitness",
                         "output" : "/tmp/output",
                         "enabled" : false
                     }
@@ -214,14 +229,13 @@ class Robot:
 
             except OSError:
                 print(f"[!] Something went wrong. Check error log for details")
-                logger.exception("Error in ansible method")
+                LOG.exception("Error in ansible method")
             except TypeError:
                 print(f"[!] Something went wrong. Check error log for details")
-                logger.exception("Error in ansible method")
+                LOG.exception("Error in ansible method")
 
     def _run_webtools(self, webtools):
-        """
-        Create custom WebTool object from dictionary containing WebTool objects to be build.
+        """Create custom WebTool object from dictionary containing WebTools
 
         Args:
             webtools (Dict): WebTool modules to build and run
@@ -231,7 +245,6 @@ class Robot:
                     {
                       "short_name": "shodan",
                       "class_name": "Shodan",
-                      "description" : "Query SHODAN for publicly facing sites of given domain",
                       "output_file" : "shodan.txt",
                       "api_key" : null,
                       "endpoint" : null,
@@ -262,9 +275,12 @@ class Robot:
                 }
                 self._print(f"Building webtool {tool} with options \n\t{attr}")
                 """
-                module contains the modules loaded in from web_resources relative to __main__
-                tool_class contains the class object with the name specified in the default/user config file.
-                tool_class_obj contains the instantiated object using the tool_class init method.
+                module contains the modules loaded in from web_resources
+                    relative to __main__
+                tool_class contains the class object with the name
+                    specified in the default/user config file.
+                tool_class_obj contains the instantiated object
+                    using the tool_class init method.
                 """
                 module = importlib.import_module('robot_api.api.web_resources', __name__)
                 tool_class = getattr(module, tool_dict.get('class_name'))
@@ -275,16 +291,16 @@ class Robot:
                         daemon=True)]
 
             except KeyError:
-                print(
-                    f"[!] Error locating key for tool. Check error log for details")
-                logger.exception("Key Error in run_webtools method")
+                print("[!] Error locating key for tool. " +
+                      "Check error log for details")
+                LOG.exception("Key Error in run_webtools method")
             except json.JSONDecodeError:
-                print(
-                    f"[!] Failure authenticating to service. Check error log for details")
-                logger.exception(f"Failure authenticating to service.")
+                print("[!] Failure authenticating to service. " +
+                      "Check error log for details")
+                LOG.exception("Failure authenticating to service.")
             except ValueError:
                 print("[!] Value Error thrown. Check error log for details")
-                logger.exception("Value error on init")
+                LOG.exception("Value error on init")
 
         for thread in threads:
             thread.start()
@@ -340,25 +356,27 @@ class Robot:
 
                 threads += [threading.Thread(target=obj.upload, daemon=True)]
             except KeyError:
-                print(f"[!] Key error: check your config. See error log for details")
-                logger.exception("Key error in upload method")
-            except TypeError as er:
-                print(f"[!] Error in initialization of {dest}: {er}")
-                logger.exception("Type error in upload method")
-            except OSError as er:
-                print(f"[!] {er}. See error log for details")
-                logger.exception("OSError in upload method")
-            except json.JSONDecodeError as er:
-                print(f"[!] Json error {er}. See error log for details")
-                logger.exception("Json error in upload method")
+                print("[!] Key error: check your config. " +
+                      "See error log for details")
+                LOG.exception("Key error in upload method")
+            except TypeError:
+                print(f"[!] Error in initializing {dest}. Check error logs")
+                LOG.exception("Type error in upload method")
             except ConnectionError:
-                print(f"[!] ConnectionError, check URL for upload destination")
-                logger.exception("Connection error in upload method")
+                print("[!] ConnectionError, check URL for upload destination")
+                LOG.exception("Connection error in upload method")
+            except OSError:
+                print("[!] OSError. See error log for details")
+                LOG.exception("OSError in upload method")
+            except json.JSONDecodeError:
+                print("[!] Json error. See error log for details")
+                LOG.exception("Json error in upload method")
 
         for thread in threads:
             thread.start()
 
         return threads
+
 
     def gather(self, **kwargs):
         """Starts domain reconnaisance of target domain using the supplied tools
@@ -368,7 +386,6 @@ class Robot:
             scanners_dockers (Dict): scanners that use docker as their base
             scanners_ansible (Dict): scanners that use ansible as their base.
             headers (Boolean): if headers should be gathered
-            verify (str): file/resource to run scans against. Not implemented yet.
 
         Returns:
 
@@ -388,16 +405,20 @@ class Robot:
         scanners_dockers = kwargs.get('scanners_dockers', {})
 
         output_folders += [v.get('output_folder') for _,
-                           v in scanners_dockers.items() if v.get("output_folder")]
+                           v in scanners_dockers.items()
+                           if v.get("output_folder")]
         output_files += [v.get('output_file') for _,
-                         v in scanners_dockers.items() if v.get('output_file')]
+                         v in scanners_dockers.items()
+                         if v.get('output_file')]
 
         scanners_ansible = kwargs.get('scanners_ansible', {})
 
         output_folders += [v.get('output_folder', None)
-                           for _, v in scanners_ansible.items() if v.get("output_folder")]
+                           for _, v in scanners_ansible.items()
+                           if v.get("output_folder")]
         output_files += [v.get('output_file', None)
-                         for _, v in scanners_ansible.items() if v.get("output_file")]
+                         for _, v in scanners_ansible.items()
+                         if v.get("output_file")]
 
         for folder in output_folders:
             if not exists(join_abs(self.OUTPUT_DIR, folder)):
@@ -415,7 +436,7 @@ class Robot:
                 [thread.join() for thread in _threads if thread]
             except KeyboardInterrupt:
                 self._print("Keyboard Interrupt sending kill signal to docker")
-                [scanner.kill() for scanner in scanners]
+                _ = [scanner.kill() for scanner in scanners]
                 raise KeyboardInterrupt
 
         verify = kwargs.get('verify', None)
@@ -441,11 +462,12 @@ class Robot:
         print("[*] Gather complete")
 
     def inspection(self, **kwargs):
-        """Starts inspection of target domain given the aggregated data from the gather phase
+        """Starts inspection of target domain
 
         Args:
-            post_enum_dockers (Dict): enumeration tools that use docker as their base
-            post_enum_ansible (Dict): enumeration tools that use ansible as their base.
+            post_enum_dockers (Dict): Tools to use docker as their base
+            post_enum_ansible (Dict): Tools to use ansible as their base.
+            infile (str): Path to file to use as alternative to infile
 
         Returns:
 
@@ -474,8 +496,8 @@ class Robot:
         post_enum_ansible = kwargs.get("post_enum_ansible")
 
         if post_enum_ansible:
-            print(
-                "[*] Custom modules will be run on main thread due to possibility of user input")
+            print("[*] Custom modules will be run on main thread due " +
+                  "to possibility of user input")
             self._run_ansible(post_enum_ansible, infile)
 
         print("[*] Inspection Done")
@@ -484,7 +506,7 @@ class Robot:
                 [thread.join() for thread in _threads if thread]
             except KeyboardInterrupt:
                 self._print("Keyboard Interrupt sending kill signal to docker")
-                [doc.kill() for doc in post_doc]
+                _ = [doc.kill() for doc in post_doc]
                 raise KeyboardInterrupt
 
     def upload(self, **kwargs):
@@ -522,14 +544,14 @@ class Robot:
         output_files += [f for f in filenames if isfile(f)]
         for root, dirs, files in walk(self.OUTPUT_DIR, topdown=True):
             dirs = [d for d in filenames if isdir(d)]
-            for f in files:
-                output_files += [join_abs(root, f)]
+            for _file in files:
+                output_files += [join_abs(root, _file)]
         self.aggregation.aggregate(output_files=output_files)
         self.aggregation.headers()
         print("[*] Rebuilding complete")
 
     def generate_output(self, _format, output_file):
-        """Dumps contents of sqlite3 file into an alternative text format (Json, XML, etc.)
+        """Dumps contents of sqlite3 file into an alternative text format
 
         Args:
             _format:        format of output file [xml, json]
@@ -540,29 +562,33 @@ class Robot:
         """
         if not output_file:
             output_file = join_abs(self.OUTPUT_DIR, f"output.{_format}")
-        file_index = self._gen_output()
+        file_index = self.aggregation.gen_output()
         if 'json' in _format:
             print("Generating JSON")
             try:
                 """
                 need to dump json file here, error checking as well
                 """
-                with open(output_file, 'w') as f:
-                    json.dump(file_index, f, indent="\t")
-            except Exception as er:
-                self._print(str(er))
-        elif "xml":
+                with open(output_file, 'w') as _file:
+                    json.dump(file_index, _file, indent="\t")
+            except json.JSONDecodeError as error:
+                self._print(str(error))
+        elif "xml" in _format:
             try:
-                with open(output_file, 'w') as f:
+                with open(output_file, 'w') as _file:
                     xmlout = dicttoxml.dicttoxml(file_index)
                     dom = parseString(xmlout)
-                    f.write(dom.toprettyxml())
-            except Exception as er:
-                self._print(str(er))
+                    _file.write(dom.toprettyxml())
+            except TypeError:
+                self._print("Error in generate_output check logs")
+                LOG.exception("Error in generate output")
+            except AttributeError:
+                self._print("Error in generate_output check logs")
+                LOG.exception("Error in generate output")
 
-    def dumpdb(self, **kwargs):
+    def dumpdb(self):
         """Dumps the contents of the db file.
         """
         print(f"[*] Dumping sqllite3 file for {self.domain.replace('.', '_')}")
         self.aggregation.dump_to_file(dump_headers=True)
-        print(f"[*] Headers will be found under header folder in your domains output")
+        print("[*] Headers will be found in output folder")

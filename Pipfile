@@ -5,8 +5,6 @@ name = "pypi"
 
 [packages]
 dr-robot = {editable = true,path = "."}
-django = "==2.2.5"
-djangorestframework = "==3.10"
 
 [dev-packages]
 pytest = "*"

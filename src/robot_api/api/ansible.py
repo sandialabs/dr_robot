@@ -1,10 +1,24 @@
+# -*- coding: utf8 -*-
+""" Ansible module
+
+Module for running ansible playbooks
+
+Attributes:
+    ansible_arguments (dict): Contains config, flags, and extra_flags options
+    ansible_file_location (str): location to playbook
+    domain (str): target domain
+    ansible_base (str): Base command string
+    output_dir (str): location to dump output of playbook
+    infile (str): Infile for playbook job
+    verbose (bool): More output Yes/No
+    final_command (str): Final command to run
+"""
 import logging
-import os
 import subprocess
 from string import Template
 from robot_api.parse import join_abs
 
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class Ansible:
@@ -58,7 +72,7 @@ class Ansible:
         """
         if self.verbose:
             print("[D] " + msg)
-        logger.debug(msg)
+        LOG.debug(msg)
 
     def build(self):
         """Build the final command for the ansible process.
@@ -82,8 +96,8 @@ class Ansible:
             self._print(f"building with extra flags {extra_flags}")
 
             if extra_flags:
-                for k, v in extra_flags.items():
-                    cur_str = Template(v)
+                for _, val in extra_flags.items():
+                    cur_str = Template(val)
                     extra_replace_string += cur_str.safe_substitute(
                         system_replacements) + " "
 
@@ -91,17 +105,19 @@ class Ansible:
             config = Template(self.ansible_arguments.get("config"))
 
             """
-            This may seem redundant but this prepends the path of the ansible location to the ansible file
+            This may seem redundant but this prepends the
+            path of the ansible location to the ansible file
             specified in the config.
-            all the flags are added to the flags argument to be input into the final command
+            All the flags are added to the flags
+            argument to be input into the final command
             """
             substitutes = {
                 "flags": flags.safe_substitute(extra=extra_replace_string),
                 "config": config.safe_substitute(system_replacements)
             }
 
-            t = Template(self.ansible_base)
-            self.final_command = t.safe_substitute(substitutes)
+            _temp = Template(self.ansible_base)
+            self.final_command = _temp.safe_substitute(substitutes)
 
             self._print(f"Final ansible command {self.final_command}")
         except BaseException:
@@ -117,20 +133,20 @@ class Ansible:
         """
         try:
             self.build()
-            call = subprocess.check_output(
+            _ = subprocess.check_output(
                 self.final_command,
                 shell=True,
                 stderr=subprocess.STDOUT,
                 universal_newlines=True)
-        except subprocess.CalledProcessError as er:
-            print(f"[!] {er} : {er.output}")
-            logger.exception("Called Process Error Ansible")
-        except OSError as er:
-            print(f"[!] {er}: {er.output}")
-            logger.exception("OSError in Ansible")
-        except subprocess.SubprocessError as er:
-            print(f"[!] {er}: {er.output}")
-            logger.exception("Subprocess Error in Ansible")
-        except TypeError as er:
-            print(f"[!] {er}: {er.output}")
-            logger.exception("Type Error in Ansible")
+        except subprocess.CalledProcessError:
+            print(f"[!] CallProcessError check logs")
+            LOG.exception("Called Process Error Ansible")
+        except OSError:
+            print(f"[!] OSError check logs")
+            LOG.exception("OSError in Ansible")
+        except subprocess.SubprocessError:
+            print(f"[!] SubprocessError check logs")
+            LOG.exception("Subprocess Error in Ansible")
+        except TypeError:
+            print(f"[!] TypeError check logs")
+            LOG.exception("Type Error in Ansible")

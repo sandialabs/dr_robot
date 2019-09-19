@@ -1,3 +1,11 @@
+# -*- coding: utf8 -*-
+"""WebTool module
+
+Contains all web based modules for Dr.ROBOT. All modules
+implement the Abstract Base Class WebTool to make running 
+any user created modules easier.
+
+"""
 import requests
 import netaddr
 import socket
@@ -8,7 +16,7 @@ import re
 from bs4 import BeautifulSoup
 from abc import ABC, abstractmethod
 
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class WebTool(ABC):
@@ -17,12 +25,12 @@ class WebTool(ABC):
         ABC class
         Args:
             **kwargs:
-                api_key : (String) [Optional] api key for service
-                user : (String) [Optional] user for service
-                password : (String) [Optional] password for service
-                proxies : (String) [Optional] proxies for service
-                domain : (String) [Optional] domain for service
-                output : (String) [Optional] output for service
+                api_key (str): api key for service
+                user (str): ) user for service
+                password (str): password for service
+                proxies (str): proxies for service
+                domain (str): domain for service
+                output (str): output for service
 
         """
         self.proxies = kwargs.get('proxies', None)
@@ -33,12 +41,19 @@ class WebTool(ABC):
 
     @abstractmethod
     def do_query(self):
+        """Abstract method for query
+
+        All modules implement this method. This method
+        is called by Dr.ROBOT so that we can dynamically
+        import and call modules without having to do
+        anything special
+        """
         pass
 
     def _print(self, msg):
         if self.verbose:
             print("[D] " + msg)
-        logger.debug(msg)
+        LOG.debug(msg)
 
     def _write_results(self):
         """
@@ -52,6 +67,12 @@ class WebTool(ABC):
 
 
 class Arin(WebTool):
+    """Arin web module
+    
+    Reaches out to ARIN api to grab IP ranges. Generates A TON
+    of IPS. Best not used unless you have time and are loud
+
+    """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.api_key = kwargs.get('api_key', None)
@@ -72,10 +93,10 @@ class Arin(WebTool):
         url = "https://whois.arin.net/ui/query.do"
         headers = {'Content-Type': 'application/x-www-form-urlencoded',
                    'Accept': 'application/json'}
-        ip = socket.gethostbyname(self.domain)
+        ipv4 = socket.gethostbyname(self.domain)
         data = {'xslt': 'https://localhost:8080/whoisrws-servlet/arin.xsl',
                 'flushCache': False,
-                'queryinput': ip,
+                'queryinput': ipv4,
                 'whoisSubmitButton': '+'}
         res = requests.post(
             url,
@@ -107,7 +128,7 @@ class Arin(WebTool):
 
         """
         print("[*] Beginning Arin Query")
-        logger.info('Starting ARIN Query for ' + self.domain)
+        LOG.info('Starting ARIN Query for ' + self.domain)
         try:
             org_name = self._lookup_org()
             if not org_name:
@@ -120,7 +141,7 @@ class Arin(WebTool):
             self._print(f"Making request to url {url}")
 
             headers = {'Accept': 'application/json'}
-            logger.info('Getting ' + org_name + ' ARIN Query from url: ' + url)
+            LOG.info('Getting ' + org_name + ' ARIN Query from url: ' + url)
             result = requests.get(
                 url,
                 headers=headers,
@@ -145,27 +166,22 @@ class Arin(WebTool):
                         result_json['nets']['netRef']['@endAddress'])
                     all_cidrs.append(result_cidr[0])
 
-                logger.info('CIDR of ' + org_name + ' is: %s', all_cidrs)
+                LOG.info('CIDR of ' + org_name + ' is: %s', all_cidrs)
                 self.results = self._generate_ips(all_cidrs)
                 self._write_results()
             else:
-                logger.error('Failed to get data for: ' + self.org_name)
+                self._print('Failed to get data for: ' + self.org_name)
 
             print("[*] Finished ARIN Query")
 
-        except requests.exceptions.HTTPError as er:
-            print(
-                f"[!] Might be related to network configuration, check proxy/dns. {er}")
-            logger.exception("HTTP Error in Arin Scan")
-        except requests.exceptions.ConnectionError as er:
-            logger.exception("Connection Error in Arin Scan")
-            print(
-                f"[!] Might be related to network configuration, check proxy/dns. {er}")
-        except requests.exceptions.RequestException as er:
-            logger.exception("Request Issue with Arin Scan")
-        except ValueError as er:
-            print(f"{er}")
-            logger.exception("Value Error in Arin Scan")
+        except requests.exceptions.HTTPError:
+            LOG.exception("HTTPError in Arin Scan")
+        except requests.exceptions.ConnectionError:
+            LOG.exception("Connection Error in Arin Scan")
+        except requests.exceptions.RequestException:
+            LOG.exception("RequestException Err in Arin Scan")
+        except ValueError:
+            LOG.exception("ValueError in Arin Scan")
 
 
 class Shodan(WebTool):
@@ -198,18 +214,16 @@ class Shodan(WebTool):
                     "\t PORT : {} \n"
                     "\t Country Code : {} \n"
                     "\t timestamp: {} \n" .format(
-                        " ".join(
-                            item.get(
-                                "hostnames", "")), item.get(
-                            "product", ""), item.get(
-                            "port", ""), item.get(
-                            "location", ""), item.get(
-                                "timestamp", "")))
+                        " ".join(item.get("hostnames", "")), 
+                            item.get("product", ""), 
+                            item.get("port", ""), 
+                            item.get("location", ""), 
+                            item.get("timestamp", "")))
                 self._write_results()
             print("[*] Finished Shodan Query")
-        except shodan.APIError as er:
+        except shodan.APIError:
             print("[!] Shodan Error. See log for more details")
-            logger.exception()
+            LOG.exception()
 
 
 class Dumpster(WebTool):
@@ -274,20 +288,18 @@ class Dumpster(WebTool):
                     self.results += [td.text.strip()]
 
             self._write_results()
-        except requests.exceptions.ConnectionError as er:
-            logger.error(
-                f"[!] Connection Error check network configuration {er}")
-            print(f"[!] Connection Error check network configuration {er}")
-        except requests.exceptions.RequestException as er:
-            logger.error(f"[!] Request failed {er}")
-            print(f"[!] Request failed {er}")
-        except IndexError as er:
-            logger.error(f"[!] No CSRF in response {er}")
-            print(f"[!] No CSRF in response {er}")
-        print("[*] End Dumpster Query")
+        except requests.exceptions.ConnectionError:
+            LOG.exception("[!] Connection Error check network configuration")
+        except requests.exceptions.RequestException:
+            LOG.exception(f"[!] Request failed SHODAN")
+        except IndexError:
+            LOG.exception(f"[!] No CSRF in response SHODAN")
+        print("\n[*] End Dumpster Query")
 
 
 class HackerTarget(WebTool):
+    """Module for HackerTarget.com
+    """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.ENDPOINT = "https://api.hackertarget.com/hostsearch/?q={}".format(
@@ -309,8 +321,7 @@ class HackerTarget(WebTool):
             self._print(f"Making request to url {self.ENDPOINT}" +
                         f"with proxies {self.proxies}")
             lines = res.content.splitlines()
-            if len(
-                    lines) < 2:  # Assuming anything greater than 1 is a valid domain for our purposes
+            if len(lines) < 2:
                 print("Domain not found on hackertarget")
                 return
             for line in res.content.split():
@@ -318,19 +329,17 @@ class HackerTarget(WebTool):
                 self.results += [ip.strip()]
             self._write_results()
         except requests.exceptions.ConnectionError as er:
-            logger.error(
-                f"[!] Connection Error check network configuration {er}")
-            print(f"[!] Connection Error check network configuration {er}")
+            LOG.exception("[!] Connection Error check network configuration")
         except requests.exceptions.RequestException as er:
-            logger.error(f"[!] Request failed {er}")
-            print(f"[!] Request failed {er}")
+            LOG.exception(f"[!] Request failed HackerTarget")
         except OSError as er:
-            logger.exception("OSError in HackerTarget")
-            print(f"[!] Writing to file failed {er}")
-        print("[*] End HackerTarget Query")
+            LOG.exception("OSError in HackerTarget")
+        print("\n[*] End HackerTarget Query")
 
 
 class VirusTotal(WebTool):
+    """Module for VirusTotal.com
+    """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.ENDPOINT = "https://www.virustotal.com/ui/domains/{}/subdomains?limit=40".format(
@@ -373,14 +382,10 @@ class VirusTotal(WebTool):
 
             self._write_results()
 
-        except requests.ConnectionError as er:
-            logger.error(
-                f"[!] Connection Error check network configuration {er}")
-            print(f"[!] Connection Error check network configuration {er}")
-        except requests.exceptions.RequestException as er:
-            logger.error(f"[!] Request failed {er}")
-            print(f"[!] Request failed {er}")
-        except OSError as er:
-            logger.exception()
-            print(f"[!] Writing to file failed {er}")
-        print("[*] End VirtusTotal Query")
+        except requests.ConnectionError:
+            LOG.exception("[!] Connection Error check network configuration")
+        except requests.exceptions.RequestException:
+            LOG.exception("[!] Request failed Virus")
+        except OSError:
+            LOG.exception("OSError in Virus")
+        print("\n[*] End VirtusTotal Query")

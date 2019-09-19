@@ -1,11 +1,19 @@
+# -*- coding: utf8 -*-
+""" Config Module
+
+Utility methods for loading configuration files,
+Generating template and config files into HOME directory
+Checking if tools exist
+"""
 import json
-import pkg_resources
 from subprocess import Popen
 from os import devnull, environ, path, makedirs
+import pkg_resources
 try:
     import errno
-except BaseException:
+except Exception:
     from os import errno
+
 
 def generate_configs():
     """Loads configuration files and templates into users home directory.
@@ -19,14 +27,16 @@ def generate_configs():
         makedirs(CONFIG_DIR)
 
     if not path.isfile(path.join(CONFIG_DIR, "config.json")):
-        with open(path.join(CONFIG_DIR, "config.json"), 'wb') as f:
-            config = pkg_resources.resource_string(__name__, 'configs/default_config.json')
-            f.write(config)
+        with open(path.join(CONFIG_DIR, "config.json"), 'wb') as _file:
+            config = pkg_resources.resource_string(__name__, 
+                                                   'configs/default_config.json')
+            _file.write(config)
 
     if not path.isfile(path.join(CONFIG_DIR, "ansible_inventory")):
-        with open(path.join(CONFIG_DIR, "ansible_inventory"), 'wb') as f:
-            config = pkg_resources.resource_string(__name__, 'configs/ansible_inventory')
-            f.write(config)
+        with open(path.join(CONFIG_DIR, "ansible_inventory"), 'wb') as _file:
+            config = pkg_resources.resource_string(__name__, 
+                                                   'configs/ansible_inventory')
+            _file.write(config)
 
     if not path.exists(path.join(CONFIG_DIR, "docker_buildfiles")):
         makedirs(path.join(CONFIG_DIR, "docker_buildfiles"))
@@ -35,8 +45,9 @@ def generate_configs():
         if not path.isfile(path.join(CONFIG_DIR, "docker_buildfiles", _file)):
             fpath = path.join("docker_buildfiles", _file)
             contents = pkg_resources.resource_string(__name__, fpath)
-            with open(path.join(CONFIG_DIR, "docker_buildfiles", _file), 'wb') as f:
-                f.write(contents)
+            with open(path.join(CONFIG_DIR, "docker_buildfiles", _file),
+                      'wb') as _file:
+                _file.write(contents)
 
     if not path.exists(path.join(CONFIG_DIR, "ansible_plays")):
         makedirs(path.join(CONFIG_DIR, "ansible_plays"))
@@ -45,12 +56,13 @@ def generate_configs():
         if not path.isfile(path.join(CONFIG_DIR, "ansible_plays", _file)):
             fpath = path.join("ansible_plays", _file)
             contents = pkg_resources.resource_string(__name__, fpath)
-            with open(path.join(CONFIG_DIR, "ansible_plays", _file), 'wb') as f:
-                f.write(contents)
+            with open(path.join(CONFIG_DIR, "ansible_plays", _file),
+                      'wb') as _file:
+                _file.write(contents)
+
 
 def tool_check():
     """Checks if Docker or Ansible exists
-        
     """
 
     TOOLS = ["ansible", "docker"]
@@ -58,9 +70,10 @@ def tool_check():
         try:
             dnull = open(devnull)
             Popen([name], stdout=dnull, stderr=dnull).communicate()
-        except OSError as e:
-            if e.errno == errno.ENOENT:
-                print(f"[!!] Tool {name} not found in path. If we error out it is your fault.")
+        except OSError as error:
+            if error.errno == errno.ENOENT:
+                print(f"[!!] Tool {name} not found in path. " + 
+                      "If we error out it is your fault.")
 
 
 def load_config(config):
@@ -82,14 +95,16 @@ def load_config(config):
     webtools = config.get('WebTools', {})
     enumeration = config.get('Enumeration', {})
     upload_dest = config.get('Upload', {})
-    serve = config.get('Serve', {})
     return {"scanners": scanners,
             "webtools": webtools,
             "enumeration": enumeration,
             "upload_dest": upload_dest}
 
+
 def get_config():
-    """Utility to fetch the path to the configuration file. If HOME is not defined just check the current directory.
+    """Utility to fetch the path to the configuration file.
+
+    If HOME is not defined just check the current directory.
 
     Returns:
         A string path that points to the config.json file.

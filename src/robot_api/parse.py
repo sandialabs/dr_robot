@@ -3,11 +3,13 @@ import json
 import pkg_resources
 from os import devnull, environ, path, makedirs
 
+
 def join_abs(*args):
-    """Utility method to call abspath and join without having to write it out every single time
+    """Utility method to call abspath and join
+    without having to write it out every single time
 
     Args:
-        *args: Multiple string like parameters to be joined 
+        *args: Multiple string like parameters to be joined
 
     Returns:
         string to the absolute path pointed to by *args
@@ -16,10 +18,10 @@ def join_abs(*args):
     return path.abspath(path.join(*args))
 
 def parse_args(
-        scanners={},
-        enumeration={},
-        webtools={},
-        upload_dest={},
+        scanners=None,
+        enumeration=None,
+        webtools=None,
+        upload_dest=None,
         root_dir="."):
     """Generate the argparse options given the configuration file.
 
@@ -33,6 +35,18 @@ def parse_args(
     Returns:
         parser given all available options provided at cli
     """
+
+    if scanners is None:
+        scanners = {}
+
+    if enumeration is None:
+        enumeration = {}
+
+    if webtools is None:
+        webtools = {}
+
+    if upload_dest is None:
+        upload_dest = {}
 
     parser = argparse.ArgumentParser(description="Docker DNS recon tool")
 
@@ -64,8 +78,7 @@ def parse_args(
 
     parser_gather = subparser.add_parser(
         'gather',
-        help="Runs initial scanning phase where tools under the webtools/scanners"
-        "category will run and gather information used in the following phases")
+        help="Runs gather phase with tools under the webtools/scanners")
 
     for k in scanners.keys():
         parser_gather.add_argument(
@@ -104,20 +117,15 @@ def parse_args(
                                type=str,
                                help="Domain to run scan against")
 
-    # Disabled for initial release
-    # parser_run.add_argument('--verify',
-    #                         default=None,
-    #                         type=str,
-    #                         help="Verify results of scan against another scan. [Requires flag to match scans being done]")
     ##########################
     # INSPECT
     ##########################
 
     parser_inspect = subparser.add_parser(
         'inspect',
-        help="Run further tools against domain information gathered from previous step."
-        "Note: you must either supply a file which contains a list of IP/Hostnames or"
-        "The targeted domain must have a db under the dbs folder")
+        help="Run inspection phase against aggregated data "
+        "Note: you must either supply a file containing a list of IP/Hostnames"
+        " or the targeted domain must have a db under the dbs folder")
 
     for k in enumeration.keys():
         parser_inspect.add_argument(
@@ -128,11 +136,6 @@ def parse_args(
                 'description',
                 "No description provided"),
             default=False)
-
-    # parser_inspect.add_argument('--file',
-    #                             default=None,
-    #                             type=str,
-    # help="(NOT WORKING) File with hostnames to run further inspection on")
 
     parser_inspect.add_argument("domain",
                                 type=str,
@@ -156,14 +159,14 @@ def parse_args(
     parser_upload.add_argument(
         f"filepath", type=str, help="Filepath to the folder containing images"
         "to upload. This is relative to the domain "
-        "specified. By default this will just be the path to the output folder")
+        "specified. By default this will be the path to the output folder")
     ##########################
     # REBUILD
     ##########################
 
     parser_rebuild = subparser.add_parser(
         'rebuild',
-        help="Rebuild the database with additional files/all files from previous runtime")
+        help="Rebuild the database with additional files from previous runs")
 
     parser_rebuild.add_argument("domain",
                                 type=str,
@@ -173,7 +176,7 @@ def parse_args(
         "-f",
         "--files",
         nargs="*",
-        help="Additional files to supply outside of the ones in the config file")
+        help="Additional files to supply outside of the config file")
 
     ##########################
     # DUMPDB
@@ -181,7 +184,8 @@ def parse_args(
 
     parser_dumpdb = subparser.add_parser(
         "dumpdb",
-        help="Dump contents of database (ip,hostname,banners) to a text file with hostname for filename")
+        help="Dump contents of database (ip,hostname,banners) to a text file")
+
     parser_dumpdb.add_argument("domain",
                                type=str,
                                help="Domain to show data for")
@@ -190,7 +194,8 @@ def parse_args(
     ##########################
     parser_output = subparser.add_parser(
         "output",
-        help="Generate output in specified format. Contains all information from scans (images, headers, hostnames, ips)")
+        help="Generate output in specified format. Contains all "
+        "information from scans (images, headers, hostnames, ips)")
 
     parser_output.add_argument(
         "format",

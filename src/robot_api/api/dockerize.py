@@ -1,17 +1,31 @@
-import docker
+# -*- coding: utf8 -*-
+""" Docker wrapper
+
+Build docker images and containers using templates for Dr.ROBOT
+
+Attributes:
+    _docker_options (dict): docker options for template provided from config.json
+    _default_config_path (str): location of template file
+    _active_config_path (str): location of active Dockerfile
+    verbose (bool): More output Yes/No
+    container (docker.Container): container object when running
+    status (str): If running or not
+    name (str): name of docker image
+"""
 from os.path import isfile
 from string import Template
 import logging
 import time
 import json
 from tqdm import tqdm
+import docker
 
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class Docker:
     def __init__(self, **kwargs):
-        """
+        """Constructor
 
         Args:
             **kwargs:
@@ -38,42 +52,45 @@ class Docker:
     def _print(self, msg):
         if self.verbose:
             print("[D] " + msg)
-        logger.debug(msg)
+        LOG.debug(msg)
 
     def kill(self):
+        """Kills container
+
+        Tries to kill container.
+
+        """
         try:
             self.container.kill()
-        except docker.errors.APIError as er:
+        except docker.errors.APIError:
             self._print(
                 "Error when trying to send kill signal to docker container.")
+            LOG.exception("Killing container")
 
     def _init_config(self):
-        """
-        Creates active configuration from template with appropriate values replaced.
-        Returns:
+        """Creates active configuration from template
 
-        Args:
-
-        Returns:
-
+        Raises:
+            OSError
         """
         if isfile(self._default_config_path):
-            logger.info(
-                f"Creating Dockerfile for {self._docker_options['name']}")
+            LOG.info("Creating Dockerfile for %s", self._docker_options['name'])
         elif not isfile(self._default_config_path):
             raise OSError(
                 'Default configuration file is not found, please fix')
 
         self.name = self._docker_options['name']
         self.network_mode = self._docker_options.get('network_mode', 'host')
-        self._print(
-            f"Making config with args:{json.dumps(self._docker_options, indent=4)}")
+        self._print(f"Making config with args:{json.dumps(self._docker_options, indent=4)}")
 
         with open(self._default_config_path, 'r') as cfg:
             t = Template(cfg.read())
         with open(self._active_config_path, 'w') as out:
-            out.write(t.safe_substitute(
-                {k: v if v else '\'\'' for k, v in self._docker_options.items()}))
+            out.write(t.safe_substitute({k: v if
+                                         v else '\'\''
+                                         for k, v
+                                         in self._docker_options.items()
+                                         }))
 
     def build(self):
         """
@@ -94,8 +111,8 @@ class Docker:
                         --rm
                         --network {self.network_mode}
                     """)
-        with open(self._active_config_path, 'rb') as f:
-            _, _ = client.images.build(fileobj=f,
+        with open(self._active_config_path, 'rb') as _file:
+            _, _ = client.images.build(fileobj=_file,
                                        tag=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
                                        rm=True,
                                        network_mode=self.network_mode,
@@ -161,8 +178,7 @@ class Docker:
                     pbar.refresh()
 
         except docker.errors.NotFound:
-            self._print(
-                f"[*] Docker container {self._docker_options['docker_name']} exited")
+            self._print(f"[*] Docker container {self._docker_options['docker_name']} exited")
             self.status = 'exited'
         except AttributeError:
-            print("Container is None")
+            LOG.exception("AttributeError in update_status. Check logs")
