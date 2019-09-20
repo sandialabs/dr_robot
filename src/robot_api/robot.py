@@ -19,7 +19,6 @@ from os.path import exists, isfile, getsize, isdir
 import logging
 import multiprocessing
 from xml.dom.minidom import parseString
-import time
 import requests
 from tqdm import tqdm
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -126,17 +125,19 @@ class Robot:
                     output_dir=output_dir)]
 
         self._print("Threading builds")
-        build_threads = [multiprocessing.Process(target=scanner.build, daemon=True) for scanner in scanners]
-        for build in build_threads:
-            build.start()
+        # build_threads = [multiprocessing.Process(target=scanner.build, daemon=True) for scanner in scanners]
+        # for build in build_threads:
+            # build.start()
 
         build_monitor_threads = [multiprocessing.Process(target=scanner.monitor_build, daemon=True) for scanner in scanners]
         for thread in build_monitor_threads:
             thread.start()
+
+        for thread in build_monitor_threads:
+            thread.join()
+
         # for build in build_threads:
             # build.join()
-        for thread in build_monitor_threads + build_threads:
-            thread.join()
 
         self._print("Images built, running containers")
         for scanner in scanners:
