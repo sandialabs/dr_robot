@@ -19,8 +19,9 @@ from os.path import exists, isfile, getsize, isdir
 import logging
 import multiprocessing
 from xml.dom.minidom import parseString
+import time
 import requests
-import docker
+from tqdm import tqdm
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import dicttoxml
 from robot_api.api import Ansible, Docker, Aggregation
@@ -129,14 +130,18 @@ class Robot:
         for build in build_threads:
             build.start()
 
-        client = docker.from_env()
-        while client.containers.list():
-            print(client.containers.list())
+        containers = [scanner.name for scanner in scanners if scanner.status == "building"] 
+        with tqdm() as pbar:
+            pbar.set_description(f"Docker images building: {containers}...")
+            while containers:
+                time.sleep(5)
+                containers = [scanner.name for scanner in scanners if scanner.status == "builbing"] 
+                pbar.refresh()
 
         for build in build_threads:
             build.join()
 
-        self._print("Running scanners")
+        self._print("Images built, running containers")
         for scanner in scanners:
             scanner.run()
 

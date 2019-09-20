@@ -111,6 +111,7 @@ class Docker:
                             --rm
                             --network {self.network_mode}
                         """)
+            self.status = "building"
             with open(self._active_config_path, 'rb') as _file:
                 _, _ = client.images.build(fileobj=_file,
                                            tag=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
