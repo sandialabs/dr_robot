@@ -126,20 +126,17 @@ class Robot:
                     output_dir=output_dir)]
 
         self._print("Threading builds")
-        build_threads = [multiprocessing.Process(target=scanner.build, daemon=True) for scanner in scanners]
-        for build in build_threads:
-            build.start()
+        # build_threads = [multiprocessing.Process(target=scanner.build, daemon=True) for scanner in scanners]
+        # for build in build_threads:
+            # build.start()
 
-        containers = [scanner.name for scanner in scanners if scanner.status == "building"] 
-        with tqdm() as pbar:
-            pbar.set_description(f"Docker images building: {containers}...")
-            while containers:
-                time.sleep(5)
-                containers = [scanner.name for scanner in scanners if scanner.status == "builbing"] 
-                pbar.refresh()
-
-        for build in build_threads:
-            build.join()
+        build_monitor_threads = [multiprocessing.Process(target=scanner.monitor_build, daemon=True) for scanner in scanners]
+        for thread in build_monitor_threads:
+            thread.start()
+        # for build in build_threads:
+            # build.join()
+        for thread in build_monitor_threads:
+            thread.join()
 
         self._print("Images built, running containers")
         for scanner in scanners:
@@ -410,7 +407,10 @@ class Robot:
                 [thread.join() for thread in _threads if thread]
             except KeyboardInterrupt:
                 self._print("Keyboard Interrupt sending kill signal to docker")
-                _ = [scanner.kill() for scanner in scanners]
+                try:
+                    _ = [scanner.kill() for scanner in scanners]
+                except:
+                    pass
                 raise KeyboardInterrupt
 
         verify = kwargs.get('verify', None)

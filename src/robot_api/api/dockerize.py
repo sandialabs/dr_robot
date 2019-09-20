@@ -46,8 +46,10 @@ class Docker:
         self.network_mode = self._docker_options.get('network_mode', 'host')
 
         self.verbose = kwargs.get('verbose', False)
+        self.image = None
         self.container = None
         self.status = None
+        self.error = False
 
         self.OUTPUT_DIR = kwargs.get('output_dir', None)
 
@@ -104,38 +106,39 @@ class Docker:
         try:
             client = docker.from_env()
             self._init_config()
-            print(f"[*] Building Docker image: {self.name}")
             self._print(f"""Built with options:
                             -f {self._active_config_path}
                             -t {self._docker_options['docker_name']}:{self._docker_options['docker_name']}
                             --rm
                             --network {self.network_mode}
                         """)
-            self.status = "building"
             with open(self._active_config_path, 'rb') as _file:
-                _, _ = client.images.build(fileobj=_file,
-                                           tag=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
-                                           rm=True,
-                                           network_mode=self.network_mode,
-                                           use_config_proxy=True)
-            self.status = "built"
+                self.image = client.images.build(fileobj=_file,
+                                                 tag=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
+                                                 rm=True,
+                                                 network_mode=self.network_mode,
+                                                 use_config_proxy=True)
         except BuildError as error:
-            print("[!] Build Error encountered. Check logs")
+            print(f"[!] Build Error {self.name}. Check logs")
             LOG.exception("[!] BuildError: %s", self.name)
+            self.error = True
             if "net/http" in str(error):
                 print("[!] This could be a proxy issue, see " +
                       "https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
         except APIError:
             print(f"[!] APIError: {self.name}")
             LOG.exception("[!] APIError: %s", self.name)
+            self.error = True
         except KeyError:
             print(f"[!] KeyError Output or Docker Name " +
                   "is not defined!!: {scanner.name}")
             LOG.exception("[!] KeyError Output or Docker Name " +
                           "is not defined!!: %s", self.name)
+            self.error = True
         except OSError:
             LOG.exception("[!] Output directory could not be created, " +
                           "please verify permissions")
+            self.error = True
 
     def run(self):
         """
@@ -146,8 +149,6 @@ class Docker:
         Returns:
 
         """
-        print(f"[*] Running container {self._docker_options['docker_name']}")
-
         client = docker.from_env()
 
         try:
@@ -179,22 +180,35 @@ class Docker:
             self._print(f"mount point specified here: {volumes}")
 
         except ImageNotFound:
+            self.error = True
             print(f"[!] ImageNotFound: {self.name}")
             LOG.exception("[!] ImageNotFound: %s", self.name)
         except ContainerError:
+            self.error = True
             print(f"[!] Container Error: {self.name}")
             LOG.exception("[!] Container Error: %s", self.name)
         except APIError:
+            self.error = True
             print(f"[!] APIError: {self.name}")
             LOG.exception("[!] APIError: %s", self.name)
         except KeyError:
+            self.error = True
             print(f"[!] KeyError Output or Docker Name " +
                   "is not defined!!: {scanner.name}")
             LOG.exception("[!] KeyError Output or Docker Name " +
                           "is not defined!!: %s", self.name)
         except OSError:
+            self.error = True
             LOG.exception("[!] Output directory could not be created, " +
                           "please verify permissions")
+
+    def monitor_build(self):
+        self.build()
+        with tqdm() as pbar:
+            pbar.set_description(f"[#] Docker image {self.name}, building...")
+            while self.image is None and not self.error:
+                time.sleep(5)
+                pbar.update(1)
 
     def update_status(self):
         """
@@ -205,18 +219,22 @@ class Docker:
         Returns:
 
         """
+        if self.error:
+            return
         try:
             with tqdm() as pbar:
                 pbar.set_description(
-                    f"Docker container {self.name}, running...")
+                    f"[#] Docker container {self.name}, running...")
                 while True:
                     self.container.reload()
                     time.sleep(5)
                     self.status = self.container.status
-                    pbar.refresh()
+                    pbar.update(1)
 
         except NotFound:
             self._print(f"[*] Docker container {self._docker_options['docker_name']} exited")
             self.status = 'exited'
         except AttributeError:
             LOG.exception("AttributeError in update_status. Check logs")
+        except KeyboardInterrupt:
+            LOG.exception("KeyboardInterrupt in update_status. Check logs")
