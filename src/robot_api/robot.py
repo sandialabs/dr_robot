@@ -18,6 +18,7 @@ from os import makedirs, walk
 from os.path import exists, isfile, getsize, isdir
 import logging
 import threading
+import multiprocessing
 from xml.dom.minidom import parseString
 import requests
 from tqdm import tqdm
