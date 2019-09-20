@@ -221,7 +221,6 @@ class Aggregation:
                     for _file in files:
                         if path.isfile(join_abs(root, _file)):
                             all_files += [join_abs(root, _file)]
-
             # multi_queue = multiprocessing.Queue()
             qu_manager = multiprocessing.Manager()
             pool = multiprocessing.Pool(5) 
@@ -331,7 +330,8 @@ class Aggregation:
         # Threading is done against the staticmethod.
         # Feel free to change the max_workers if your system allows.
         # May add option to specify threaded workers.
-        pool = multiprocessing.Pool(10)
+        pool = multiprocessing.Pool(40)
+
         qu_manager = multiprocessing.Manager()
         queue = qu_manager.Queue()
         get_headers_partial = partial(self._get_headers, queue)
@@ -358,9 +358,8 @@ class Aggregation:
                                 AND domain='{self.domain.replace('.','_')}'"""
                                    ).fetchall()
         hostnames = [item[0] for item in hostnames]
-        # with ThreadPoolExecutor(max_workers=40) as pool:
-        # with ThreadPoolExecutor(max_workers=40) as pool:
-        pool = multiprocessing.Pool(10)
+
+        pool = multiprocessing.Pool(40)
         queue = qu_manager.Queue()
         get_headers_partial = partial(self._get_headers, queue)
         _ = list(tqdm(pool.map(get_headers_partial, hostnames), total=len(hostnames), desc="Getting headers for host..."))
