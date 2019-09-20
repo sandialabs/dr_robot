@@ -1,4 +1,4 @@
-FROM golang:1.12.6-alpine3.10 as build
+FROM golang:1.13.0-alpine3.10 as build
 
 RUN if [ -n "$dns" ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
@@ -20,6 +20,12 @@ RUN if [ -n "$dns" ]; \
 	go install ./...
 
 FROM alpine:latest
+
+RUN if [ -n "$dns" ]; \
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
+    fi;\
+	apk --no-cache add ca-certificates
+
 COPY --from=build /go/bin/amass /bin/amass
 COPY --from=build /go/src/github.com/OWASP/Amass/wordlists/ /wordlists/
 
@@ -29,4 +35,4 @@ ENV HOME /
 
 RUN mkdir -p $output
 
-ENTRYPOINT amass enum --passive -d "$target" -o $output/amass.txt 
+ENTRYPOINT /bin/amass enum --passive -d "$target" -o $output/amass.txt 

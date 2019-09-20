@@ -203,7 +203,6 @@ class Docker:
                           "please verify permissions")
 
     def monitor_build(self):
-        self.build()
         with tqdm() as pbar:
             pbar.set_description(f"[#] Docker image {self.name}, building...")
             while self.image is None and not self.error:
