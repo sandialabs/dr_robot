@@ -123,19 +123,19 @@ class Docker:
 
             self.done_building = True
         except BuildError as error:
-            print(f"[!] Build Error {self.name}. Check logs")
+            # print(f"[!] Build Error {self.name}. Check logs")
             LOG.exception("[!] BuildError: %s", self.name)
             self.error = True
-            if "net/http" in str(error):
-                print("[!] This could be a proxy issue, see " +
-                      "https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
+            # if "net/http" in str(error):
+                # print("[!] This could be a proxy issue, see " +
+                      # "https://docs.docker.com/config/daemon/systemd/#httphttps-proxy for help")
         except APIError:
-            print(f"[!] APIError: {self.name}")
+            # print(f"[!] APIError: {self.name}")
             LOG.exception("[!] APIError: %s", self.name)
             self.error = True
         except KeyError:
-            print(f"[!] KeyError Output or Docker Name " +
-                  "is not defined!!: {scanner.name}")
+            # print(f"[!] KeyError Output or Docker Name " +
+                  # "is not defined!!: {scanner.name}")
             LOG.exception("[!] KeyError Output or Docker Name " +
                           "is not defined!!: %s", self.name)
             self.error = True
@@ -184,20 +184,20 @@ class Docker:
 
         except ImageNotFound:
             self.error = True
-            print(f"[!] ImageNotFound: {self.name}")
+            # print(f"[!] ImageNotFound: {self.name}")
             LOG.exception("[!] ImageNotFound: %s", self.name)
         except ContainerError:
             self.error = True
-            print(f"[!] Container Error: {self.name}")
+            # print(f"[!] Container Error: {self.name}")
             LOG.exception("[!] Container Error: %s", self.name)
         except APIError:
             self.error = True
-            print(f"[!] APIError: {self.name}")
+            # print(f"[!] APIError: {self.name}")
             LOG.exception("[!] APIError: %s", self.name)
         except KeyError:
             self.error = True
-            print(f"[!] KeyError Output or Docker Name " +
-                  "is not defined!!: {scanner.name}")
+            # print(f"[!] KeyError Output or Docker Name " +
+                  # "is not defined!!: {scanner.name}")
             LOG.exception("[!] KeyError Output or Docker Name " +
                           "is not defined!!: %s", self.name)
         except OSError:
@@ -209,7 +209,6 @@ class Docker:
         """Monitor build status of docker
 
         """
-        multiprocessing.Process(target=self.build(), daemon=True)
         with tqdm() as pbar:
             pbar.set_description(f"[#] Docker image {self.name}, building...")
             while self.image is None and not self.error and not self.done_building:

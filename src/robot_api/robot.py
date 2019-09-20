@@ -17,7 +17,7 @@ import json
 from os import makedirs, walk
 from os.path import exists, isfile, getsize, isdir
 import logging
-import multiprocessing
+import threading
 from xml.dom.minidom import parseString
 import requests
 from tqdm import tqdm
@@ -125,25 +125,26 @@ class Robot:
                     output_dir=output_dir)]
 
         self._print("Threading builds")
-        # build_threads = [multiprocessing.Process(target=scanner.build, daemon=True) for scanner in scanners]
-        # for build in build_threads:
-            # build.start()
+        build_threads = [threading.Thread(target=scanner.build, daemon=True) for scanner in scanners]
+        for build in build_threads:
+            build.start()
 
-        build_monitor_threads = [multiprocessing.Process(target=scanner.monitor_build, daemon=True) for scanner in scanners]
+        build_monitor_threads = [threading.Thread(target=scanner.monitor_build, daemon=True) for scanner in scanners]
         for thread in build_monitor_threads:
             thread.start()
 
-        for thread in build_monitor_threads:
-            thread.join()
+        for build in build_monitor_threads:
+            build.join()
 
-        # for build in build_threads:
-            # build.join()
+        for scanner in scanners:
+            if scanner.error or scanner.image is None:
+                print(f"[!] Error building {scanner.name}. Check logs")
 
         self._print("Images built, running containers")
         for scanner in scanners:
             scanner.run()
 
-        status_threads = [multiprocessing.Process(target=scanner.update_status, daemon=True) for scanner in scanners]
+        status_threads = [threading.Thread(target=scanner.update_status, daemon=True) for scanner in scanners]
         for stat in status_threads:
             stat.start()
 
