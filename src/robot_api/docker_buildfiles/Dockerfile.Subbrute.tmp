@@ -20,4 +20,4 @@ RUN mkdir -p $output
 
 WORKDIR /root/subbrute
 
-ENTRYPOINT ./subbrute.py -o $output/subbrute.txt $target
+ENTRYPOINT ./subbrute.py -o $output/subbrute.txt -r resolvers.txt -p -v $target
