@@ -19,48 +19,48 @@ jobs:
           name: Sublist3r
           script:
             - drrobot gather -sub github.com
-            - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/sublist3r)" ]; then echo "Success"; else exit 1 done;
+            - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/sublist3r)" ]; then echo "Success"; else exit 1 fi;
         - script:
              - drrobot gather -knock github.com
-             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/knock)" ]; then echo "Success"; else exit 1 done;
+             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/knock)" ]; then echo "Success"; else exit 1 fi;
           name: Knock
         - script:
              - drrobot gather -amass github.com
-             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/amass)" ]; then echo "Success"; else exit 1 done;
+             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/amass)" ]; then echo "Success"; else exit 1 fi;
           name: Amass 
         - script:
              - drrobot gather -brute github.com
-             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/brute)" ]; then echo "Success"; else exit 1 done;
+             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/brute)" ]; then echo "Success"; else exit 1 fi;
           name: Subbrute
         - script:
              - drrobot gather -turbo github.com
-             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/turbolist3r)" ]; then echo "Success"; else exit 1 done;
+             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/turbolist3r)" ]; then echo "Success"; else exit 1 fi;
           name: Turbolist3r
         - script:
              - drrobot gather -sfinder github.com
-             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/subfinder)" ]; then echo "Success"; else exit 1 done;
+             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/subfinder)" ]; then echo "Success"; else exit 1 fi;
           name: Subfinder
         - script:
              - drrobot gather -recon github.com
-             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/reconng)" ]; then echo "Success"; else exit 1 done;
+             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/reconng)" ]; then echo "Success"; else exit 1 fi;
           name: ReconNG
         - script:
              - drrobot gather -altdns github.com
-             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/altdns)" ]; then echo "Success"; else exit 1 done;
+             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/altdns)" ]; then echo "Success"; else exit 1 fi;
           name: AltDNS
         - script:
              - drrobot gather -anubis github.com
-             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/anubis)" ]; then echo "Success"; else exit 1 done;
+             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/anubis)" ]; then echo "Success"; else exit 1 fi;
           name: Anubis
         - script:
              - drrobot gather -ctexpo github.com
-             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/ctexpose)" ]; then echo "Success"; else exit 1 done;
+             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/ctexpose)" ]; then echo "Success"; else exit 1 fi;
           name: CTExpose
         - script:
              - drrobot gather -ctfr github.com
-             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/ctfr)" ]; then echo "Success"; else exit 1 done;
+             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/ctfr)" ]; then echo "Success"; else exit 1 fi;
           name: CTFR
         - script:
              - drrobot gather -pdlist github.com
-             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/pdlist)" ]; then echo "Success"; else exit 1 done;
+             - if [ -z "$(ls -la $HOME/.drrobot/output/github.com/pdlist)" ]; then echo "Success"; else exit 1 fi;
           name: PDList
