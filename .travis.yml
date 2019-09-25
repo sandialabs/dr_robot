@@ -13,9 +13,9 @@ install:
 jobs:
     include:
         - stage: help
-        - script:
+        script:
             - drrobot --help
         - stage: start scans
-        - script:
+        script:
             - drrobot gather -sub github.com
             - ls -la $HOME/.drrobot/output/sublist3r
