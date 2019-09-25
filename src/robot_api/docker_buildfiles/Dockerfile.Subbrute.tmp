@@ -9,7 +9,7 @@ RUN if [ -n $dns ];\
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
 	apt install -y git ;\
-    pip install dnspython;
+    pip install --trusted-host pypi.org dnspython;
 
 RUN if [ -n $dns ];\
     then echo "nameserver $dns" >> /etc/resolv.conf;\

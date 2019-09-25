@@ -19,7 +19,7 @@ WORKDIR /ctexposure
 
 RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\
- 	pip3 install -r requirements.txt
+ 	pip3 install --trusted-host pypi.org -r requirements.txt
 
 ENV INFILE  $infile
 

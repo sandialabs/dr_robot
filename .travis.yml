@@ -1,11 +1,22 @@
 language: python
 python:
-  - '3.6'
+  - '3.7'
 
-install:
+services:
+    - docker
+
+before_install:
   - 'pip install pipenv'
   - 'pipenv sync -d'
-  - 'pipenv run pip install pip==18.0'
 
-script:
-  'pipenv run pytest tests'
+    #script:
+    #'pipenv run pytest tests'
+jobs:
+    include:
+        - stage: help
+        - script:
+            - drrobot --help
+        - stage: start scans
+        - script:
+            - drrobot gather -sub github.com
+            - ls -la $HOME/.drrobot/output/sublist3r

@@ -63,6 +63,7 @@ If you ever break your config beyond saving, you can delete the config.json file
 ```
 git clone <URL>
 cd gitrepo
+pip install -r requirements.txt
 pip install -e .
 drrobot --help
 
