@@ -64,3 +64,32 @@ jobs:
              - drrobot gather -pdlist github.com
              - if [ -z "$(ls -A $HOME/.drrobot/output/github.com/pdlist)" ]; then exit 1; else echo "Success"; fi;
           name: PDList
+        - stage: Test screenshots
+          name: Webscreenshot
+          script:
+             - drrobot -h
+             - mkdir -p $HOME/.drrobot/output/singlewebsitetest/aggregated
+             - echo "https://github.com" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
+             - drrobot inspect -webscreen singlewebsitetest
+             - if [ -z "$(ls -A $HOME/.drrobot/output/singlewebsitetest/webscreen)" ]; then exit 1; else echo "Success"; fi;
+        - script:
+             - drrobot -h
+             - mkdir -p $HOME/.drrobot/output/singlewebsitetest/aggregated
+             - echo "https://github.com" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
+             - drrobot inspect -nmapscreen singlewebsitetest
+             - if [ -z "$(ls -A $HOME/.drrobot/output/singlewebsitetest/nmapscreen)" ]; then exit 1; else echo "Success"; fi;
+          name: NMAP
+        - script:
+             - drrobot -h
+             - mkdir -p $HOME/.drrobot/output/singlewebsitetest/aggregated
+             - echo "https://github.com" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
+             - drrobot inspect -eye singlewebsitetest
+             - if [ -z "$(ls -A $HOME/.drrobot/output/singlewebsitetest/eyewitness)" ]; then exit 1; else echo "Success"; fi;
+          name: Eyewitness
+        - script:
+             - drrobot -h
+             - mkdir -p $HOME/.drrobot/output/singlewebsitetest/aggregated
+             - echo "https://github.com" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
+             - drrobot inspect -http singlewebsitetest
+             - if [ -z "$(ls -A $HOME/.drrobot/output/singlewebsitetest/httpscreenshot)" ]; then exit 1; else echo "Success"; fi;
+          name: HTTPScreenshot 
