@@ -7,8 +7,10 @@ ENV DNS $dns
 RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\
     apt update; \
-    apt install -y nmap git wget libjpeg-turbo8 fontconfig libfreetype6 xfonts-base libxrender1 xfonts-75dpi chromium-browser firefox
+    apt install -y nmap git wget libjpeg-turbo8 fontconfig libfreetype6 xfonts-base libxrender1 xfonts-75dpi chromium-browser firefox ca-certificates
 
+ADD certs/ /usr/local/share/ca-certificates/
+RUN update-ca-certificates
 
 RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\

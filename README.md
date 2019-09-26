@@ -143,7 +143,12 @@ optional arguments:
   --dbfile DBFILE       Specify what db file to use for saving data too
 ```
 
+## Certs
+
+Running this behind a proxy was a pain. To make this less painful we create a certs directory under the **$HOME/.drrobot/*** where you can add your crt files. As part of the dockerfile build process we now generate tarfiles with the certificates so that applications, such as Amass, can run.
+
 ## Configuration
+
 Dr.ROBOT is built in a modular fashion, making it easy to add new tools. You have three options for adding a new tool to Dr.ROBOT:
 
 #### Important: To make sure no issues come from adding your own tool, make sure the key used to identify a json item, the name, and docker_name are all unique. 

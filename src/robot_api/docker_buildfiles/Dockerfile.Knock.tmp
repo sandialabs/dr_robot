@@ -8,8 +8,11 @@ RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     apt-get update && \
-    apt-get install -y git python-dnspython && \
+    apt-get install -y git python-dnspython ca-certificates && \
 	  rm -rf /var/lib/apt/lists/*
+
+ADD certs/ /usr/local/share/ca-certificates/
+RUN update-ca-certificates
 
 RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\

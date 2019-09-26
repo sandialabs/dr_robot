@@ -10,9 +10,12 @@ RUN if [ -n $dns ]; \
             libssl-dev \
             libffi-dev \
             python-dev \
+			ca-certificates \
 			git \
         && rm -rf /var/lib/apt/lists/*
 
+ADD certs/ /usr/local/share/ca-certificates/
+RUN update-ca-certificates
 
 RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\

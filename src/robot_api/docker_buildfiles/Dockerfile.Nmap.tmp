@@ -10,7 +10,10 @@ ARG user=eyewitness
 RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\
     apt update; \
-    apt install -y nmap git  wget
+    apt install -y nmap git  wget ca-certificates
+
+ADD certs/ /usr/local/share/ca-certificates/
+RUN update-ca-certificates
 
 RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\

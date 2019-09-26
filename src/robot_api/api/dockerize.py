@@ -12,15 +12,18 @@ Attributes:
     status (str): If running or not
     name (str): name of docker image
 """
-from os.path import isfile
+from os.path import isfile, basename
 from string import Template
 import logging
 import time
+import tarfile
 import json
 import multiprocessing
 from tqdm import tqdm
 import docker
 from docker.errors import APIError, BuildError, ContainerError, ImageNotFound, NotFound
+
+from robot_api.parse import join_abs
 
 LOG = logging.getLogger(__name__)
 
@@ -53,7 +56,6 @@ class Docker:
         self.status = None
         self.error = False
         self.done_building = False
-
         self.OUTPUT_DIR = kwargs.get('output_dir', None)
 
     def _print(self, msg):
@@ -74,7 +76,7 @@ class Docker:
                 "Error when trying to send kill signal to docker container.")
             LOG.exception("Killing container")
 
-    def _init_config(self):
+    def gen_config(self):
         """Creates active configuration from template
 
         Raises:
@@ -96,6 +98,13 @@ class Docker:
                                          for k, v
                                          in self._docker_options.items()
                                          }))
+    def gen_tarfile(self):
+        tarname = join_abs(self._docker_options['tarfiles'], basename(self._active_config_path) + ".tar.gz")
+        with tarfile.open(name=tarname, mode="w:gz") as tar:
+            tar.add(self._active_config_path, "Dockerfile")
+            tar.add(self._docker_options['certs'], 'certs')
+        return tarname
+            
 
     def build(self):
         """
@@ -107,16 +116,19 @@ class Docker:
 
         """
         try:
-            self._init_config()
+            self.gen_config()
+            tarfile = self.gen_tarfile() 
             self._print(f"""Built with options:
                             -f {self._active_config_path}
                             -t {self._docker_options['docker_name']}:{self._docker_options['docker_name']}
                             --rm
                             --network {self.network_mode}
                         """)
-            with open(self._active_config_path, 'rb') as _file:
-                self.image = self.client.images.build(fileobj=_file,
+            with open(tarfile, 'rb') as _file:
+                self.image = self.client.images.build(fileobj=_file, 
                                                  tag=f"{self._docker_options['docker_name']}:{self._docker_options['docker_name']}",
+                                                 custom_context=True,
+                                                 encoding='gzip',
                                                  rm=True,
                                                  network_mode=self.network_mode,
                                                  use_config_proxy=True)

@@ -106,6 +106,8 @@ class Robot:
             options.update({"dns": self.dns or None})
             options.update({"target": self.domain})
             options.update({"verbose": self.verbose})
+            options.update({"tarfiles": join_abs(self.ROOT_DIR, "tarfiles")})
+            options.update({"certs": join_abs(self.ROOT_DIR, "certs")})
             output_dir = self.OUTPUT_DIR
             if options.get("output_folder", None):
                 output_dir = join_abs(

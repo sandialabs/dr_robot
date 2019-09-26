@@ -8,8 +8,11 @@ ENV https_proxy $proxy
 RUN if [ -n $dns ];\
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
-	apt install -y git ;\
+	apt install -y git ca-certificates;\
     pip install --trusted-host pypi.org dnspython;
+
+ADD certs/ /usr/local/share/ca-certificates/
+RUN update-ca-certificates
 
 RUN if [ -n $dns ];\
     then echo "nameserver $dns" >> /etc/resolv.conf;\

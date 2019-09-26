@@ -9,7 +9,10 @@ RUN mkdir -p $output
 RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
-    apt-get install git
+    apt-get install git ca-certificates
+
+ADD certs/ /usr/local/share/ca-certificates/
+RUN update-ca-certificates
 
 RUN if [ -n $dns ];\
     then echo "nameserver $dns" >> /etc/resolv.conf;\

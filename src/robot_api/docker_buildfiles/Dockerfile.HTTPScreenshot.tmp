@@ -7,7 +7,11 @@ RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
     apt-get update \
-    && apt-get install -y wget git python-dev python-pip libfontconfig unzip firefox
+    && apt-get install -y wget git python-dev python-pip libfontconfig unzip firefox ca-certificates
+
+
+ADD certs/ /usr/local/share/ca-certificates/
+RUN update-ca-certificates
 
 RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\

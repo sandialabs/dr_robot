@@ -8,12 +8,13 @@ RUN if [ -n $dns ]; \
     fi;\
 	apk add --no-cache --upgrade git openssh-client ca-certificates
 
-RUN git config --global http.sslVerify false
+ADD certs/ /usr/local/share/ca-certificates/
+RUN update-ca-certificates
 
 RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
-	go get -insecure -u github.com/golang/dep/cmd/dep
+	go get github.com/golang/dep/cmd/dep
 
 WORKDIR /go/src/app
 

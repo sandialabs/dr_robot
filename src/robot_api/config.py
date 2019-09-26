@@ -26,6 +26,18 @@ def generate_configs():
     if not path.exists(CONFIG_DIR):
         makedirs(CONFIG_DIR)
 
+    if not path.exists(path.join(CONFIG_DIR, "docker_buildfiles")):
+        makedirs(path.join(CONFIG_DIR, "docker_buildfiles"))
+
+    if not path.exists(path.join(CONFIG_DIR, "docker_active")):
+        makedirs(path.join(CONFIG_DIR, "docker_active"))
+
+    if not path.exists(path.join(CONFIG_DIR, "tarfiles")):
+        makedirs(path.join(CONFIG_DIR, "tarfiles"))
+
+    if not path.exists(path.join(CONFIG_DIR, "certs")):
+        makedirs(path.join(CONFIG_DIR, "certs"))
+
     if not path.isfile(path.join(CONFIG_DIR, "config.json")):
         with open(path.join(CONFIG_DIR, "config.json"), 'wb') as _file:
             config = pkg_resources.resource_string(__name__, 
@@ -38,8 +50,6 @@ def generate_configs():
                                                    'configs/ansible_inventory')
             _file.write(config)
 
-    if not path.exists(path.join(CONFIG_DIR, "docker_buildfiles")):
-        makedirs(path.join(CONFIG_DIR, "docker_buildfiles"))
 
     for _file in pkg_resources.resource_listdir(__name__, "docker_buildfiles"):
         if not path.isfile(path.join(CONFIG_DIR, "docker_buildfiles", _file)):
