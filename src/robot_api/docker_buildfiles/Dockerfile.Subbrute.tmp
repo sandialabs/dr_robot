@@ -1,9 +1,11 @@
 FROM python:2.7
 
-WORKDIR /root
+WORKDIR /home
 
 ENV http_proxy $proxy
 ENV https_proxy $proxy
+
+RUN mkdir -p $output
 
 RUN if [ -n $dns ];\
     then echo "nameserver $dns" >> /etc/resolv.conf;\
@@ -17,10 +19,10 @@ RUN update-ca-certificates
 RUN if [ -n $dns ];\
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
-    git clone https://github.com/TheRook/subbrute.git subbrute
+    git clone https://github.com/TheRook/subbrute.git /home/subbrute
 
 RUN mkdir -p $output
 
-WORKDIR /root/subbrute
+WORKDIR /home/subbrute
 
 ENTRYPOINT ./subbrute.py -o $output/subbrute.txt -r resolvers.txt -p -v $target

@@ -5,10 +5,7 @@ ENV https_proxy $proxy
 
 RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\
- 	apt-get update && apt-get install -y --no-install-recommends \
-            python-dev \
-			git \
-			ca-certiticates
+ 	apt-get update && apt-get install -y python-dev git ca-certificates
 
 ADD certs/ /usr/local/share/ca-certificates/
 RUN update-ca-certificates
@@ -22,7 +19,7 @@ WORKDIR /ctexposure
 
 RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\
- 	pip3 install --trusted-host pypi.org -r requirements.txt
+ 	pip3 install --trusted-host pypi.python.org  --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements.txt
 
 ENV INFILE  $infile
 

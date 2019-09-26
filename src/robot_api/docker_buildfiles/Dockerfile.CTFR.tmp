@@ -22,7 +22,7 @@ WORKDIR /ctfr
 
 RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\
- 	pip3 install -r requirements.txt
+ 	pip install --trusted-host pypi.python.org --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements.txt
 
 RUN mkdir -p $output
 
