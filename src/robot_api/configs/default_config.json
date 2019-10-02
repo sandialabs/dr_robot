@@ -228,6 +228,17 @@
             "src": "https://github.com/gnebbia/pdlist",
             "output": "/root/pdlistoutput",
             "output_folder": "pdlist"
+        },"MassDNS": {
+            "name": "MassDNS",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "mass",
+            "default_conf": "docker_buildfiles/Dockerfile.Massdns.tmp",
+            "active_conf": "docker_active/Dockerfile.Massdns",
+            "description": "MassDNS high performance DNS stub resolver",
+            "src": "https://github.com/blechschmidt/massdns",
+            "output": "/root/massdns",
+            "output_folder": "massdns"
         }
     },
     "Enumeration" :

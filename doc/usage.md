@@ -45,6 +45,8 @@ optional arguments:
                         Post enumeration tool for screen grabbing websites.
                         (Chrome is not installed in the dockerfile due.
                         Options are chromium-browser/firefox/wkhtmltoimage)
+
+  --file FILE           File to use for inspection
 ```
 
 ## Upload
