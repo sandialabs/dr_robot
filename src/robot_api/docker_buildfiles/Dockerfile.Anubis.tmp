@@ -2,6 +2,7 @@ FROM python:3.7-slim
 
 ENV http_proxy $proxy
 ENV https_proxy $proxy
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/
 
 RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\
@@ -15,6 +16,7 @@ RUN if [ -n $dns ]; \
         && rm -rf /var/lib/apt/lists/*
 
 ADD certs/ /usr/local/share/ca-certificates/
+ADD certs/ /etc/ssl/certs/
 RUN update-ca-certificates
 
 RUN if [ -n $dns ]; \

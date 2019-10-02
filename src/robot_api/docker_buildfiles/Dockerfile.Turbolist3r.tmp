@@ -3,6 +3,7 @@ FROM python:3.7
 WORKDIR /root
 ENV http_proxy $proxy
 ENV https_proxy $proxy
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/
 
 RUN mkdir -p $output
 
@@ -12,6 +13,7 @@ RUN if [ -n $dns ]; \
     apt-get install git ca-certificates
 
 ADD certs/ /usr/local/share/ca-certificates/
+ADD certs/ /etc/ssl/certs/
 RUN update-ca-certificates
 
 RUN if [ -n $dns ];\

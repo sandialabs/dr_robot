@@ -3,6 +3,7 @@ FROM python:2.7
 ENV http_proxy $proxy
 ENV https_proxy $proxy
 ENV DNS $dns
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/
 
 
 RUN if [ -n $dns ]; \
@@ -11,6 +12,7 @@ RUN if [ -n $dns ]; \
     apt-get install git ca-certificates
 
 ADD certs/ /usr/local/share/ca-certificates/
+ADD certs/ /etc/ssl/certs/
 RUN update-ca-certificates
 
 RUN if [ -n $dns ]; \

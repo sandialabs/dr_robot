@@ -4,6 +4,7 @@ ENV http_proxy $proxy
 ENV https_proxy $proxy
 ENV dns $dns
 ENV GIT_SSL_NO_VERIFY 1
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/
 
 RUN mkdir -p /home/
 
@@ -13,6 +14,7 @@ RUN if [ -n $dns ]; \
     apt-get install -y git ca-certificates
 
 ADD certs/ /usr/local/share/ca-certificates/
+ADD certs/ /etc/ssl/certs/
 RUN update-ca-certificates
 
 RUN if [ -n $dns ]; \
