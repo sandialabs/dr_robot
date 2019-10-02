@@ -150,17 +150,17 @@ class Aggregation:
         """
         cursor.execute('BEGIN TRANSACTION')
         domain = self.domain.replace(".", "_")
-        try:
-            while not queue.empty():
-                host, ipv4 = queue.get()
-                if host is not None and len(host) > 1:
-                    host = host[0]
+        while not queue.empty():
+            host, ipv4 = queue.get()
+            if host is not None and type(host) is not str:
+                host = host[0]
+            try:
                 cursor.execute("""INSERT OR IGNORE INTO data
                         (ip, hostname, http_headers, https_headers, domain)
                         VALUES (?,?, NULL, NULL, ?);""", (ipv4, host, domain))
-        except sqlite3.Error:
-            print(f"Issue with the following data: {ipv4} {host} {domain}")
-            self.logger.exception("Error in _build_db")
+            except sqlite3.Error:
+                print(f"Issue with the following data: {ipv4} {host} {domain}")
+                self.logger.exception("Error in _build_db")
 
         cursor.execute('COMMIT')
 
@@ -248,8 +248,7 @@ class Aggregation:
             r"(?:(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)\.){3}(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)")
         # hostname_reg = re.compile(r"([A-Za-z0-9\-]*\.?)*\." + self.domain)
         hostname_reg = re.compile(
-            r"([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]))*?\." +
-            self.domain)
+            fr"([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]))*?\.{{self.domain}}")
         results = []
         with open(filename, "r") as _file:
             for line in tqdm(_file.readlines(), desc=f"{filename} parsing..."):
