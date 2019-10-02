@@ -29,10 +29,6 @@ jobs:
              - if [ -z "$(ls -A $HOME/.drrobot/output/github.com/amass)" ]; then exit 1; else echo "Success"; fi;
           name: Amass 
         - script:
-             - drrobot gather -brute github.com
-             - if [ -z "$(ls -A $HOME/.drrobot/output/github.com/brute)" ]; then exit 1; else echo "Success"; fi;
-          name: Subbrute
-        - script:
              - drrobot gather -turbo github.com
              - if [ -z "$(ls -A $HOME/.drrobot/output/github.com/turbolist3r)" ]; then exit 1; else echo "Success"; fi;
           name: Turbolist3r
