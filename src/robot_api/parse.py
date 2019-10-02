@@ -137,6 +137,10 @@ def parse_args(
                 "No description provided"),
             default=False)
 
+    parser_inspect.add_argument("--file",
+                                type=str,
+                                help="File to use for inspection")
+
     parser_inspect.add_argument("domain",
                                 type=str,
                                 help="Domain to run scan against")
