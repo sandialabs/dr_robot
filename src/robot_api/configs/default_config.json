@@ -252,7 +252,7 @@
                 }
             },
             "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: httpscreenshot.tar and unpacked httpscreenshots",
-            "output" : "/tmp/output",
+            "output" : "/tmp/output/httpscreenshot",
             "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt"
         },
         "Eyewitness": {
@@ -275,7 +275,7 @@
                 }
             },
             "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: Eyewitness.tar and unpacked in Eyewitness",
-            "output" : "/tmp/output",
+            "output" : "/tmp/output/eyewitness",
             "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt"
         },
         "Nmap" : {
@@ -287,7 +287,7 @@
             "default_conf" : "docker_buildfiles/Dockerfile.Nmap.Screenshot.tmp",
             "active_conf" : "docker_active/Dockerfile.Nmap.Screenshot",
             "description" : "Post enumeration tool for screen grabbing websites. (Chrome is not installed in the dockerfile due. Options are chromium-browser/firefox/wkhtmltoimage)",
-            "output" : "/tmp/output",
+            "output" : "/tmp/output/nmapscreen",
             "infile" : "/tmp/output/aggregated/aggregated_hostnames.txt",
             "tool_nmap" : "chromium-browser"
         },
@@ -300,7 +300,7 @@
             "default_conf" : "docker_buildfiles/Dockerfile.Webscreenshot.Screenshot.tmp",
             "active_conf" : "docker_active/Dockerfile.Webscreenshot.Screenshot",
             "description" : "Post enumeration tool for screen grabbing websites. (Chrome is not installed in the dockerfile due. Options are chromium-browser/firefox/wkhtmltoimage)",
-            "output" : "/tmp/output",
+            "output" : "/tmp/output/webscreen",
             "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt",
             "tool_web" : "phantomjs"
         }
