@@ -200,6 +200,7 @@ class Robot:
                 self._print(
                     f"Creating ansible {ansible} with attributes\n\t {attr}")
                 ansible_mod = Ansible(**attr)
+                ansible_mod.build()
 
                 ansible_mod.run()
 
