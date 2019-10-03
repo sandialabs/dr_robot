@@ -40,7 +40,7 @@
         become: true
         command:
             chdir=/tmp/EyeWitness
-            python EyeWitness.py -f hosts_targets.txt -d /tmp/EyeWitness/reportout --no-prompt --web --threads 40 --max-retries 1
+            python2 EyeWitness.py -f hosts_targets.txt -d /tmp/EyeWitness/reportout --no-prompt --web --threads 40 --max-retries 1
         async: 100000
         poll: 60
 
