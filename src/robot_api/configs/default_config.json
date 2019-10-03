@@ -253,7 +253,7 @@
             "active_conf" : "docker_active/Dockerfile.HTTPScreenshot",
             "ansible_arguments" : {
                 "config" : "$config/httpscreenshot_play.yml",
-                "flags": "-e '$extra' -i configs/ansible_inventory",
+                "flags": "-e '$extra' -i ~/.drrobot/ansible_inventory",
                 "extra_flags":{
                     "1" : "variable_host=localhost",
                     "2" : "variable_user=user", 
@@ -276,7 +276,7 @@
             "active_conf" : "docker_active/Dockerfile.Eyewitness",
             "ansible_arguments" : {
                 "config" : "$config/eyewitness_play.yml",
-                "flags": "-e '$extra' -i configs/ansible_inventory",
+                "flags": "-e '$extra' -i ~/.drrobot/ansible_inventory",
                 "extra_flags":{
                     "1" : "variable_host=localhost",
                     "2" : "variable_user=user", 
