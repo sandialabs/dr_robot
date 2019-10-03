@@ -188,8 +188,8 @@ class Robot:
             try:
                 attr = {}
                 print(f"[*] Running {ansible} as ansible Module")
-                if attr['infile'] is not None:
-                    infile = attr['infile']
+                if ansible_json.get('infile', None) is not None:
+                    infile = ansible_json.get('infile')
                 elif infile is None:
                     print("[*] No file provided, dumping db for input")
                     if getsize(self.dbfile) > 0:
