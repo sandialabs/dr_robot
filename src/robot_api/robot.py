@@ -187,7 +187,7 @@ class Robot:
         for ansible, ansible_json in ansible_mods.items():
             try:
                 attr = {}
-                print("[*] Running {ansible} as ansible Module")
+                print(f"[*] Running {ansible} as ansible Module")
                 attr['infile'] = infile
                 attr['domain'] = self.domain
                 attr['ansible_file_location'] = join_abs(
