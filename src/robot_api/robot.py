@@ -188,6 +188,18 @@ class Robot:
             try:
                 attr = {}
                 print(f"[*] Running {ansible} as ansible Module")
+                if attr['infile'] is not None:
+                    infile = attr['infile']
+                elif infile is None:
+                    print("[*] No file provided, dumping db for input")
+                    if getsize(self.dbfile) > 0:
+                        self.aggregation.dump_to_file()
+                    else:
+                        print("[!] \tDatabase file is empty. Have you ran gather?")
+                elif not isfile(infile):
+                    print("[!] file provided does not exist, terminating")
+                    return
+
                 attr['infile'] = infile
                 attr['domain'] = self.domain
                 attr['ansible_file_location'] = join_abs(
@@ -455,16 +467,6 @@ class Robot:
         _threads = []
 
         infile = kwargs.get('file', None)
-
-        if infile is None:
-            print("[*] No file provided, dumping db for input")
-            if getsize(self.dbfile) > 0:
-                self.aggregation.dump_to_file()
-            else:
-                print("[!] \tDatabase file is empty. Have you ran gather?")
-        elif not isfile(infile):
-            print("[!] file provided does not exist, terminating")
-            return
 
         print("[*] Inspection beginning")
         post_enum_dockers = kwargs.get("post_enum_dockers")
