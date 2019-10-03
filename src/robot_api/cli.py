@@ -143,6 +143,7 @@ def start_inspect(drrobot, tools, parser):
     """
     print("Beginning inspection")
     args = parser.parse_args()
+    verbose = getattr(args, "verbose", False)
     post_enum_dockers = {k: v for k, v
                          in tools.get("enumeration").items()
                          if getattr(args, k)
