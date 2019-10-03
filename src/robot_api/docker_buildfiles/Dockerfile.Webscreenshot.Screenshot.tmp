@@ -3,6 +3,8 @@ FROM ubuntu:latest
 ENV http_proxy $proxy
 ENV https_proxy $proxy
 
+RUN mkdir -p $output/webscreenshot
+
 RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
@@ -30,9 +32,5 @@ RUN if [ -n $dns ]; \
     fi;\
     pip install -r requirements.txt
 
-
-ENV OUTPUT $output/webscreenshot
-
-RUN mkdir -p $OUTPUT 
 
 ENTRYPOINT python webscreenshot.py -i $infile -o $output/webscreenshot -r $tool --no-xserver

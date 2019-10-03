@@ -1,0 +1,12 @@
+version: '3'
+services:
+ minio:
+    image: minio/minio:RELEASE.2018-03-30T00-38-44Z
+    volumes:
+      - ~/.drrobot/output/:/export
+    ports:
+      - "9000:9000"
+    environment:
+      MINIO_ACCESS_KEY: YOURACCESSKEY
+      MINIO_SECRET_KEY: YOURSECRETKEY 
+    command: server /export

@@ -147,6 +147,16 @@ optional arguments:
 
 Running this behind a proxy was a pain. To make this less painful we create a certs directory under the **$HOME/.drrobot/*** where you can add your crt files. As part of the dockerfile build process we now generate tarfiles with the certificates so that applications, such as Amass, can run.
 
+## Minio
+
+Included with Dr.ROBOT is a docker-compose.yml file. This file contains a simple compose file to serve up Minio and the files gathered during runtime. 
+
+To use:
+```
+cd /path/to/drrobot/
+docker-compose up
+```
+
 ## Documentation
 
 To add your own tool see the [Configuration](https://github.com/CrimsonK1ng/bloc/master/doc/config.md) to get started.

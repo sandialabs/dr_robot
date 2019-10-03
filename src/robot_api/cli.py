@@ -148,16 +148,18 @@ def start_inspect(drrobot, tools, parser):
                          if getattr(args, k)
                          is True
                          and Mode[v["mode"]] == Mode.DOCKER}
-    print(f"Inspection dockers \
-                {json.dumps(post_enum_dockers, indent=4)}")
+    if verbose:
+        print(f"Inspection dockers \
+                    {json.dumps(post_enum_dockers, indent=4)}")
 
     post_enum_ansible = {k: v for k, v
                          in tools.get("enumeration").items()
                          if getattr(args, k)
                          is True
                          and Mode[v["mode"]] == Mode.ANSIBLE}
-    print(f"Inspection ansible \
-                {json.dumps(post_enum_ansible, indent=4)}")
+    if verbose:
+        print(f"Inspection ansible \
+                    {json.dumps(post_enum_ansible, indent=4)}")
 
     if not post_enum_ansible and not post_enum_dockers:
         print("[*] No scanners/webtools provided, exiting...")
@@ -300,6 +302,7 @@ def run():
             makedirs(join_abs(ROOT_DIR, "dbs"))
 
         create_dirs(parser)
+        log.debug(f"Dumping tools for run :{tools}")
 
         if args.actions in "gather":
             start_gather(drrobot, tools, parser)
