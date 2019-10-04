@@ -159,5 +159,6 @@ docker-compose up
 
 ## Documentation
 
-To add your own tool see the [Configuration](https://github.com/CrimsonK1ng/bloc/master/doc/config.md) to get started.
-For usage see [Usage](https://github.com/CrimsonK1ng/bloc/master/doc/usage.md) to get started.
+To add your own tool see the [Configuration](https://github.com/CrimsonK1ng/bloc/master/readmes/config.md) to get started.
+
+For usage see [Usage](https://github.com/CrimsonK1ng/bloc/master/readmes/usage.md) to get started.
