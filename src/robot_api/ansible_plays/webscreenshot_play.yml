@@ -30,7 +30,7 @@
       - name: Pip install Webscreenshot
         become: true
         command:
-            chdir=/tmp/Webscreenshot/setup
+            chdir=/tmp/Webscreenshot
             pip3 install -r requirements.txt
 
       - name: Copy target hosts file to remote
@@ -47,7 +47,7 @@
         become: true
         command:
             chdir=/tmp/Webscreenshot
-            python3 webscreenshot.py -i hosts_targets.txt -r phantomjs  -o /tmp/Webscreenshot/results
+            python3 webscreenshot.py -i hosts_targets.txt -r phantomjs  -o /tmp/Webscreenshot/results --no-xserver
         async: 100000
         poll: 60
 

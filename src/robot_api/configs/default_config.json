@@ -258,8 +258,8 @@
                     "1" : "variable_host=localhost",
                     "2" : "variable_user=user", 
                     "3" : "infile=$infile",
-                    "4" : "outfile=$outfile/httpscreenshots.tar",
-                    "5" : "outfolder=$outfile/httpscreenshots"
+                    "4" : "outfile=$outdir/httpscreenshots.tar",
+                    "5" : "outfolder=$outdir/httpscreenshots"
                 },
                 "infile" : "aggregated/aggregated_protocol_hostnames.txt"
             },
@@ -282,8 +282,8 @@
                     "1" : "variable_host=localhost",
                     "2" : "variable_user=user", 
                     "3" : "infile=$infile",
-                    "4" : "outfile=$outfile/Eyewitness.tar",
-                    "5" : "outfolder=$outfile/Eyewitness"
+                    "4" : "outfile=$outdir/Eyewitness.tar",
+                    "5" : "outfolder=$outdir/Eyewitness"
                 },
                 "infile" : "aggregated/aggregated_protocol_hostnames.txt"
             },
@@ -319,8 +319,8 @@
                     "1" : "variable_host=localhost",
                     "2" : "variable_user=user", 
                     "3" : "infile=$infile",
-                    "4" : "outfile=$outfile/Webscreenshot.tar",
-                    "5" : "outfolder=$outfile/Webscreenshot"
+                    "4" : "outfile=$outdir/Webscreenshot.tar",
+                    "5" : "outfolder=$outdir/Webscreenshot"
                 },
                 "infile" : "aggregated/aggregated_protocol_hostnames.txt"
             },
