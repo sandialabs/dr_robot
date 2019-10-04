@@ -71,6 +71,14 @@
         async: 10000
         poll: 60
 
+      - name: Permissions
+        become: true
+        file:
+           group: "{{ variable_user|quote }}"
+           owner: "{{ variable_user|quote }}"
+           recurse: yes
+           path: /tmp/httpscreenshot
+
       - name: Create tar of all files
         archive:
             path: /tmp/httpscreenshot/screenshot

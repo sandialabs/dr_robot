@@ -45,6 +45,14 @@
         async: 100000
         poll: 60
 
+      - name: Permissions
+        become: true
+        file:
+           group: "{{ variable_user|quote }}"
+           owner: "{{ variable_user|quote }}"
+           recurse: yes
+           path: /tmp/EyeWitness
+
       - name: Create tar of all files
         archive:
             path: /tmp/EyeWitness/reportout

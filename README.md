@@ -13,7 +13,12 @@
 [![Dc27Badge](https://img.shields.io/badge/DEF%20CON-27-green)](https://defcon.org/html/defcon-27/dc-27-demolabs.html#Dr.%20ROBOT)
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/sandialabs/dr_robot/blob/master/LICENSE)
 [![Build Status](https://travis-ci.org/sandialabs/dr_robot.svg?branch=master)](https://travis-ci.org/sandialabs/dr_robot)
-
+[Version](https://img.shields.io/github/v/release/SandiaLabs/dr_robot)
+[Last Commit](https://img.shields.io/github/last-commit/CrimsonK1ng/dr_robot)
+[Docker](https://img.shields.io/github/pipenv/locked/dependency-version/CrimsonK1ng/dr_robot/docker)
+[Mattermost](https://img.shields.io/github/pipenv/locked/dependency-version/CrimsonK1ng/dr_robot/mattermostdriver)
+[SlackClient](https://img.shields.io/github/pipenv/locked/dependency-version/CrimsonK1ng/dr_robot/slackclient)
+[Size](https://img.shields.io/github/repo-size/CrimsonK1ng/dr_robot)
 Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.
 
 ## Introduction
@@ -156,6 +161,25 @@ To use:
 cd /path/to/drrobot/
 docker-compose up
 ```
+
+## Docker
+
+This tool relies heavily on Docker. 
+
+See installation instructions here: 
+* [Docker Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
+* [Docker MacOS](https://docs.docker.com/docker-for-mac/install/)
+* [Docker Windows](https://docs.docker.com/docker-for-windows/install/)
+
+
+## Ansible
+
+You can make any module support Ansible. 
+
+See [Installation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#intro-installation-guide) guide for instructions.
+
+* If using a mac you will need to install gnu-tar for Ansible to unpack compressed files. ```brew install gnu-tar```
+
 
 ## Documentation
 
