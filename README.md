@@ -14,11 +14,11 @@
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/sandialabs/dr_robot/blob/master/LICENSE)
 [![Build Status](https://travis-ci.org/sandialabs/dr_robot.svg?branch=master)](https://travis-ci.org/sandialabs/dr_robot)
 [Version](https://img.shields.io/github/v/release/SandiaLabs/dr_robot)
-[Last Commit](https://img.shields.io/github/last-commit/CrimsonK1ng/dr_robot)
-[Docker](https://img.shields.io/github/pipenv/locked/dependency-version/CrimsonK1ng/dr_robot/docker)
-[Mattermost](https://img.shields.io/github/pipenv/locked/dependency-version/CrimsonK1ng/dr_robot/mattermostdriver)
-[SlackClient](https://img.shields.io/github/pipenv/locked/dependency-version/CrimsonK1ng/dr_robot/slackclient)
-[Size](https://img.shields.io/github/repo-size/CrimsonK1ng/dr_robot)
+[Last Commit](https://img.shields.io/github/last-commit/sandialabs/dr_robot)
+[Docker](https://img.shields.io/github/pipenv/locked/dependency-version/sandialabs/dr_robot/docker)
+[Mattermost](https://img.shields.io/github/pipenv/locked/dependency-version/sandialabs/dr_robot/mattermostdriver)
+[SlackClient](https://img.shields.io/github/pipenv/locked/dependency-version/sandialabs/dr_robot/slackclient)
+[Size](https://img.shields.io/github/repo-size/sandialabs/dr_robot)
 Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.
 
 ## Introduction
@@ -188,6 +188,6 @@ ssh-add /path/to/keyfile
 
 ## Documentation
 
-To add your own tool see the [Configuration](https://github.com/CrimsonK1ng/bloc/master/readmes/config.md) to get started.
+To add your own tool see the [Configuration](https://github.com/sandialabs/bloc/master/readmes/config.md) to get started.
 
-For usage see [Usage](https://github.com/CrimsonK1ng/bloc/master/readmes/usage.md) to get started.
+For usage see [Usage](https://github.com/sandialabs/bloc/master/readmes/usage.md) to get started.

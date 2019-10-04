@@ -2,15 +2,42 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## Unreleased
 
-* JSON parsing, and other file identification
-* Multithreading file parsing. Previous implementation had a couple issues
+## [1.3.0] - August 2019
 
-### Beta
-* Serve option to host Django serve via Docker
-	* make requests to http://hostname:port/data/<domain_name>/
-	* Allow various selections of hosting data. Currently only supports Django via Docker.
+Updates
+
+### Added
+
+* Threading for docker containers
+* CI/CD with travis to test building of containers
+* MassDNS
+* Certificate usage for all containers
+* Minio docker-compose to serve up data locally for easy viewing
+* Config files in $HOME/.drrobot!!!
+
+### Removed
+
+* Server for Dr.ROBOT
+* Test directory. Most testing involves the network. Will eventually add unit tests again.
+
+### Changed
+
+* File layout
+	* Broke up drrobot into multiple pieces: cli.py robot.py config.py
+	* Moved robot specific classes into api folder: dockerize.py ansible.py aggregation.py upload.py web_resources.py
+* Template files are not longer in same directory as filled in files
+* Config and templates are stored in user $HOME/.drrobot directories for convenience
+* Users can now use virtualenv or pipenv
+* drrobot can now be installed locally for usage as a module
+
+### Fixed
+
+* Aggregation not parsing correctly
+* Host/IP resolution error
+* Redundant license
+* Weird output with multiprocessing
+* Logging
 
 ## [1.2.0] - August 2019
 
@@ -84,9 +111,3 @@ Current Release
 ## [1.0.0] - Nov  2018
 
 Initial Release
-
-
-
-
-
-
