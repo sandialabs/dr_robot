@@ -67,7 +67,7 @@ jobs:
              - mkdir -p $HOME/.drrobot/output/singlewebsitetest/aggregated
              - echo "https://github.com" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
              - drrobot inspect --file $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt  -webscreen singlewebsitetest
-             - if [ -z "$(ls -A $HOME/.drrobot/output/singlewebsitetest/webscreen)" ]; then exit 1; else echo "Success"; fi;
+             - if [ -z "$(ls -A $HOME/.drrobot/output/singlewebsitetest/webscreenshot)" ]; then exit 1; else echo "Success"; fi;
         - script:
              - drrobot -h
              - mkdir -p $HOME/.drrobot/output/singlewebsitetest/aggregated
@@ -80,7 +80,7 @@ jobs:
              - mkdir -p $HOME/.drrobot/output/singlewebsitetest/aggregated
              - echo "https://github.com" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
              - drrobot inspect --file $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt -eye singlewebsitetest
-             - if [ -z "$(ls -A $HOME/.drrobot/output/singlewebsitetest/eyewitness)" ]; then exit 1; else echo "Success"; fi;
+             - if [ -z "$(ls -A $HOME/.drrobot/output/singlewebsitetest/Eyewitness)" ]; then exit 1; else echo "Success"; fi;
           name: Eyewitness
         - script:
              - drrobot -h

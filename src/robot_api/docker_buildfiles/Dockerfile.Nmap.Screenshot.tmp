@@ -23,6 +23,7 @@ RUN if [ -n $dns ]; \
     wget -O wkhtml.deb https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb \
     && dpkg -i  wkhtml.deb
 
+RUN mkdir $output/nmapscreen
 WORKDIR $output
 
 ENTRYPOINT nmap --script http-screenshot --script-args tool=$tool -iL $infile -p "80,8080,443,8888"
