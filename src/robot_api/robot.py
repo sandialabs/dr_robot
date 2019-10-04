@@ -188,15 +188,18 @@ class Robot:
             try:
                 attr = {}
                 print(f"[*] Running {ansible} as ansible Module")
-                if ansible_json.get('infile', None) is not None:
-                    infile = ansible_json.get('infile')
-                elif infile is None:
-                    print("[*] No file provided, dumping db for input")
-                    if getsize(self.dbfile) > 0:
-                        self.aggregation.dump_to_file()
-                    else:
-                        print("[!] \tDatabase file is empty. Have you ran gather?")
-                elif not isfile(infile):
+                if infile is None:
+                    if ansible_json.get('ansible_arguments', None) is not None:
+                        if ansible_json.get('ansible_arguments').get('infile', None) is not None:
+                            infile = join_abs(self.OUTPUT_DIR, ansible_json.get('ansible_arguments').get('infile', None))
+                    elif infile is None:
+                        print("[*] No file provided, dumping db for input")
+                        if getsize(self.dbfile) > 0:
+                            self.aggregation.dump_to_file()
+                        else:
+                            print("[!] \tDatabase file is empty. Have you ran gather?")
+                
+                if not isfile(infile):
                     print("[!] file provided does not exist, terminating")
                     return
 

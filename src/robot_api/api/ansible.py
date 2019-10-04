@@ -62,7 +62,7 @@ class Ansible:
         self.output_dir = kwargs.get('output_dir')
         self.infile = kwargs.get('infile', None)
         if not self.infile:
-            self.infile = join_abs(self.output_dir, "aggregated")
+            self.infile = join_abs(self.output_dir, "aggregated", "aggregated_protocol_hostnames.txt")
 
         self.verbose = kwargs.get('verbose', False)
         self.final_command = None

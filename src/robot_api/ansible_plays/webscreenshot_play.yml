@@ -15,23 +15,29 @@
             name: python
             force: yes
 
-      - name: Git install EyeWitness repo
-        git:
-            repo: https://github.com/FortyNorthSecurity/EyeWitness.git
-            update: no
-            dest: /tmp/EyeWitness
+      - name: Apt install phantomjs 
+        become: true
+        apt:
+            name: phantomjs
+            force: yes
 
-      - name: Pip install EyeWitness
+      - name: Git install Webscreenshot repo
+        git:
+            repo: https://github.com/maaaaz/webscreenshot.git
+            update: yes
+            dest: /tmp/Webscreenshot
+
+      - name: Pip install Webscreenshot
         become: true
         command:
-            chdir=/tmp/EyeWitness/setup
-            ./setup.sh
+            chdir=/tmp/Webscreenshot/setup
+            pip3 install -r requirements.txt
 
       - name: Copy target hosts file to remote
         become: true
         copy:
             src: "{{ infile|quote }}" #This is how you access a passed in variable --extra-vars "version=1.23.45 other_variable=foo"
-            dest: /tmp/EyeWitness/hosts_targets.txt
+            dest: /tmp/Webscreenshot/hosts_targets.txt
             owner: root 
             group: root 
             force: true
@@ -40,19 +46,19 @@
       - name: Run Scan
         become: true
         command:
-            chdir=/tmp/EyeWitness
-            python2 EyeWitness.py -f hosts_targets.txt -d /tmp/EyeWitness/reportout --no-prompt --web --threads 40 --max-retries 1
+            chdir=/tmp/Webscreenshot
+            python3 webscreenshot.py -i hosts_targets.txt -r phantomjs  -o /tmp/Webscreenshot/results
         async: 100000
         poll: 60
 
       - name: Create tar of all files
         archive:
-            path: /tmp/EyeWitness/reportout
-            dest: /tmp/EyeWitness.tar
+            path: /tmp/Webscreenshot/results
+            dest: /tmp/Webscreenshot.tar
 
       - name: Fetch tar file from server
         fetch:
-            src: /tmp/EyeWitness.tar
+            src: /tmp/Webscreenshot.tar
             dest: "{{ outfile|quote }}"
             flat: true
 
