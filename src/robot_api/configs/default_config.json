@@ -261,7 +261,7 @@
                     "4" : "outfile=$outfile/httpscreenshots.tar",
                     "5" : "outfolder=$outfile/httpscreenshots"
                 },
-                infile" : "aggregated/aggregated_protocol_hostnames.txt"
+                "infile" : "aggregated/aggregated_protocol_hostnames.txt"
             },
             "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: httpscreenshot.tar and unpacked httpscreenshots",
             "output" : "/tmp/output/",
@@ -285,7 +285,7 @@
                     "4" : "outfile=$outfile/Eyewitness.tar",
                     "5" : "outfolder=$outfile/Eyewitness"
                 },
-                infile" : "aggregated/aggregated_protocol_hostnames.txt"
+                "infile" : "aggregated/aggregated_protocol_hostnames.txt"
             },
             "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: Eyewitness.tar and unpacked in Eyewitness",
             "output" : "/tmp/output/",
@@ -322,7 +322,7 @@
                     "4" : "outfile=$outfile/Webscreenshot.tar",
                     "5" : "outfolder=$outfile/Webscreenshot"
                 },
-                infile" : "aggregated/aggregated_protocol_hostnames.txt"
+                "infile" : "aggregated/aggregated_protocol_hostnames.txt"
             },
             "description" : "Post enumeration tool for screen grabbing websites. (Chrome is not installed in the dockerfile due. Options are chromium-browser/firefox/wkhtmltoimage)",
             "output" : "/tmp/output/",
