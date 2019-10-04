@@ -54,7 +54,6 @@ jobs:
           name: CTExpose
         - script:
              - drrobot gather -ctfr github.com
-             - if [ -z "$(ls -A $HOME/.drrobot/output/github.com/ctfr)" ]; then exit 1; else echo "Success"; fi;
           name: CTFR
         - script:
              - drrobot gather -pdlist github.com
