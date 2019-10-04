@@ -14,7 +14,7 @@ RUN update-ca-certificates
 
 RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf; fi;\
-    git clone https://github.com/Sandarmann/nmap-screenshot.git \
+    git clone https://github.com/CrimsonK1ng/nmap-screenshot.git \
     && cp nmap-screenshot/http-screenshot.nse /usr/share/nmap/scripts/http-screenshot.nse \
     && nmap --script-updatedb 
 
@@ -23,7 +23,6 @@ RUN if [ -n $dns ]; \
     wget -O wkhtml.deb https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb \
     && dpkg -i  wkhtml.deb
 
-RUN mkdir $output/nmapscreen
 WORKDIR $output
 
-ENTRYPOINT nmap --script http-screenshot --script-args tool=$tool -iL $infile -p "80,8080,443,8888"
+ENTRYPOINT mkdir $output/nmapscreen && cd $output/nmapscreen && nmap --script http-screenshot --script-args tool=$tool -iL $infile -p "80,8080,443,8888"

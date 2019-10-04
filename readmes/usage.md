@@ -20,7 +20,7 @@ drrobot gather <tool> <domain>
 
 ## Inspection
 
-Inspection is not a passive usage. It will run a tool that uses the aggregated information to grab screenshots for manual enumeration.
+The inspection process will generate noise due to the headless automated browsing which are easily detectable. If your list is large enough this could cause your IP to be blocked. 
 
 ```
 drrobot inspect --help

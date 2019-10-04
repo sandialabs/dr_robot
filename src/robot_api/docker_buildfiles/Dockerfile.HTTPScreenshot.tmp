@@ -23,7 +23,7 @@ RUN if [ -n $dns ]; \
 RUN if [ -n $dns ]; \
     then echo "nameserver $dns" >> /etc/resolv.conf;\
     fi;\
-    git clone https://github.com/Sandarmann/httpscreenshot.git
+    git clone https://github.com/CrimsonK1ng/httpscreenshot.git
 
 RUN cd httpscreenshot \
     && ./install-dependencies.sh \
@@ -33,7 +33,4 @@ RUN cd httpscreenshot \
     && unzip -o chromedriver_linux64.zip \
     && ln -s /httpscreenshot/chromedriver /usr/bin/chromedriver
 
-RUN mkdir -p $output/httpscreenshot
-WORKDIR $output
-
-ENTRYPOINT httpscreenshot -i $infile -b chrome -p -w 40  -a -vH
+ENTRYPOINT mkdir -p $output/httpscreenshot && cd $output/httpscreenshot && httpscreenshot -i $infile -b chrome -p -w 40  -a -vH

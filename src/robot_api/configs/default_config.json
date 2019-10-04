@@ -304,6 +304,18 @@
             "infile" : "/tmp/output/aggregated/aggregated_hostnames.txt",
             "tool" : "chromium-browser"
         },
+        "Gowitness" : {
+            "name" : "Gowitness",
+            "short_name" : "gowitness",
+            "docker_name" : "gowitness",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "default_conf" : "docker_buildfiles/Dockerfile.Gowitness.Screenshot.tmp",
+            "active_conf" : "docker_active/Dockerfile.Gowitness.Screenshot",
+            "description" : "gowitness is a website screenshot utility written in Golang",
+            "output" : "/tmp/output/",
+            "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt"
+        },
         "Webscreenshot" : {
             "name" : "WebScreenshot",
             "short_name" : "webscreen",

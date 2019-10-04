@@ -18,73 +18,65 @@ jobs:
         - stage: start scans
           name: Sublist3r
           script:
-            - drrobot gather -sub github.com
-            - if [ -z "$(ls -A $HOME/.drrobot/output/github.com/sublist3r)" ]; then exit 1; else echo "Success"; fi;
+            - drrobot gather -sub localhost
         - script:
-             - drrobot gather -knock github.com
-             - if [ -z "$(ls -A $HOME/.drrobot/output/github.com/knock)" ]; then exit 1; else echo "Success"; fi;
+             - drrobot gather -knock localhost
           name: Knock
         - script:
-             - drrobot gather -amass github.com
-             - if [ -z "$(ls -A $HOME/.drrobot/output/github.com/amass)" ]; then exit 1; else echo "Success"; fi;
+             - drrobot gather -amass localhost
           name: Amass 
         - script:
-             - drrobot gather -turbo github.com
-             - if [ -z "$(ls -A $HOME/.drrobot/output/github.com/turbolist3r)" ]; then exit 1; else echo "Success"; fi;
+             - drrobot gather -turbo localhost
           name: Turbolist3r
         - script:
-             - drrobot gather -sfinder github.com
-             - if [ -z "$(ls -A $HOME/.drrobot/output/github.com/subfinder)" ]; then exit 1; else echo "Success"; fi;
+             - drrobot gather -sfinder localhost
           name: Subfinder
         - script:
-             - drrobot gather -recon github.com
-             - if [ -z "$(ls -A $HOME/.drrobot/output/github.com/reconng)" ]; then exit 1; else echo "Success"; fi;
+             - drrobot gather -recon localhost
           name: ReconNG
         - script:
-             - drrobot gather -altdns github.com
-             - if [ -z "$(ls -A $HOME/.drrobot/output/github.com/altdns)" ]; then exit 1; else echo "Success"; fi;
+             - drrobot gather -altdns localhost
           name: AltDNS
         - script:
-             - drrobot gather -anubis github.com
-             - if [ -z "$(ls -A $HOME/.drrobot/output/github.com/anubis)" ]; then exit 1; else echo "Success"; fi;
+             - drrobot gather -anubis localhost
           name: Anubis
         - script:
-             - drrobot gather -ctexpo github.com
-             - if [ -z "$(ls -A $HOME/.drrobot/output/github.com/ctexpose)" ]; then exit 1; else echo "Success"; fi;
+             - drrobot gather -ctexpo localhost
           name: CTExpose
         - script:
-             - drrobot gather -ctfr github.com
+             - drrobot gather -ctfr localhost 
           name: CTFR
         - script:
-             - drrobot gather -pdlist github.com
-             - if [ -z "$(ls -A $HOME/.drrobot/output/github.com/pdlist)" ]; then exit 1; else echo "Success"; fi;
+             - drrobot gather -pdlist localhost
           name: PDList
         - stage: Test screenshots
           name: Webscreenshot
           script:
              - drrobot -h
              - mkdir -p $HOME/.drrobot/output/singlewebsitetest/aggregated
-             - echo "https://github.com" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
+             - echo "http://localhost" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
              - drrobot inspect --file $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt  -webscreen singlewebsitetest
-             - if [ -z "$(ls -A $HOME/.drrobot/output/singlewebsitetest/webscreenshot)" ]; then exit 1; else echo "Success"; fi;
         - script:
              - drrobot -h
              - mkdir -p $HOME/.drrobot/output/singlewebsitetest/aggregated
-             - echo "https://github.com" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
+             - echo "http://localhost" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
              - drrobot inspect --file $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt  -nmapscreen singlewebsitetest
-             - if [ -z "$(ls -A $HOME/.drrobot/output/singlewebsitetest/nmapscreen)" ]; then exit 1; else echo "Success"; fi;
           name: NMAP
         - script:
              - drrobot -h
              - mkdir -p $HOME/.drrobot/output/singlewebsitetest/aggregated
-             - echo "https://github.com" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
+             - echo "http://localhost" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
              - drrobot inspect --file $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt -eye singlewebsitetest
-             - if [ -z "$(ls -A $HOME/.drrobot/output/singlewebsitetest/Eyewitness)" ]; then exit 1; else echo "Success"; fi;
           name: Eyewitness
         - script:
              - drrobot -h
              - mkdir -p $HOME/.drrobot/output/singlewebsitetest/aggregated
-             - echo "https://github.com" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
+             - echo "http://localhost" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
              - drrobot inspect --file $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt  -http singlewebsitetest
-             - if [ -z "$(ls -A $HOME/.drrobot/output/singlewebsitetest/httpscreenshot)" ]; then exit 1; else echo "Success"; fi;
           name: HTTPScreenshot 
+        - script:
+             - drrobot -h
+             - mkdir -p $HOME/.drrobot/output/singlewebsitetest/aggregated
+             - echo "http://localhost" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
+             - drrobot inspect --file $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt  -gowitness singlewebsitetest
+          name: GOWitness 

@@ -41,4 +41,4 @@ RUN cd setup && \
     chown -R $$user:$$user /home/$$user/EyeWitness && \
     mkdir -p /tmp/EyeWitness
 
-ENTRYPOINT mkdir -p $output/Eyewitness && python EyeWitness.py -d $output -f $infile --no-prompt --web --threads 40 --max-retries 1
+ENTRYPOINT mkdir -p $output/Eyewitness && python EyeWitness.py -d $output/EyeWitness -f $infile --no-prompt --web --threads 40 --max-retries 1
