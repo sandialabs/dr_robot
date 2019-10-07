@@ -49,12 +49,12 @@ class Robot:
         self.ROOT_DIR = kwargs.get("root_dir")
         if self.domain:
             self.OUTPUT_DIR = join_abs(self.ROOT_DIR, "output", self.domain)
+            self.aggregation = Aggregation(
+                kwargs.get("dbfile"), self.domain, self.OUTPUT_DIR)
         self.dns = kwargs.get("dns", None)
         self.proxy = kwargs.get("proxy", None)
         self.verbose = kwargs.get("verbose", False)
         self.dbfile = kwargs.get("dbfile")
-        self.aggregation = Aggregation(
-            kwargs.get("dbfile"), self.domain, self.OUTPUT_DIR)
 
         # Disable warnings for insecure requests
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
