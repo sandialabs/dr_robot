@@ -250,25 +250,28 @@ class Aggregation:
         hostname_reg = re.compile(
             fr"([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]))*?\.{{self.domain}}")
         results = []
-        with open(filename, "r") as _file:
-            for line in tqdm(_file.readlines(), desc=f"{filename} parsing..."):
-                _host = hostname_reg.match(line)
-                if _host is not None:
-                    _host = _host.group(1)
-                _ip = ip_reg.match(line)
-                if _ip is not None:
-                    _ip = _ip.group()
-                try:
-                    if _host is not None and _ip is None:
-                        _ip = socket.gethostbyname(_host)
-                    if _ip is not None and _host is None:
-                        _host = socket.gethostbyaddr(_ip)
-                except Exception:
-                    pass
-                if self.domain not in _host:
-                    _host = None
-                if _host or _ip:
-                    queue.put((_host, _ip))
+        try:
+            with open(filename, "r", encoding='utf-8') as _file:
+                for line in tqdm(_file.readlines(), desc=f"{filename} parsing..."):
+                    _host = hostname_reg.match(line)
+                    if _host is not None:
+                        _host = _host.group(1)
+                    _ip = ip_reg.match(line)
+                    if _ip is not None:
+                        _ip = _ip.group()
+                    try:
+                        if _host is not None and _ip is None:
+                            _ip = socket.gethostbyname(_host)
+                        if _ip is not None and _host is None:
+                            _host = socket.gethostbyaddr(_ip)
+                    except Exception:
+                        pass
+                    if self.domain not in _host:
+                        _host = None
+                    if _host or _ip:
+                        queue.put((_host, _ip))
+        except Exception:
+            self.logger.exception(f"Error opening file {filename}")
 
         return results
 

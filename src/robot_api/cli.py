@@ -325,17 +325,17 @@ def run():
 
     except json.JSONDecodeError as error:
         print(f"[!] JSON load error, configuration file is bad.\n {error}")
-        log.error(error)
+        log.exception(error)
     except DatabaseError as error:
         print(f"[!] Something went wrong with SQLite\n {error}")
-        log.error(error)
+        log.exception(error)
     except KeyboardInterrupt:
         print("[!] KeyboardInterrup, exiting...")
     except OSError as error:
-        log.error(error)
+        log.exception(error)
         print(f"[!] OSError {error}")
     except TypeError as error:
-        log.error(error)
+        log.exception(error)
         print(f"[!] {error}")
 
 
