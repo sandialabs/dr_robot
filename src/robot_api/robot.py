@@ -342,7 +342,7 @@ class Robot:
 
                 self._print(f"Uploading to {dest} with options \n\t{attr}")
 
-                module = importlib.import_module('..upload', __name__)
+                module = importlib.import_module('robot_api.api.upload', __name__)
                 board_class = getattr(module, dest_json.get('class_name'))
                 obj = board_class(**attr)
 
