@@ -39,6 +39,7 @@ Dr.ROBOT is a tool for **Domain Reconnaissance and Enumeration**. By utilizing c
 * Subfinder
 * Sublist3r
 * Webscreenshot
+* GoWitness
 
 ## Config Files
 
@@ -171,7 +172,7 @@ You can make any module support Ansible.
 
 See [Installation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#intro-installation-guide) guide for instructions.
 
-* If using a mac you will need to install gnu-tar for Ansible to unpack compressed files. ```brew install gnu-tar```
+* If using a mac you will need to install gnu-tar for Ansible to unpack compressed files: ```brew install gnu-tar```
 * If you have an encrypted ssh key that requires a password to use and would not like to enter their password for every command ran remotely look into using an **ssh-agent**
 ```
 eval $(ssh-agent)
@@ -181,6 +182,6 @@ ssh-add /path/to/keyfile
 
 ## Documentation
 
-To add your own tool see the [Configuration](https://github.com/sandialabs/bloc/master/readmes/config.md) to get started.
+To add your own tool see the [Configuration](readmes/config.md) to get started.
 
-For usage see [Usage](https://github.com/sandialabs/bloc/master/readmes/usage.md) to get started.
+For usage see [Usage](readmes/usage.md) to get started.

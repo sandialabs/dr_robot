@@ -85,7 +85,7 @@ Take special note of the `ansible_arguments`. The two required items are `config
 Note: 
 
 * `$infile` comes from the outermost **infile**, so that it is consistent for both docker and ansible. You can use a full path to a file for input if you desire.
-* `$outdir` comes from Dr.ROBOT. It will generate a path that points to ````$HOME/.drrobot/output/<domain>/`. ``` Again, you can specify a custom path if you like. 
+* `$outdir` comes from Dr.ROBOT. It will generate a path that points to ```$HOME/.drrobot/output/<domain>/ ``` Again, you can specify a custom path if you like. 
 
 #### The Playbook
 This will simply be a standard playbook with a few changes so that Dr.ROBOT can use the parameters we fed it. To make sure a parameter that we specified in the "extra_flags" JSON blob is available,  use Ansible syntax for variables: ```"{{ variable_name|quote }}"``` (Note the *quote* helps prevent issues with variable names)

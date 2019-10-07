@@ -20,7 +20,7 @@ drrobot gather <tool> <domain>
 
 ## Inspection
 
-The inspection process will generate noise due to the headless automated browsing which are easily detectable. If your list is large enough this could cause your IP to be blocked. 
+The inspection process will generate noise due to the headless automated browsing, which is easily detectable. If your list is large enough this could cause your IP to be blocked. 
 
 ```
 drrobot inspect --help
