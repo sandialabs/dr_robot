@@ -1,0 +1,92 @@
+---
+- hosts: "{{ variable_host|quote }}"
+  remote_user: "{{ variable_user|quote }}" 
+
+  tasks:
+      - name: Apt install git
+        become: true
+        apt:
+            name: git
+            force: yes
+
+      - name: Apt install python
+        become: true
+        apt:
+            name: python
+            force: yes
+
+      - name: Apt install phantomjs 
+        become: true
+        apt:
+            name: phantomjs
+            force: yes
+
+      - name: Git install Webscreenshot repo
+        git:
+            repo: https://github.com/maaaaz/webscreenshot.git
+            update: yes
+            dest: /tmp/Webscreenshot
+
+      - name: Pip install Webscreenshot
+        become: true
+        command:
+            chdir=/tmp/Webscreenshot
+            pip3 install -r requirements.txt
+
+      - name: Copy target hosts file to remote
+        become: true
+        copy:
+            src: "{{ infile|quote }}" #This is how you access a passed in variable --extra-vars "version=1.23.45 other_variable=foo"
+            dest: /tmp/Webscreenshot/hosts_targets.txt
+            owner: root 
+            group: root 
+            force: true
+            mode: u+rw,g+rw,o+rw
+
+      - name: Run Scan
+        become: true
+        command:
+            chdir=/tmp/Webscreenshot
+            python3 webscreenshot.py -i hosts_targets.txt -r phantomjs  -o /tmp/Webscreenshot/results --no-xserver
+        async: 100000
+        poll: 60
+
+      - name: Permissions
+        become: true
+        file:
+           group: "{{ variable_user|quote }}"
+           owner: "{{ variable_user|quote }}"
+           recurse: yes
+           path: /tmp/Webscreenshot
+
+      - name: Create tar of all files
+        archive:
+            path: /tmp/Webscreenshot/results/
+            dest: /tmp/Webscreenshot.tar
+
+      - name: Fetch tar file from server
+        fetch:
+            src: /tmp/Webscreenshot.tar
+            dest: "{{ outfile|quote }}"
+            flat: true
+
+      - name: Killall phantomJS processes
+        become: true
+        command:
+            killall phantomjs
+        ignore_errors: yes
+
+- hosts: localhost
+
+  tasks:
+    - name: Create output directory
+      file:
+          path: "{{ outfolder|quote }}"
+          state: directory
+          mode: 0755
+
+    - name: Unpack tar file
+      unarchive:
+          src: "{{ outfile|quote }}"
+          dest: "{{ outfolder|quote }}"
+...

@@ -1,0 +1,41 @@
+FROM golang:1.13.0-alpine3.10 as build
+
+RUN if [ -n $dns ]; \
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
+    fi;\
+	apk --no-cache add git ca-certificates; 
+
+ADD certs/ /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+
+RUN if [ -n $dns ]; \
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
+    fi;\
+	go get github.com/OWASP/Amass; exit 0
+
+ENV GO111MODULE on
+
+WORKDIR /go/src/github.com/OWASP/Amass
+
+RUN if [ -n $dns ]; \
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
+    fi;\
+	go install ./...
+
+FROM alpine:latest
+
+RUN if [ -n $dns ]; \
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
+    fi;\
+	apk --no-cache add ca-certificates
+
+COPY --from=build /go/bin/amass /bin/amass
+COPY --from=build /go/src/github.com/OWASP/Amass/examples/wordlists/ /wordlists/
+
+ENV http_proxy $proxy
+ENV https_proxy $proxy
+ENV HOME /
+
+RUN mkdir -p $output
+
+ENTRYPOINT /bin/amass enum --passive -d "$target" -o $output/amass.txt  

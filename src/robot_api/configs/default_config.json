@@ -1,0 +1,345 @@
+{
+    "WebTools":
+    {
+        "Shodan" :
+        {
+            "short_name": "shodan",
+            "class_name": "Shodan",
+            "description" : "Query SHODAN for publicly facing sites of given domain",
+            "output_file" : "shodan.txt",
+            "api_key" : null,
+            "endpoint" : null,
+            "username" : null,
+            "password" : null
+        },
+        "Arin" :
+        {
+            "short_name" : "arin",
+            "class_name": "Arin",
+            "description" : "Query ARIN for public CIDR ranges. This is better as a brute force option as the ranges",
+            "output_file" : "arin.txt",
+            "api_key" : null,
+            "username" : null,
+            "password" : null
+        },
+        "HackerTarget" :
+        {
+            "short_name" : "hack",
+            "class_name" : "HackerTarget",
+            "description" : "This query will display the forward DNS records discovered using the data sets outlined above.",
+            "api_call_unused" : "https://api.hackertarget.com/hostsearch/?q=example.com",
+            "output_file" : "hacker.txt"
+        },
+        "Dumpster" :
+        {
+            "short_name" : "dump",
+            "class_name" : "Dumpster",
+            "description" : "Use the limited response of DNSDumpster. Requires API access for better results.",
+            "output_file" : "dumpster.txt"
+        },
+        "VirusTotal" :
+        {
+            "short_name" : "virus",
+            "class_name" : "VirusTotal",
+            "description" : "Utilize VirusTotal's Observer Subdomain Search",
+            "output_file" : "virustotal.txt"
+        }
+    },
+    "Upload" : {
+        "Mattermost":
+        {
+            "class_name" : "Mattermost",
+            "short_name" : "matter",
+            "api_key": "",
+            "token_id" : "",
+            "port" : null,
+            "username" : "",
+            "url" : "",
+            "team_name" : "",
+            "channel_name" : "",
+            "description" : "Mattermost server"
+        },
+        "Slack" : 
+		{
+            "class_name" : "Slack",
+            "short_name" : "slack",
+            "api_key": "",
+            "channel_name" : "",
+            "description" : "Slack server"
+            
+        }
+    },
+    "Scanners" :
+    {
+        "Aquatone" : {
+            "name": "Aquatone",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name": "aqua",
+            "default_conf": "docker_buildfiles/Dockerfile.Aquatone.tmp",
+            "active_conf": "docker_active/Dockerfile.Aquatone",
+            "description": "AQUATONE is a set of tools for performing reconnaissance on domain names",
+            "src": "https://github.com/michenriksen/aquatone",
+            "output": "/aqua",
+            "output_folder": "aquatone"
+        },
+        "Sublist3r": {
+            "name": "Sublist3r",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name": "sub",
+            "default_conf": "docker_buildfiles/Dockerfile.Sublist3r.tmp",
+            "active_conf": "docker_active/Dockerfile.Sublist3r",
+            "description": "Sublist3r is a python tool designed to enumerate subdomains of websites using OSINT",
+            "src": "https://github.com/aboul3la/Sublist3r",
+            "output": "/root/sublist3r",
+            "output_folder": "sublist3r"
+        },
+        "Turbolist3r": {
+            "name": "Turbolist3r",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name": "turbo",
+            "default_conf": "docker_buildfiles/Dockerfile.Turbolist3r.tmp",
+            "active_conf": "docker_active/Dockerfile.Turbolist3r",
+            "description": "Turbolist3r is a fork of the sublist3r subdomain discovery tool",
+            "src": "https://github.com/fleetcaptain/Turbolist3r.git",
+            "output": "/root/turbooutput",
+            "output_folder": "turbolist3r"
+        },
+        "Subbrute": {
+            "name": "Subbrute",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "brute",
+            "default_conf": "docker_buildfiles/Dockerfile.Subbrute.tmp",
+            "active_conf": "docker_active/Dockerfile.Subbrute",
+            "description": "SubBrute is a community driven project with the goal of creating the fastest, and most accurate subdomain enumeration tool.",
+            "src": "https://github.com/TheRook/subbrute.git",
+            "output": "/root/brute",
+            "output_folder": "subbrute"
+        },
+        "Subfinder": {
+            "name": "Subfinder",
+            "mode" : "DOCKER",
+            "docker_name" : "sfinder",
+            "network_mode": "host",
+            "default_conf": "docker_buildfiles/Dockerfile.Subfinder.tmp",
+            "active_conf": "docker_active/Dockerfile.Subfinder",
+            "description": "SubFinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources",
+            "src": "https://github.com/subfinder/subfinder",
+            "output": "/root/subfinder",
+            "output_folder": "subfinder"
+        },
+        "Knock": {
+            "name": "Knock",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "knock",
+            "default_conf": "docker_buildfiles/Dockerfile.Knock.tmp",
+            "active_conf": "docker_active/Dockerfile.Knock",
+            "description": "Knockpy is a python tool designed to enumerate subdomains on a target domain through a wordlist",
+            "src": "https://github.com/guelfoweb/knock",
+            "output": "/root/knock",
+            "output_folder": "knock",
+            "vt_key": ""
+        },
+        "Amass": {
+            "name": "Amass",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "amass",
+            "default_conf": "docker_buildfiles/Dockerfile.Amass.tmp",
+            "active_conf": "docker_active/Dockerfile.Amass",
+            "description": "The OWASP Amass tool suite obtains subdomain names by scraping data sources, recursive brute forcing, crawling web archives, permuting/altering names and reverse DNS sweeping.",
+            "src": "https://github.com/OWASP/Amass",
+            "resolvers": "",
+            "output": "/root/amass",
+            "output_folder": "amass"
+        },
+        "Reconng": {
+            "name": "Reconng",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "recon",
+            "default_conf": "docker_buildfiles/Dockerfile.Reconng.tmp",
+            "active_conf": "docker_active/Dockerfile.Reconng",
+            "description": "Recon-ng is a full-featured Web Reconnaissance framework written in Python. DrRobot utilizes several of the recon/hosts-domain modules in this framework.",
+            "src": "https://bitbucket.org/LaNMaSteR53/recon-ng",
+            "output": "/tmp/output",
+            "output_folder": "reconng"
+        },
+        "Altdns": {
+            "name": "Altdns",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "altdns",
+            "default_conf": "docker_buildfiles/Dockerfile.Altdns.tmp",
+            "active_conf": "docker_active/Dockerfile.Altdns",
+            "description": "Generates permutations, alterations and mutations of subdomains and then resolves them",
+            "src": "https://github.com/infosec-au/altdns",
+            "infile" : "/root/altdns/aggregated/aggregated_hostnames.txt",
+            "output": "/root/altdns",
+            "output_folder": "altdns"
+        },
+        "Anubis": {
+            "name": "Anubis",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "anubis",
+            "default_conf": "docker_buildfiles/Dockerfile.Anubis.tmp",
+            "active_conf": "docker_active/Dockerfile.Anubis",
+            "description": "Anubis is a subdomain enumeration and information gathering tool.",
+            "src": "https://github.com/jonluca/Anubis",
+            "output": "/root/anubis",
+            "output_folder": "anubis"
+        } ,
+        "CTExposer": {
+            "name": "CTExpose",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "ctexpo",
+            "default_conf": "docker_buildfiles/Dockerfile.CT.tmp",
+            "active_conf": "docker_active/Dockerfile.CT",
+            "description": "An OSINT tool that discovers sub-domains by searching Certificate Transparency ",
+            "src": "https://github.com/chris408/ct-exposer",
+            "output": "/root/ct",
+            "output_folder": "ctexpose"
+        },
+        "CTFR": {
+            "name": "CTFR",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "ctfr",
+            "default_conf": "docker_buildfiles/Dockerfile.CTFR.tmp",
+            "active_conf": "docker_active/Dockerfile.CTFR",
+            "description": "Abusing Certificate Transparency logs for getting HTTPS websites subdomains.",
+            "src": "https://github.com/UnaPibaGeek/ctfr",
+            "output": "/root/ctfr",
+            "output_folder": "ctfr"
+        },"PDList": {
+            "name": "PDList",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "pdlist",
+            "default_conf": "docker_buildfiles/Dockerfile.PDList.tmp",
+            "active_conf": "docker_active/Dockerfile.PDList",
+            "description": "pdlist is a passive subdomain finder written in python3",
+            "src": "https://github.com/gnebbia/pdlist",
+            "output": "/root/pdlistoutput",
+            "output_folder": "pdlist"
+        },"MassDNS": {
+            "name": "MassDNS",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "mass",
+            "default_conf": "docker_buildfiles/Dockerfile.Massdns.tmp",
+            "active_conf": "docker_active/Dockerfile.Massdns",
+            "description": "MassDNS high performance DNS stub resolver",
+            "src": "https://github.com/blechschmidt/massdns",
+            "output": "/root/massdns",
+            "output_folder": "massdns"
+        }
+    },
+    "Enumeration" :
+    {
+        "HTTPScreenshot": {
+            "name" : "HTTPScreenshot",
+            "short_name" : "http",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "httpscreen",
+            "default_conf" : "docker_buildfiles/Dockerfile.HTTPScreenshot.tmp",
+            "active_conf" : "docker_active/Dockerfile.HTTPScreenshot",
+            "ansible_arguments" : {
+                "config" : "$config/httpscreenshot_play.yml",
+                "flags": "-e '$extra' -i ~/.drrobot/ansible_inventory",
+                "extra_flags":{
+                    "1" : "variable_host=localhost",
+                    "2" : "variable_user=user", 
+                    "3" : "infile=$infile",
+                    "4" : "outfile=$outdir/httpscreenshots.tar",
+                    "5" : "outfolder=$outdir/httpscreenshots"
+                },
+                "infile" : "aggregated/aggregated_protocol_hostnames.txt"
+            },
+            "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: httpscreenshot.tar and unpacked httpscreenshots",
+            "output" : "/tmp/output/",
+            "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt"
+        },
+        "Eyewitness": {
+            "name" : "Eyewitness",
+            "short_name" : "eye",
+            "docker_name" : "eye",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "default_conf" : "docker_buildfiles/Dockerfile.Eyewitness.tmp",
+            "active_conf" : "docker_active/Dockerfile.Eyewitness",
+            "ansible_arguments" : {
+                "config" : "$config/eyewitness_play.yml",
+                "flags": "-e '$extra' -i ~/.drrobot/ansible_inventory",
+                "extra_flags":{
+                    "1" : "variable_host=localhost",
+                    "2" : "variable_user=user", 
+                    "3" : "infile=$infile",
+                    "4" : "outfile=$outdir/Eyewitness.tar",
+                    "5" : "outfolder=$outdir/Eyewitness"
+                },
+                "infile" : "aggregated/aggregated_protocol_hostnames.txt"
+            },
+            "description" : "Post enumeration tool for screen grabbing websites. All images will be downloaded to outfile: Eyewitness.tar and unpacked in Eyewitness",
+            "output" : "/tmp/output/",
+            "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt"
+        },
+        "Nmap" : {
+            "name" : "Nmap Screenshot",
+            "short_name" : "nmapscreen",
+            "docker_name" : "nmapscreen",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "default_conf" : "docker_buildfiles/Dockerfile.Nmap.Screenshot.tmp",
+            "active_conf" : "docker_active/Dockerfile.Nmap.Screenshot",
+            "description" : "Post enumeration tool for screen grabbing websites. (Chrome is not installed in the dockerfile due. Options are chromium-browser/firefox/wkhtmltoimage)",
+            "output" : "/tmp/output/",
+            "infile" : "/tmp/output/aggregated/aggregated_hostnames.txt",
+            "tool" : "chromium-browser"
+        },
+        "Gowitness" : {
+            "name" : "Gowitness",
+            "short_name" : "gowitness",
+            "docker_name" : "gowitness",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "default_conf" : "docker_buildfiles/Dockerfile.Gowitness.Screenshot.tmp",
+            "active_conf" : "docker_active/Dockerfile.Gowitness.Screenshot",
+            "description" : "gowitness is a website screenshot utility written in Golang",
+            "output" : "/tmp/output/",
+            "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt"
+        },
+        "Webscreenshot" : {
+            "name" : "WebScreenshot",
+            "short_name" : "webscreen",
+            "docker_name" : "webscreen",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "default_conf" : "docker_buildfiles/Dockerfile.Webscreenshot.Screenshot.tmp",
+            "active_conf" : "docker_active/Dockerfile.Webscreenshot.Screenshot",
+            "ansible_arguments" : {
+                "config" : "$config/webscreenshot_play.yml",
+                "flags": "-e '$extra' -i ~/.drrobot/ansible_inventory",
+                "extra_flags":{
+                    "1" : "variable_host=localhost",
+                    "2" : "variable_user=user", 
+                    "3" : "infile=$infile",
+                    "4" : "outfile=$outdir/Webscreenshot.tar",
+                    "5" : "outfolder=$outdir/Webscreenshot"
+                },
+                "infile" : "aggregated/aggregated_protocol_hostnames.txt"
+            },
+            "description" : "Post enumeration tool for screen grabbing websites. (Chrome is not installed in the dockerfile due. Options are chromium-browser/firefox/wkhtmltoimage)",
+            "output" : "/tmp/output/",
+            "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt",
+            "tool" : "phantomjs"
+        }
+    }
+}

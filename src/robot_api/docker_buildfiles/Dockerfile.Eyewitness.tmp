@@ -1,0 +1,44 @@
+FROM phusion/baseimage
+
+ENV http_proxy $proxy
+ENV https_proxy $proxy
+
+ARG user=eyewitness
+
+RUN if [ -n $dns ]; \
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
+    fi;\
+    apt-get update && \
+    apt-get install -y git wget ca-certificates && \
+	rm -rf /var/lib/apt/lists/*
+
+
+ADD certs/ /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+
+RUN if [ -n $dns ]; \
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
+    fi;\
+    export uid=1000 gid=1000 && \
+    mkdir -p /home/$$user && \
+    echo "$$user:x:$${uid}:$${gid}:$$user,,,:/home/$$user:/bin/bash" >> /etc/passwd && \
+    echo "$$user:x:$${uid}:" >> /etc/group && \
+    chown $${uid}:$${gid} -R /home/$$user
+
+WORKDIR /home/$$user
+
+RUN if [ -n $dns ]; \
+    then echo "nameserver $dns" >> /etc/resolv.conf;\
+    fi;\
+	  git clone https://github.com/ChrisTruncer/EyeWitness.git && \
+    cd EyeWitness
+
+WORKDIR /home/$$user/EyeWitness
+
+RUN cd setup && \
+    ./setup.sh && \
+    cd .. && \
+    chown -R $$user:$$user /home/$$user/EyeWitness && \
+    mkdir -p /tmp/EyeWitness
+
+ENTRYPOINT mkdir -p $output/Eyewitness && python EyeWitness.py -d $output/EyeWitness -f $infile --no-prompt --web --threads 40 --max-retries 1

@@ -2,17 +2,25 @@
 
 import codecs
 
-from setuptools import setup
+from setuptools import setup, find_packages
+
+def get_requirements():
+    with open('requirements.txt', 'r') as fp:
+        reqs = [req.strip() for req in fp.readlines()]
+    return reqs
 
 
 setup(
-    name="Dr.ROBOT",
-    version="1.0.0",
-    package_dir={"":"src"},
+    name="drrobot",
+    version="1.1.2",
+    package_dir={"": "src"},
+    packages=find_packages(where="src"),
     url='https://github.com/sandialabs/dr_robot',
     author='Aleksandar Straumann',
     author_email='astraum@sandia.gov',
-    description='This tool can be used to enumerate the subdomains associated with a company by aggregating the results of multiple OSINT (Open Source Intelligence) tools.',
+    description='This tool can be used to enumerate the subdomains associated'
+    + 'with a company by aggregating the results of multiple OSINT'
+    + '(Open Source Intelligence) tools.',
     keywords=[
         'environment variables',
         'settings',
@@ -23,12 +31,11 @@ setup(
         'python'
         ],
     long_description=codecs.open('README.md', encoding="utf8").read(),
+    include_package_data=True,
     entry_points={
-
+        'console_scripts': ['drrobot=robot_api.cli:run']
         },
     install_requires=[
-        #'python-dotenv>=0.8.2',
-
         ],
     setup_requires=[
         'pytest-runner'
@@ -36,5 +43,4 @@ setup(
     tests_require=[
         'pytest',
         ]
-
 )

@@ -1,0 +1,105 @@
+---
+- hosts: "{{ variable_host|quote }}"
+  remote_user: "{{ variable_user|quote }}"
+
+  tasks:
+      - name: Apt install swig
+        become: true
+        apt:
+            name: swig
+            force: yes
+
+      - name: Apt install swig2
+        become: true
+        apt:
+            name: swig2.0
+            force: yes
+
+      - name: Apt install libssl-dev
+        become: true
+        apt:
+            name: libssl-dev
+            force: yes
+
+      - name: Apt install python-dev
+        become: true
+        apt:
+            name: swig
+            force: yes
+
+      - name: Apt install python-pip
+        become: true
+        apt:
+            name: swig
+            force: yes
+
+      - name: Apt install git
+        become: true
+        apt:
+            name: git
+            force: yes
+
+      - name: Git install httpscreen repo
+        git:
+            repo: https://github.com/breenmachine/httpscreenshot.git
+            update: no
+            dest: /tmp/httpscreenshot
+
+      - name: Pip install httpscreenshot
+        command:
+            chdir=/tmp/httpscreenshot
+            python -m pip install -r requirements.txt
+
+      - name: Copy target hosts file to remote
+        copy:
+            src: "{{ infile|quote }}" #This is how you access a passed in variable --extra-vars "version=1.23.45 other_variable=foo"
+            dest: /tmp/httpscreenshot/hosts_targets.txt
+            owner: admin
+            group: admin
+            mode: u+rw,g+rw,o+rw
+
+      - name: Create temp file location for screenshots
+        file:
+            path: /tmp/httpscreenshot/screenshot
+            state: directory
+            mode: 0755
+
+      - name: Run Scan
+        command:
+            chdir=/tmp/httpscreenshot/screenshot
+            python ../httpscreenshot.py -l ../hosts_targets.txt -p -w 40 -vH -a
+        async: 10000
+        poll: 60
+
+      - name: Permissions
+        become: true
+        file:
+           group: "{{ variable_user|quote }}"
+           owner: "{{ variable_user|quote }}"
+           recurse: yes
+           path: /tmp/httpscreenshot
+
+      - name: Create tar of all files
+        archive:
+            path: /tmp/httpscreenshot/screenshot
+            dest: /tmp/httpscreenshot.tar
+
+      - name: Fetch tar file from server
+        fetch:
+            src: /tmp/httpscreenshot.tar
+            dest: "{{ outfile|quote }}"
+            flat: true
+
+- hosts: localhost
+  tasks:
+        - name: Create output directory
+          file:
+              path: "{{ outfolder|quote }}"
+              state: directory
+              mode: 0755
+
+        - name: Unpack tar file
+          unarchive:
+              src: "{{ outfile|quote }}"
+              dest: "{{ outfolder|quote }}"
+...

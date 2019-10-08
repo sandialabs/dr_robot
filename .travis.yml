@@ -1,11 +1,82 @@
+dist: bionic
 language: python
 python:
-  - '3.6'
+  - '3.7'
+
+services:
+    - docker
 
 install:
-  - 'pip install pipenv'
-  - 'pipenv sync -d'
-  - 'pipenv run pip install pip==18.0'
+    - pip install -r requirements.txt
+    - pip install -e .
 
-script:
-  'pipenv run pytest tests'
+jobs:
+    include:
+        - stage: help
+          script:
+            - drrobot --help
+        - stage: start scans
+          name: Sublist3r
+          script:
+            - drrobot gather -sub localhost
+        - script:
+             - drrobot gather -knock localhost
+          name: Knock
+        - script:
+             - drrobot gather -amass localhost
+          name: Amass 
+        - script:
+             - drrobot gather -turbo localhost
+          name: Turbolist3r
+        - script:
+             - drrobot gather -sfinder localhost
+          name: Subfinder
+        - script:
+             - drrobot gather -recon localhost
+          name: ReconNG
+        - script:
+             - drrobot gather -altdns localhost
+          name: AltDNS
+        - script:
+             - drrobot gather -anubis localhost
+          name: Anubis
+        - script:
+             - drrobot gather -ctexpo localhost
+          name: CTExpose
+        - script:
+             - drrobot gather -ctfr localhost 
+          name: CTFR
+        - script:
+             - drrobot gather -pdlist localhost
+          name: PDList
+        - stage: Test screenshots
+          name: Webscreenshot
+          script:
+             - drrobot -h
+             - mkdir -p $HOME/.drrobot/output/singlewebsitetest/aggregated
+             - echo "http://localhost" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
+             - drrobot inspect --file $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt  -webscreen singlewebsitetest
+        - script:
+             - drrobot -h
+             - mkdir -p $HOME/.drrobot/output/singlewebsitetest/aggregated
+             - echo "http://localhost" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
+             - drrobot inspect --file $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt  -nmapscreen singlewebsitetest
+          name: NMAP
+        - script:
+             - drrobot -h
+             - mkdir -p $HOME/.drrobot/output/singlewebsitetest/aggregated
+             - echo "http://localhost" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
+             - drrobot inspect --file $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt -eye singlewebsitetest
+          name: Eyewitness
+        - script:
+             - drrobot -h
+             - mkdir -p $HOME/.drrobot/output/singlewebsitetest/aggregated
+             - echo "http://localhost" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
+             - drrobot inspect --file $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt  -http singlewebsitetest
+          name: HTTPScreenshot 
+        - script:
+             - drrobot -h
+             - mkdir -p $HOME/.drrobot/output/singlewebsitetest/aggregated
+             - echo "http://localhost" > $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt
+             - drrobot inspect --file $HOME/.drrobot/output/singlewebsitetest/aggregated/aggregated_protocol_hostnames.txt  -gowitness singlewebsitetest
+          name: GOWitness 
