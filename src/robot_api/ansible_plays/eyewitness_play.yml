@@ -18,7 +18,7 @@
       - name: Git install EyeWitness repo
         git:
             repo: https://github.com/FortyNorthSecurity/EyeWitness.git
-            update: no
+            update: yes
             dest: /tmp/EyeWitness
 
       - name: Pip install EyeWitness
@@ -41,7 +41,7 @@
         become: true
         command:
             chdir=/tmp/EyeWitness
-            python2 EyeWitness.py -f hosts_targets.txt -d /tmp/EyeWitness/reportout --no-prompt --web --threads 40 --max-retries 1
+            python3 EyeWitness.py -f hosts_targets.txt -d /tmp/EyeWitness/reportout --no-prompt --web --threads 40 --max-retries 1
         async: 100000
         poll: 60
 
