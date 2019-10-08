@@ -266,7 +266,7 @@ class Aggregation:
                             _host = socket.gethostbyaddr(_ip)
                     except Exception:
                         pass
-                    if self.domain not in _host:
+                    if _host is not None and self.domain not in _host:
                         _host = None
                     if _host or _ip:
                         queue.put((_host, _ip))
