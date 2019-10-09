@@ -10,7 +10,7 @@
  :                            :                  :             
 ```
 
-[![Dc27Badge](https://img.shields.io/badge/DEF%20CON-27-green)](https://defcon.org/html/defcon-27/dc-27-demolabs.html#Dr.%20ROBOT)[![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/sandialabs/dr_robot/blob/master/LICENSE)[![Build Status](https://travis-ci.org/sandialabs/dr_robot.svg?branch=master)](https://travis-ci.org/sandialabs/dr_robot)[![GitHub release (latest by date)](https://img.shields.io/github/v/release/sandialabs/dr_robot)](https://github.com/sandialabs/dr_robot/blob/master/CHANGELOG.md)[![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/sandialabs/dr_robot/docker)]()[![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/sandialabs/dr_robot/mattermostdriver)]() ![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/sandialabs/dr_robot/slackclient)
+[![Dc27Badge](https://img.shields.io/badge/DEF%20CON-27-green)](https://defcon.org/html/defcon-27/dc-27-demolabs.html#Dr.%20ROBOT)[![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/sandialabs/dr_robot/blob/master/LICENSE)[![Build Status](https://travis-ci.org/sandialabs/dr_robot.svg?branch=master)](https://travis-ci.org/sandialabs/dr_robot)[![GitHub release (latest by date)](https://img.shields.io/github/v/release/sandialabs/dr_robot)](https://github.com/sandialabs/dr_robot/blob/master/CHANGELOG.md)
 
 Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.
 
