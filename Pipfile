@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 dr-robot = {editable = true,path = "."}
+idna-ssl = "*"
 
 [dev-packages]
 docker = "~=4.0"
