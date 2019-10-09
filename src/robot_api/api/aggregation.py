@@ -248,17 +248,19 @@ class Aggregation:
             r"(?:(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)\.){3}(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)")
         # hostname_reg = re.compile(r"([A-Za-z0-9\-]*\.?)*\." + self.domain)
         hostname_reg = re.compile(
-            r"([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]))*?\." + self.domain)
+            r"([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]))*?\." 
+            + self.domain
+            + r"(\:?[0-9]{1,5})?")
         results = []
         try:
             with open(filename, "r", encoding='utf-8') as _file:
                 for line in tqdm(_file.readlines(), desc=f"{filename} parsing..."):
-                    _host = hostname_reg.match(line)
+                    _host = hostname_reg.search(line)
                     if _host is not None:
-                        _host = _host.group(1)
-                    _ip = ip_reg.match(line)
+                        _host = _host.group(0)
+                    _ip = ip_reg.search(line)
                     if _ip is not None:
-                        _ip = _ip.group()
+                        _ip = _ip.group(0)
                     try:
                         if _host is not None and _ip is None:
                             _ip = socket.gethostbyname(_host)
