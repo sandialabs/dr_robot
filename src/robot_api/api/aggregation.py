@@ -116,7 +116,7 @@ class Aggregation:
                           'w') as _file:
                     _file.writelines(
                         "\n".join(
-                            list(f"https://{host[0]}.{self.domain}\nhttp://{host[0]}.{self.domain}"
+                            list(f"https://{host[0]}\nhttp://{host[0]}"
                                  for host in hostnames)))
 
             if dump_headers:
@@ -250,7 +250,7 @@ class Aggregation:
         hostname_reg = re.compile(
             r"([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]))*?\." 
             + self.domain
-            + r"(\:?[0-9]{1,6})?")
+            + r"(\:?[0-9]{1,5})?")
         results = []
         try:
             with open(filename, "r", encoding='utf-8') as _file:
