@@ -9,3 +9,4 @@ argparse
 tqdm~=4.0
 dicttoxml~=1.0
 slackclient~=2.0
+idna-ssl~=1.1
