@@ -485,7 +485,6 @@ class Robot:
                   "to possibility of user input")
             self._run_ansible(post_enum_ansible, infile)
 
-        print("[*] Inspection Done")
         if _threads:
             try:
                 [thread.join() for thread in _threads if thread]
@@ -493,6 +492,8 @@ class Robot:
                 self._print("Keyboard Interrupt sending kill signal to docker")
                 _ = [doc.kill() for doc in post_doc]
                 raise KeyboardInterrupt
+
+        print("[*] Inspection Done")
 
     def upload(self, **kwargs):
         """Uploads files under filepath to upload destination

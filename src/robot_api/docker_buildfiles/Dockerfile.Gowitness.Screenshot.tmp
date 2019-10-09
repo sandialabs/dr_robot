@@ -29,4 +29,4 @@ ENV https_proxy $proxy
 ENV HOME /
 
 
-ENTRYPOINT mkdir $output/gowitness && cd $output/gowitness && gowitness file -s $infile --threads 20
+ENTRYPOINT mkdir -p $output/gowitness && cd $output/gowitness && gowitness file -s $infile --threads 20
