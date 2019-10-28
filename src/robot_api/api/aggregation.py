@@ -24,6 +24,83 @@ import requests
 
 from robot_api.parse import join_abs
 
+def reverse_ip_lookup(domain, queue, filename):
+    """Read in filesnames and use regex to extract all ips and hostnames.
+
+    Args:
+        filename: string to filename to parse
+
+    Returns:
+        A list of tuples containing the extracted host and ip
+    """
+    ip_reg = re.compile(
+        r"(?:(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)\.){3}(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)")
+    hostname_reg = re.compile(
+        r"([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]))*?\." 
+        + domain
+        + r"(\:?[0-9]{1,5})?")
+    results = []
+    try:
+        with open(filename, "r", encoding='utf-8') as _file:
+            for line in tqdm(_file.readlines(), desc=f"{filename} parsing..."):
+                _host = hostname_reg.search(line)
+                if _host is not None:
+                    _host = _host.group(0)
+                _ip = ip_reg.search(line)
+                if _ip is not None:
+                    _ip = _ip.group(0)
+                try:
+                    if _host is not None and _ip is None:
+                        _ip = socket.gethostbyname(_host)
+                    if _ip is not None and _host is None:
+                        _host = socket.gethostbyaddr(_ip)
+                except Exception:
+                    pass
+                if _host or _ip:
+                    queue.put((_host, _ip))
+    except Exception:
+        pass
+
+    return results
+
+def get_headers(queue, target):
+    """Static method for request to scrape header information from ip
+
+    Args:
+        target: string to make request to
+
+    Returns:
+        ip/hostname and tuple containing headers
+    """
+    http = None
+    https = None
+    # May add option later to set UserAgent
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0"
+    }
+    try:
+        http = requests.get(
+            f"http://{target}",
+            headers=headers,
+            timeout=1,
+            verify=False).headers
+        http = str(http)
+    except requests.ConnectionError:
+        pass
+    except OSError:
+        pass
+    try:
+        https = requests.get(
+            f"https://{target}",
+            headers=headers,
+            timeout=1,
+            verify=False).headers
+        https = str(https)
+    except requests.ConnectionError:
+        pass
+    except OSError:
+        pass
+    queue.put([target, (http, https)])
 
 class Aggregation:
     """Aggregation module
@@ -225,7 +302,7 @@ class Aggregation:
             qu_manager = multiprocessing.Manager()
             pool = multiprocessing.Pool(5) 
             queue = qu_manager.Queue()
-            reverse_partial = partial(self._reverse_ip_lookup, queue)
+            reverse_partial = partial(reverse_ip_lookup, self.domain, queue)
             pool.map(reverse_partial, all_files)
             pool.close()
             self._build_db(queue, dbcurs)
@@ -235,85 +312,7 @@ class Aggregation:
         finally:
             dbconn.close()
 
-    def _reverse_ip_lookup(self, queue, filename):
-        """Read in filesnames and use regex to extract all ips and hostnames.
 
-        Args:
-            filename: string to filename to parse
-
-        Returns:
-            A list of tuples containing the extracted host and ip
-        """
-        ip_reg = re.compile(
-            r"(?:(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)\.){3}(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)")
-        # hostname_reg = re.compile(r"([A-Za-z0-9\-]*\.?)*\." + self.domain)
-        hostname_reg = re.compile(
-            r"([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]))*?\." 
-            + self.domain
-            + r"(\:?[0-9]{1,5})?")
-        results = []
-        try:
-            with open(filename, "r", encoding='utf-8') as _file:
-                for line in tqdm(_file.readlines(), desc=f"{filename} parsing..."):
-                    _host = hostname_reg.search(line)
-                    if _host is not None:
-                        _host = _host.group(0)
-                    _ip = ip_reg.search(line)
-                    if _ip is not None:
-                        _ip = _ip.group(0)
-                    try:
-                        if _host is not None and _ip is None:
-                            _ip = socket.gethostbyname(_host)
-                        if _ip is not None and _host is None:
-                            _host = socket.gethostbyaddr(_ip)
-                    except Exception:
-                        pass
-                    if _host or _ip:
-                        queue.put((_host, _ip))
-        except Exception:
-            self.logger.exception(f"Error opening file {filename}")
-
-        return results
-
-    def _get_headers(self, queue, target):
-        """Static method for request to scrape header information from ip
-
-        Args:
-            target: string to make request to
-
-        Returns:
-            ip/hostname and tuple containing headers
-        """
-        http = None
-        https = None
-        # May add option later to set UserAgent
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0"
-        }
-        try:
-            http = requests.get(
-                f"http://{target}",
-                headers=headers,
-                timeout=1,
-                verify=False).headers
-            http = str(http)
-        except requests.ConnectionError:
-            pass
-        except OSError:
-            pass
-        try:
-            https = requests.get(
-                f"https://{target}",
-                headers=headers,
-                timeout=1,
-                verify=False).headers
-            https = str(https)
-        except requests.ConnectionError:
-            pass
-        except OSError:
-            pass
-        queue.put([target, (http, https)])
-        # return target, (http, https)
 
     def headers(self):
         """Attempts to grab header data for all ips/hostnames
@@ -338,7 +337,7 @@ class Aggregation:
 
         qu_manager = multiprocessing.Manager()
         queue = qu_manager.Queue()
-        get_headers_partial = partial(self._get_headers, queue)
+        get_headers_partial = partial(get_headers, queue)
         _ = list(tqdm(pool.imap_unordered(get_headers_partial, ips), total=len(ips), desc="Getting headers for ip..."))
         pool.close()
         pool.join()
@@ -365,7 +364,7 @@ class Aggregation:
 
         pool = multiprocessing.Pool(40)
         queue = qu_manager.Queue()
-        get_headers_partial = partial(self._get_headers, queue)
+        get_headers_partial = partial(get_headers, queue)
         _ = list(tqdm(pool.map(get_headers_partial, hostnames), total=len(hostnames), desc="Getting headers for host..."))
 
         pool.close()
