@@ -243,6 +243,18 @@
     },
     "Enumeration" :
     {
+        "Aquatone" : {
+            "name" : "Aquatone",
+            "short_name" : "aqua",
+            "mode" : "DOCKER",
+            "network_mode": "host",
+            "docker_name" : "aquatone",
+            "default_conf" : "docker_buildfiles/Dockerfile.Aquatone.Flyover.tmp",
+            "active_conf" : "docker_active/Dockerfile.Aquatone.Flyover",
+            "description" : "Tool for domain flyovers",
+            "output" : "/tmp/output",
+            "infile" : "/tmp/output/aggregated/aggregated_protocol_hostnames.txt"
+        },
         "HTTPScreenshot": {
             "name" : "HTTPScreenshot",
             "short_name" : "http",
