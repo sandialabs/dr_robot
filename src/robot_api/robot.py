@@ -184,6 +184,7 @@ class Robot:
         Returns:
 
         """
+        ansible_threads = []
         for ansible, ansible_json in ansible_mods.items():
             try:
                 attr = {}
@@ -216,8 +217,13 @@ class Robot:
                     f"Creating ansible {ansible} with attributes\n\t {attr}")
                 ansible_mod = Ansible(**attr)
                 ansible_mod.build()
-
-                ansible_mod.run()
+                
+                if ansible_json.get('ansible_arguments').get("run_as_thread", False):
+                    thread = threading.Thread(target=ansible_mod.run, daemon=True)
+                    thread.start()
+                    ansible_threads += [thread]
+                else:
+                    ansible_mod.run()
 
             except OSError:
                 print(f"[!] Something went wrong. Check error log for details")
@@ -225,6 +231,9 @@ class Robot:
             except TypeError:
                 print(f"[!] Something went wrong. Check error log for details")
                 LOG.exception("Error in ansible method")
+
+        for ansible in ansible_threads:
+            ansible.join()
 
     def _run_webtools(self, webtools):
         """Create custom WebTool object from dictionary containing WebTools
